@@ -93,11 +93,11 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
         var PLAYER_ANIMATION_STATE = {}
 
         func _exit_tree():
-        	RECV_NET_THREAD_RUN = false
-        	SEND_NET_THREAD_RUN = false
         	print("[calico] Waiting for network thread to finish...")
-        	RECV_NET_THREAD_RUN.wait_to_finish()
-        	SEND_NET_THREAD_RUN.wait_to_finish()
+        	RECV_NET_THREAD_RUN = false
+        	RECV_NET_THREAD.wait_to_finish()
+        	SEND_NET_THREAD_RUN = false
+        	SEND_NET_THREAD.wait_to_finish()
         	
         func _calico_recv_net_thread():
         	while RECV_NET_THREAD_RUN:
@@ -123,12 +123,12 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
         if !STEAM_ENABLED: return
         RECV_NET_MUTEX = Mutex.new()
         SEND_NET_MUTEX = Mutex.new()
-        RECV_NET_THREAD_RUN = Thread.new()
-        SEND_NET_THREAD_RUN = Thread.new()
+        RECV_NET_THREAD = Thread.new()
+        SEND_NET_THREAD = Thread.new()
         print("[calico] Starting receiver network thread...")
-        RECV_NET_THREAD_RUN.start(self, "_calico_recv_net_thread")
+        RECV_NET_THREAD.start(self, "_calico_recv_net_thread")
         print("[calico] Starting sender network thread...")
-        SEND_NET_THREAD_RUN.start(self, "_calico_send_net_thread")
+        SEND_NET_THREAD.start(self, "_calico_send_net_thread")
 
         """, 1);
 
