@@ -28,13 +28,15 @@ public class PhysicsProcessScriptMod(IModInterface mod): IScriptMod
     //public bool ShouldRun(string path) => path == "res://Scenes/Entities/Player/fishing_line.gdc";
     public bool ShouldRun(string path)
     {
-        return path.StartsWith("res://Scenes/Entities/") && !path.EndsWith("/actor.gdc") && !path.EndsWith("/prop.gdc");
+        return path.StartsWith("res://Scenes/Entities/") && !path.EndsWith("/actor.gdc") &&
+               !path.EndsWith("/prop.gdc") && !path.EndsWith("/player.gdc");
     }
 
     private readonly Dictionary<string, bool> _injectedGlobals = new();
 
     public IEnumerable<Token> Modify(string path, IEnumerable<Token> tokens)
     {
+        // We need new waiters for each Modify call.
         MultiTokenWaiter extendsWaiter = new([
             t => t.Type is TokenType.PrExtends,
             t => t.Type is TokenType.Newline
@@ -54,11 +56,10 @@ public class PhysicsProcessScriptMod(IModInterface mod): IScriptMod
             t => t.Type is TokenType.Colon
         ]);
         _injectedGlobals[path] = false;
-        mod.Logger.Information(path);
         
+        mod.Logger.Information($"Patching {path}");
         foreach (var t in tokens)
         {
-            mod.Logger.Information(t.ToString());
             if (extendsWaiter.Check(t))
             {
                 _injectedGlobals[path] = true;

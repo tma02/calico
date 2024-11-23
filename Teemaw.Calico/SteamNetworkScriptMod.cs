@@ -65,28 +65,55 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
         t => t.Type is TokenType.Newline
     ], allowPartialMatch: true);
 
+    private readonly MultiTokenWaiter _sendP2PPacketWaiter = new([
+        t => t is { Type: TokenType.PrFunction },
+        t => t is IdentifierToken { Name: "_send_P2P_Packet" },
+        t => t.Type is TokenType.ParenthesisOpen,
+        t => t is IdentifierToken { Name: "packet_data" },
+        t => t is IdentifierToken { Name: "target" },
+        t => t is IdentifierToken { Name: "type" },
+        t => t is IdentifierToken { Name: "channel" },
+        t => t.Type is TokenType.ParenthesisClose,
+        t => t.Type is TokenType.Colon
+    ], allowPartialMatch: true);
+
     private readonly IEnumerable<Token> _globals = ScriptTokenizer.Tokenize(
         """
-
-        var NET_MUTEX
-        var NET_THREAD
+        
+        var CALICO_RECV_PACKET_QUEUE = []
+        var RECV_NET_MUTEX
+        var RECV_NET_THREAD
+        var RECV_NET_THREAD_RUN = true
+        var CALICO_SEND_PACKET_QUEUE = []
+        var SEND_NET_MUTEX
+        var SEND_NET_THREAD
+        var SEND_NET_THREAD_RUN = true
         var ACTOR_UPDATE_STATE = {}
         var PLAYER_UPDATE_COUNTER = {}
         var PLAYER_ANIMATION_STATE = {}
-        var NET_THREAD_RUN = true
-        var PACKET_QUEUE = []
 
         func _exit_tree():
-        	NET_THREAD_RUN = false
+        	RECV_NET_THREAD_RUN = false
+        	SEND_NET_THREAD_RUN = false
         	print("[calico] Waiting for network thread to finish...")
-        	NET_THREAD.wait_to_finish()
+        	RECV_NET_THREAD_RUN.wait_to_finish()
+        	SEND_NET_THREAD_RUN.wait_to_finish()
         	
-        func _calico_net_thread():
-        	while NET_THREAD_RUN:
-        		NET_MUTEX.lock()
-        		_calico_net_process(0)
-        		NET_MUTEX.unlock()
-        		OS.delay_msec(62 - get_ticks_msec() % 62)
+        func _calico_recv_net_thread():
+        	while RECV_NET_THREAD_RUN:
+        		RECV_NET_MUTEX.lock()
+        		_calico_recv_net_process(0)
+        		RECV_NET_MUTEX.unlock()
+        		OS.delay_msec(62 - Time.get_ticks_msec() % 62)
+        
+        func _calico_send_net_thread():
+        	while SEND_NET_THREAD_RUN:
+        		SEND_NET_MUTEX.lock()
+        		for packet in CALICO_SEND_PACKET_QUEUE:
+        			_calico_send_P2P_packet_on_thread(packet)
+        		CALICO_SEND_PACKET_QUEUE.clear()
+        		SEND_NET_MUTEX.unlock()
+        		OS.delay_msec(62 - Time.get_ticks_msec() % 62)
 
         """);
 
@@ -94,22 +121,26 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
         """
 
         if !STEAM_ENABLED: return
-        NET_MUTEX = Mutex.new()
-        NET_THREAD = Thread.new()
-        print("[calico] Starting network thread...")
-        NET_THREAD.start(self, "_calico_net_thread")
+        RECV_NET_MUTEX = Mutex.new()
+        SEND_NET_MUTEX = Mutex.new()
+        RECV_NET_THREAD_RUN = Thread.new()
+        SEND_NET_THREAD_RUN = Thread.new()
+        print("[calico] Starting receiver network thread...")
+        RECV_NET_THREAD_RUN.start(self, "_calico_recv_net_thread")
+        print("[calico] Starting sender network thread...")
+        SEND_NET_THREAD_RUN.start(self, "_calico_send_net_thread")
 
         """, 1);
 
     private readonly IEnumerable<Token> _onProcess = ScriptTokenizer.Tokenize(
         // Note the tab character instead of spaces. This is required by the tokenizer.
         """
-
-        NET_MUTEX.lock()
-        for packet in PACKET_QUEUE:
+        
+        RECV_NET_MUTEX.lock()
+        for packet in CALICO_RECV_PACKET_QUEUE:
         	_calico_process_P2P_packet_on_main(packet)
-        PACKET_QUEUE.clear()
-        NET_MUTEX.unlock()
+        CALICO_RECV_PACKET_QUEUE.clear()
+        RECV_NET_MUTEX.unlock()
 
         """, 1);
 
@@ -144,12 +175,12 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
         		ACTOR_UPDATE_STATE[DATA["actor_id"]].count = 0
         	if ACTOR_UPDATE_STATE[DATA["actor_id"]].count != 0:
         		return
-        PACKET_QUEUE.append({"PACKET_SIZE": PACKET_SIZE, "PACKET_SENDER": PACKET_SENDER, "DATA": DATA, "type": type, "from_host": from_host})
+        CALICO_RECV_PACKET_QUEUE.append({"PACKET_SIZE": PACKET_SIZE, "PACKET_SENDER": PACKET_SENDER, "DATA": DATA, "type": type, "from_host": from_host})
 
         """, 2);
 
     private readonly IEnumerable<Token> _networkThreadFunctionSignatureTokens = ScriptTokenizer.Tokenize(
-        "func _calico_net_process(delta): ");
+        "func _calico_recv_net_process(delta): ");
 
     private readonly IEnumerable<Token> _packetHandlerFunction = ScriptTokenizer.Tokenize(
         """
@@ -163,17 +194,34 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
         		
         """);
 
+    // TODO: mutex lock anything that the original send func interacts with
+    private readonly IEnumerable<Token> _onSend = ScriptTokenizer.Tokenize(
+        // Note the tab character instead of spaces. This is required by the tokenizer.
+        """
+        	
+        	SEND_NET_MUTEX.lock()
+        	CALICO_SEND_PACKET_QUEUE.append({ "packet_data": packet_data, "target": target, "type": type, "channel": channel })
+        	SEND_NET_MUTEX.unlock()
+
+        func _calico_send_P2P_packet_on_thread(packet):
+        	var packet_data = packet["packet_data"]
+        	var target = packet["target"]
+        	var type = packet["type"]
+        	var channel = packet["channel"]
+        	
+        """);
+
     private readonly IEnumerable<Token> _lockMutex = ScriptTokenizer.Tokenize(
         """
         
-        NET_MUTEX.lock()
+        SEND_NET_MUTEX.lock()
         
         """, 1);
 
     private readonly IEnumerable<Token> _unlockMutex = ScriptTokenizer.Tokenize(
         """
         
-        NET_MUTEX.unlock()
+        SEND_NET_MUTEX.unlock()
         
         """, 1);
 
@@ -181,6 +229,7 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
 
     public IEnumerable<Token> Modify(string path, IEnumerable<Token> tokens)
     {
+        mod.Logger.Information($"[SteamNetworkScript] Patching {path}");
         foreach (var t in tokens)
         {
             if (_extendsWaiter.Check(t))
@@ -195,10 +244,16 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
                 // TODO: figure out why these don't get declared as part of _globals...
                 yield return new Token(TokenType.Newline);
                 yield return new Token(TokenType.PrVar);
-                yield return new IdentifierToken("NET_MUTEX");
+                yield return new IdentifierToken("RECV_NET_MUTEX");
                 yield return new Token(TokenType.Newline);
                 yield return new Token(TokenType.PrVar);
-                yield return new IdentifierToken("NET_THREAD");
+                yield return new IdentifierToken("RECV_NET_THREAD");
+                yield return new Token(TokenType.Newline);
+                yield return new Token(TokenType.PrVar);
+                yield return new IdentifierToken("SEND_NET_MUTEX");
+                yield return new Token(TokenType.Newline);
+                yield return new Token(TokenType.PrVar);
+                yield return new IdentifierToken("SEND_NET_THREAD");
             }
             else if (_readyWaiter.Check(t))
             {
@@ -214,6 +269,7 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
                 mod.Logger.Information(string.Join(", ", _onProcess));
                 foreach (var t1 in _onProcess)
                     yield return t1;
+                // End the _process function here
                 yield return new Token(TokenType.Newline);
 
                 // Then add func signature for our thread before tokens in original _process
@@ -225,15 +281,25 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
             {
                 yield return t;
 
-                // Fill body for enqueuing
+                // Fill body for enqueuing received packets
                 mod.Logger.Information(string.Join(", ", _onHandlePacket));
                 foreach (var t1 in _onHandlePacket)
                     yield return t1;
+                // End the _read_P2P_Packet function here
                 yield return new Token(TokenType.Newline);
 
                 // Then add func for our thread before tokens in original func
                 mod.Logger.Information(string.Join(", ", _packetHandlerFunction));
                 foreach (var t1 in _packetHandlerFunction)
+                    yield return t1;
+            }
+            else if (_sendP2PPacketWaiter.Check(t))
+            {
+                yield return t;
+                
+                // Fill body for enqueuing packets for send
+                mod.Logger.Information(string.Join(", ", _onSend));
+                foreach (var t1 in _onSend)
                     yield return t1;
             }
             else if (_packetFlushStartWaiter.Check(t))
@@ -244,6 +310,7 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
             }
             else if (_packetFlushEndWaiter.Check(t))
             {
+                // The next t is the newline closing this function, we want this in the func so don't yield it yet.
                 foreach (var t1 in _unlockMutex)
                     yield return t1;
                 // Yield the last newline after!
