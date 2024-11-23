@@ -1,0 +1,10 @@
+{
+  "Id": "Teemaw.Calico",
+  "AssemblyPath": "Teemaw.Calico.dll",
+  "Metadata": {
+    "Name": "Calico",
+    "Author": "teemaw",
+    "Version": "1.0.0",
+    "Description": "Multiplayer optimizations suite."
+  }
+}
