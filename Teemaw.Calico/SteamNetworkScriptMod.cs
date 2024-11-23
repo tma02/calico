@@ -113,12 +113,13 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
 
         """, 1);
 
+    // TODO: This can probably be relaxed once Player processing is multithreaded
     private readonly IEnumerable<Token> _onHandlePacket = ScriptTokenizer.Tokenize(
         """
 
         if type == "actor_animation_update":
         	if !_validate_packet_information(DATA, ["actor_id", "data"], [TYPE_INT, TYPE_ARRAY]): return
-        	var delay = 6
+        	var delay = 4
         	if DATA["data"][32] == 5 || DATA["data"][32] == 6:
         		delay = 2
         	if DATA["data"][32] == 19:

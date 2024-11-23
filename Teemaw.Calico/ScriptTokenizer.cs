@@ -337,6 +337,12 @@ public static class ScriptTokenizer {
                         // token of a line.
                         finalTokens.Add(new Token(TokenType.CfReturn));
                     }
+                    else if (idName.Trim() == "self")
+                    {
+                        // Not sure why we sometimes hit this here. I think it has to do with self being the final
+                        // token of a line.
+                        finalTokens.Add(new Token(TokenType.Self));
+                    }
                     else if (idName == "print")
                     {
                         // Without this, `print` is tokenized as an identifier.
