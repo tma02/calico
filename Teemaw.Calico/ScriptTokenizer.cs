@@ -348,6 +348,11 @@ public static class ScriptTokenizer {
                         // Without this, `print` is tokenized as an identifier.
                         finalTokens.Add(new Token(TokenType.BuiltInFunc, (uint?) BuiltinFunction.TextPrint));
                     }
+                    else if (idName == "Color")
+                    {
+                        // Without this, `print` is tokenized as an identifier.
+                        finalTokens.Add(new Token(TokenType.BuiltInType, 14));
+                    }
                     else if (idName == "Vector3")
                     {
                         // Without this, `print` is tokenized as an identifier.

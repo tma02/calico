@@ -148,20 +148,6 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
     private readonly IEnumerable<Token> _onHandlePacket = ScriptTokenizer.Tokenize(
         """
 
-        if type == "actor_animation_update":
-        	if !_validate_packet_information(DATA, ["actor_id", "data"], [TYPE_INT, TYPE_ARRAY]): return
-        	var delay = 4
-        	if DATA["data"][32] == 5 || DATA["data"][32] == 6:
-        		delay = 2
-        	if DATA["data"][32] == 19:
-        		delay = 0
-        	if !PLAYER_UPDATE_COUNTER.keys().has(PACKET_SENDER):
-        		PLAYER_UPDATE_COUNTER[PACKET_SENDER] = -1
-        	PLAYER_UPDATE_COUNTER[PACKET_SENDER] += 1
-        	if PLAYER_UPDATE_COUNTER[PACKET_SENDER] >= delay:
-        		PLAYER_UPDATE_COUNTER[PACKET_SENDER] = 0
-        	if PLAYER_UPDATE_COUNTER[PACKET_SENDER] != 0:
-        		return
         if type == "actor_update":
         	if !_validate_packet_information(DATA, ["actor_id", "pos", "rot"], [TYPE_INT, TYPE_VECTOR3, TYPE_VECTOR3]): return
         	if !ACTOR_UPDATE_STATE.keys().has(DATA["actor_id"]):
