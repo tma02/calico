@@ -149,7 +149,7 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
         	if !_validate_packet_information(DATA, ["actor_id", "pos", "rot"], [TYPE_INT, TYPE_VECTOR3, TYPE_VECTOR3]): return
         	if !ACTOR_UPDATE_STATE.keys().has(DATA["actor_id"]):
         		ACTOR_UPDATE_STATE[DATA["actor_id"]] = { "pos": Vector3.ZERO, "rot": Vector3.ZERO, "count": -1 }
-        	if ACTOR_UPDATE_STATE[DATA["actor_id"]].pos.distance_to(DATA["pos"]) < 0.002 && ACTOR_UPDATE_STATE[DATA["actor_id"]].rot.distance_to(DATA["rot"]) < 0.002:
+        	if ACTOR_UPDATE_STATE[DATA["actor_id"]].pos.distance_squared_to(DATA["pos"]) < 0.000001 && ACTOR_UPDATE_STATE[DATA["actor_id"]].rot.distance_squard_to(DATA["rot"]) < 0.000001:
         		return
         	ACTOR_UPDATE_STATE[DATA["actor_id"]].pos = DATA["pos"]
         	ACTOR_UPDATE_STATE[DATA["actor_id"]].rot = DATA["rot"]
