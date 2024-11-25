@@ -89,8 +89,6 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
         var SEND_NET_THREAD
         var SEND_NET_THREAD_RUN = true
         var ACTOR_UPDATE_STATE = {}
-        var PLAYER_UPDATE_COUNTER = {}
-        var PLAYER_ANIMATION_STATE = {}
 
         func _exit_tree():
         	print("[calico] Waiting for network thread to finish...")
@@ -144,7 +142,6 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
 
         """, 1);
 
-    // TODO: This can probably be relaxed once Player processing is multithreaded
     private readonly IEnumerable<Token> _onHandlePacket = ScriptTokenizer.Tokenize(
         """
 
@@ -156,11 +153,6 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
         		return
         	ACTOR_UPDATE_STATE[DATA["actor_id"]].pos = DATA["pos"]
         	ACTOR_UPDATE_STATE[DATA["actor_id"]].rot = DATA["rot"]
-        	ACTOR_UPDATE_STATE[DATA["actor_id"]].count += 1
-        	if ACTOR_UPDATE_STATE[DATA["actor_id"]].count >= 2:
-        		ACTOR_UPDATE_STATE[DATA["actor_id"]].count = 0
-        	if ACTOR_UPDATE_STATE[DATA["actor_id"]].count != 0:
-        		return
         CALICO_RECV_PACKET_QUEUE.append({"PACKET_SIZE": PACKET_SIZE, "PACKET_SENDER": PACKET_SENDER, "DATA": DATA, "type": type, "from_host": from_host})
 
         """, 2);
