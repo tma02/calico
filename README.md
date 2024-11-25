@@ -1,13 +1,20 @@
-# GDWeave.Sample
+# Calico
 
-A sample for C# [GDWeave](https://github.com/NotNite/GDWeave) mods.
+Calico; anti-lag improvements & client optimizations for WEBFISHING.
 
-## Setup
+## About
 
-Clone/fork/whatever this repository. Pick an ID for your project (people like to do `Username.ProjectName`, but there is no enforced naming scheme). Rename the following:
+Calico improves the performance of WEBFISHING in multiplayer scenarios. In lobbies with ~15 players we've seen framerate
+improvements of 30-60+ FPS. The bulk of this performance comes from
+introducing threading to the network and player animation processing.
 
-- Solution name, project name, and project namespace to your project ID
-- Various fields in the manifest.json to your project ID and name
+### Improvements & optimizations
+* Dedicated thread for sending packets
+* Dedicated thread for receiving packets
+* Dedicated thread per player for processing animation calculations
+* Filtering of movement packets for players/props (actors) that are not in motion
+* Filtering of cosmetic loading for players that have not changed
+* Small improvements to player handling
 
 ## Building
 
