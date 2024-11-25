@@ -13,9 +13,7 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
         var CALICO_MUTEX = false
         var CALICO_THREAD = false
         var CALICO_THREAD_RUN = false
-        var THREAD_LOCKS = 0
-        var SET_LOCKS = 0
-        var CALICO_TITLE_CANVASLAYER = {}
+        var CALICO_THREAD_ANIMATION_DATA = []
 
         func _calico_cosmetic_data_needs_update(new_cosmetic_data):
         	for key in PlayerData.FALLBACK_COSM.keys():
@@ -33,7 +31,6 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
         		CALICO_MUTEX.lock()
         		_calico_process_animation()
         		CALICO_MUTEX.unlock()
-        		print("u")
         		OS.delay_msec(62 - Time.get_ticks_msec() % 62)
 
         func _exit_tree():
@@ -41,15 +38,6 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
         		print("[calico] Waiting for player thread to finish...")
         		CALICO_THREAD_RUN = false
         		CALICO_THREAD.wait_to_finish()
-
-        func set(property, value):
-        	if property == "shared_animation_data" && CALICO_THREAD_RUN:
-        		CALICO_MUTEX.lock()
-        		set_indexed(property, value)
-        		CALICO_MUTEX.unlock()
-        		print("su")
-        	else:
-        		set_indexed(property, value)
         
         """);
 
@@ -59,8 +47,12 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
         	
         	if controlled:
         		_calico_physics_process()
-        	if !controlled:
+        	if !controlled && CALICO_THREAD_RUN:
+        		CALICO_MUTEX.lock()
+        		_calico_original_process_animation()
         		_process_sounds()
+        		CALICO_THREAD_ANIMATION_DATA = shared_animation_data.duplicate()
+        		CALICO_MUTEX.unlock()
 
         """);
 
@@ -69,6 +61,7 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
 
         func _calico_physics_process():
         	_calico_process_animation()
+        	_calico_original_process_animation()
         	_process_sounds()
         	return
         	
@@ -85,6 +78,15 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
         	
         """);
 
+    private readonly IEnumerable<Token> _originalProcessAnimation = ScriptTokenizer.Tokenize(
+        """
+        
+        	return
+
+        func _calico_original_process_animation():
+        	
+        """);
+
     private readonly IEnumerable<Token> _setupNotControlled = ScriptTokenizer.Tokenize(
         """
 
@@ -94,16 +96,14 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
         $SpringArm.queue_free()
         $fishing_update.queue_free()
         $prop_ray.queue_free()
+        if !CALICO_THREAD_RUN:
+        	print("[calico] Starting player thread")
+        	CALICO_MUTEX = Mutex.new()
+        	CALICO_THREAD = Thread.new()
+        	CALICO_THREAD_RUN = true
+        	CALICO_THREAD.start(self, "_calico_thread_process")
 
         """, 1);
-    
-    
-    // if !CALICO_THREAD_RUN:
-    //     print("[calico] Starting player thread")
-    //     CALICO_MUTEX = Mutex.new()
-    //     CALICO_THREAD = Thread.new()
-    //     CALICO_THREAD_RUN = true
-    //     CALICO_THREAD.start(self, "_calico_thread_process")
 
     private readonly IEnumerable<Token> _onReady = ScriptTokenizer.Tokenize(
         """
@@ -181,6 +181,7 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
             t => t.Type is TokenType.ParenthesisClose,
         ], allowPartialMatch: true);
         var inProcessAnimation = false;
+        var inProcessAnimationLineCount = 0;
         var skipNextToken = false;
 
         mod.Logger.Information($"[PlayerScript] Patching {path}");
@@ -194,10 +195,40 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
             }
             if (inProcessAnimation)
             {
+                if (t.Type is TokenType.Newline)
+                {
+                    inProcessAnimationLineCount += 1;
+                    // 32 is where the bulk of anim_tree sets are done. From here we should patch in our thread-safe
+                    // version of the rest of the logic.
+                    if (inProcessAnimationLineCount == 32)
+                    {
+                        inProcessAnimation = false;
+                        foreach (var t1 in _originalProcessAnimation)
+                            yield return t1;
+                        continue;
+                    }
+                }
                 switch (t)
                 {
                     case IdentifierToken { Name: "set" }:
                         yield return new IdentifierToken("set_deferred");
+                        break;
+                    case IdentifierToken { Name: "shared_animation_data" }:
+                        yield return new IdentifierToken("CALICO_THREAD_ANIMATION_DATA");
+                        break;
+                    case IdentifierToken { Name: "_show_blush" }:
+                        yield return new IdentifierToken("call_deferred");
+                        yield return new Token(TokenType.ParenthesisOpen);
+                        yield return new ConstantToken(new StringVariant("_show_blush"));
+                        yield return new Token(TokenType.Comma);
+                        skipNextToken = true;
+                        break;
+                    case IdentifierToken { Name: "_update_caught_item" }:
+                        yield return new IdentifierToken("call_deferred");
+                        yield return new Token(TokenType.ParenthesisOpen);
+                        yield return new ConstantToken(new StringVariant("_update_caught_item"));
+                        yield return new Token(TokenType.Comma);
+                        skipNextToken = true;
                         break;
                     case IdentifierToken { Name: "set_animation" }:
                         yield return new IdentifierToken("call_deferred");
@@ -236,25 +267,25 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
                 foreach (var t1 in _onReady)
                     yield return t1;
             }
-            // else if (physicsProcessWaiter.Check(t))
-            // {
-            //     yield return t;
-            //     mod.Logger.Information(string.Join(", ", _onPhysicsProcess));
-            //     foreach (var t1 in _onPhysicsProcess)
-            //         yield return t1;
-            //     mod.Logger.Information(string.Join(", ", _calicoPhysicsProcess));
-            //     foreach (var t1 in _calicoPhysicsProcess)
-            //         yield return t1;
-            // }
-            // else if (processAnimationWaiter.Check(t))
-            // {
-            //     yield return t;
-            //     mod.Logger.Information(string.Join(", ", _processAnimation));
-            //     foreach (var t1 in _processAnimation)
-	           //      yield return t1;
-            //
-            //     inProcessAnimation = true;
-            // }
+            else if (physicsProcessWaiter.Check(t))
+            {
+                yield return t;
+                mod.Logger.Information(string.Join(", ", _onPhysicsProcess));
+                foreach (var t1 in _onPhysicsProcess)
+                    yield return t1;
+                mod.Logger.Information(string.Join(", ", _calicoPhysicsProcess));
+                foreach (var t1 in _calicoPhysicsProcess)
+                    yield return t1;
+            }
+            else if (processAnimationWaiter.Check(t))
+            {
+                yield return t;
+                mod.Logger.Information(string.Join(", ", _processAnimation));
+                foreach (var t1 in _processAnimation)
+	                yield return t1;
+            
+                inProcessAnimation = true;
+            }
             else if (setupNotControlledWaiter.Check(t))
             {
                 yield return t;
