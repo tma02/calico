@@ -4,13 +4,13 @@ Calico; anti-lag improvements & client optimizations for WEBFISHING.
 
 ## About
 
-Calico improves the performance of WEBFISHING in multiplayer scenarios. In lobbies with ~15 players we've seen framerate
-improvements of 30-60+ FPS. The bulk of this performance comes from
-introducing threading to the network and player animation processing.
+Calico improves the performance of WEBFISHING in multiplayer scenarios. In lobbies with ~15 players we've seen a 
+framerate of 40-60+ FPS (frametimes went from ~60ms to ~15ms). The bulk of this performance comes from introducing
+threading to the network and player animation processing.
 
 ### Improvements & optimizations
-* Dedicated thread for sending packets
-* Dedicated thread for receiving packets
+* Dedicated thread for compression and sending packets
+* Dedicated thread for receiving and decompressing packets
 * Dedicated thread per player for processing animation calculations
 * Filtering of movement packets for players/props (actors) that are not in motion
 * Filtering of cosmetic loading for players that have not changed
