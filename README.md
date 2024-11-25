@@ -14,7 +14,7 @@ threading to the network and player animation processing.
 * Dedicated thread per player for processing animation calculations
 * Filtering of movement packets for players/props (actors) that are not in motion
 * Filtering of cosmetic loading for players that have not changed
-* Small improvements to player handling
+* Other minor improvements to player handling
 
 ## Building
 
