@@ -72,11 +72,6 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
 
         """, 1);
 
-    private readonly IEnumerable<Token> _guardUpdateCaughtItem = ScriptTokenizer.Tokenize(
-        """
-
-        """);
-
     public bool ShouldRun(string path) => path == "res://Scenes/Entities/Player/player.gdc";
 
     public IEnumerable<Token> Modify(string path, IEnumerable<Token> tokens)
