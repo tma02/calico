@@ -11,10 +11,8 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
     private readonly IEnumerable<Token> _globals = ScriptTokenizer.Tokenize(
         """
 
-        var CALICO_MUTEX = false
-        var CALICO_THREAD = false
-        var CALICO_THREAD_RUN = false
-        var CALICO_THREAD_ANIMATION_DATA = []
+        var calico_emote_anim = false
+        var calico_emote_anim_b = false
 
         func _calico_cosmetic_data_needs_update(new_cosmetic_data):
         	for key in PlayerData.FALLBACK_COSM.keys():
@@ -27,73 +25,13 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
         			return true
         	return false
         
-        func _calico_thread_process(userdata):
-        	while CALICO_THREAD_RUN:
-        		CALICO_MUTEX.lock()
-        		_calico_process_animation()
-        		CALICO_MUTEX.unlock()
-        		OS.delay_msec(62 - Time.get_ticks_msec() % 62)
+        func _calico_caught_item_needs_update(new_caught):
+        	if new_caught.empty() != caught_item.empty():
+        		return true
+        	if !new_caught.keys().has("id") || !new_caught.keys().has("size") || !new_caught.keys().has("quality"):
+        		return false
+        	return new_caught["id"] != caught_item["id"] || new_caught["size"] != caught_item["size"] || new_caught["quality"] != caught_item["quality"]
 
-        func _exit_tree():
-        	if CALICO_THREAD_RUN:
-        		print("[calico] Waiting for player thread to finish...")
-        		CALICO_THREAD_RUN = false
-        		CALICO_THREAD.wait_to_finish()
-
-        """);
-
-    private readonly IEnumerable<Token> _onPhysicsProcess = ScriptTokenizer.Tokenize(
-        // Note the tabs(!) for indent tokenization
-        """
-        	
-        	if controlled:
-        		_calico_physics_process()
-        	elif CALICO_THREAD_RUN:
-        		CALICO_MUTEX.lock()
-        		_process_sounds()
-        		CALICO_THREAD_ANIMATION_DATA = shared_animation_data.duplicate()
-        		_calico_original_process_animation()
-        		CALICO_MUTEX.unlock()
-
-        """);
-
-    private readonly IEnumerable<Token> _calicoPhysicsProcess = ScriptTokenizer.Tokenize(
-        """
-
-        func _calico_physics_process():
-        	_calico_process_animation()
-        	_calico_original_process_animation()
-        	_process_sounds()
-        	return
-        	
-        func _calico_do_not_call():
-        	
-        """);
-
-    private readonly IEnumerable<Token> _processAnimation = ScriptTokenizer.Tokenize(
-        """
-        	
-        	return
-
-        func _calico_process_animation():
-        	var calico_bobber_transform = bobber.global_transform.scaled(Vector3.ONE)
-        	
-        """);
-
-    private readonly IEnumerable<Token> _endProcessAnimation = ScriptTokenizer.Tokenize(
-        """
-        	
-        	bobber.set_deferred("global_transform", calico_bobber_transform)
-
-        """);
-
-    private readonly IEnumerable<Token> _originalProcessAnimation = ScriptTokenizer.Tokenize(
-        """
-        	
-        	return
-
-        func _calico_original_process_animation():
-        	
         """);
 
     private readonly IEnumerable<Token> _setupNotControlled = ScriptTokenizer.Tokenize(
@@ -105,12 +43,6 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
         $SpringArm.queue_free()
         $fishing_update.queue_free()
         $prop_ray.queue_free()
-        if !CALICO_THREAD_RUN:
-        	print("[calico] Starting player thread")
-        	CALICO_MUTEX = Mutex.new()
-        	CALICO_THREAD = Thread.new()
-        	CALICO_THREAD_RUN = true
-        	CALICO_THREAD.start(self, "_calico_thread_process")
 
         """, 1);
 
@@ -119,6 +51,14 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
 
         $Viewport.disable_3d = true
         $Viewport.usage = 0
+
+        """, 1);
+
+    private readonly IEnumerable<Token> _afterAnimTreeDupe = ScriptTokenizer.Tokenize(
+        """
+
+        calico_emote_anim = anim_tree.tree_root.get_node("emote_anim")
+        calico_emote_anim_b = anim_tree.tree_root.get_node("emote_anim_b")
 
         """, 1);
 
@@ -131,6 +71,11 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
         	return
 
         """, 1);
+
+    private readonly IEnumerable<Token> _guardUpdateCaughtItem = ScriptTokenizer.Tokenize(
+        """
+
+        """);
 
     public bool ShouldRun(string path) => path == "res://Scenes/Entities/Player/player.gdc";
 
@@ -150,13 +95,15 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
             t => t.Type is Colon,
         ]);
 
-        MultiTokenWaiter physicsProcessWaiter = new([
-            t => t is { Type: PrFunction },
-            t => t is IdentifierToken { Name: "_physics_process" },
+        MultiTokenWaiter afterAnimTreeDupeWaiter = new([
+            t => t is IdentifierToken { Name: "anim_tree" },
+            t => t.Type is Period,
+            t => t is IdentifierToken { Name: "tree_root" },
+            t => t.Type is Period,
+            t => t is IdentifierToken { Name: "duplicate" },
             t => t.Type is ParenthesisOpen,
-            t => t is IdentifierToken { Name: "delta" },
+            t => t is ConstantToken c && c.Value.Equals(new BoolVariant(true)),
             t => t.Type is ParenthesisClose,
-            t => t.Type is Colon,
         ]);
 
         MultiTokenWaiter processAnimationWaiter = new([
@@ -190,7 +137,6 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
             t => t.Type is ParenthesisClose,
         ], allowPartialMatch: true);
         var inProcessAnimation = false;
-        var inProcessAnimationLineCount = 0;
         var skipNextToken = false;
         List<Token> inProcessAnimationTokens = [];
 
@@ -206,73 +152,37 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
 
             if (inProcessAnimation)
             {
-                if (t.Type is Newline)
-                {
-                    inProcessAnimationLineCount += 1;
-                    // 32 is where the bulk of anim_tree sets are done. From here we should patch in our thread-safe
-                    // version of the rest of the logic.
-                    if (inProcessAnimationLineCount == 32)
-                    {
-                        inProcessAnimation = false;
-                        foreach (var t1 in _originalProcessAnimation)
-                            yield return t1;
-                        continue;
-                    }
-                }
                 switch (t)
                 {
-                    case IdentifierToken { Name: "set" }:
-                        inProcessAnimationTokens.Add(new IdentifierToken("set_deferred"));
-                        break;
-                    case IdentifierToken { Name: "shared_animation_data" }:
-                        inProcessAnimationTokens.Add(new IdentifierToken("CALICO_THREAD_ANIMATION_DATA"));
-                        break;
-                    case IdentifierToken { Name: "_show_blush" }:
-                        inProcessAnimationTokens.Add(new IdentifierToken("call_deferred"));
-                        inProcessAnimationTokens.Add(new Token(ParenthesisOpen));
-                        inProcessAnimationTokens.Add(new ConstantToken(new StringVariant("_show_blush")));
-                        inProcessAnimationTokens.Add(new Token(Comma));
-                        skipNextToken = true;
-                        break;
-                    case IdentifierToken { Name: "_update_caught_item" }:
-                        inProcessAnimationTokens.Add(new IdentifierToken("call_deferred"));
-                        inProcessAnimationTokens.Add(new Token(ParenthesisOpen));
-                        inProcessAnimationTokens.Add(new ConstantToken(new StringVariant("_update_caught_item")));
-                        inProcessAnimationTokens.Add(new Token(Comma));
-                        skipNextToken = true;
-                        break;
-                    case IdentifierToken { Name: "set_animation" }:
-                        inProcessAnimationTokens.Add(new IdentifierToken("call_deferred"));
-                        inProcessAnimationTokens.Add(new Token(ParenthesisOpen));
-                        inProcessAnimationTokens.Add(new ConstantToken(new StringVariant("set_animation")));
-                        inProcessAnimationTokens.Add(new Token(Comma));
-                        skipNextToken = true;
-                        break;
-                    case IdentifierToken { Name: "set_bone_custom_pose" }:
-                        inProcessAnimationTokens.Add(new IdentifierToken("call_deferred"));
-                        inProcessAnimationTokens.Add(new Token(ParenthesisOpen));
-                        inProcessAnimationTokens.Add(new ConstantToken(new StringVariant("set_bone_custom_pose")));
-                        inProcessAnimationTokens.Add(new Token(Comma));
-                        skipNextToken = true;
-                        break;
                     case { Type: Newline, AssociatedData: null }:
                         inProcessAnimation = false;
                         inProcessAnimationTokens.Add(t);
                         // We're about to leave the func, process the buffered tokens then return all of them.
                         mod.Logger.Information("Patching assignments in _process_animation");
-                        var replacedTokens = TokenUtil.ReplaceTokens(inProcessAnimationTokens, [
-                            new IdentifierToken("bobber"),
-                            new Token(Period),
-                            new IdentifierToken("global_transform"),
-                        ], [new IdentifierToken("calico_bobber_transform")]);
-                        foreach (var t1 in TokenUtil.ReplaceAssignmentsAsDeferred(replacedTokens, ["origin"]))
+                        var replacedTokens = TokenUtil.ReplaceTokens(inProcessAnimationTokens,
+                            ScriptTokenizer.Tokenize("if animation_data[\"caught_item\"] != caught_item:"),
+                            ScriptTokenizer.Tokenize("if _calico_caught_item_needs_update(animation_data[\"caught_item\"]):"));
+                        replacedTokens = TokenUtil.ReplaceTokens(replacedTokens,
+                            ScriptTokenizer.Tokenize("var root = anim_tree.tree_root"),
+                            []);
+                        replacedTokens = TokenUtil.ReplaceTokens(replacedTokens,
+                            ScriptTokenizer.Tokenize("var node = root.get_node(\"emote_anim\")"),
+                            []);
+                        replacedTokens = TokenUtil.ReplaceTokens(replacedTokens,
+                            ScriptTokenizer.Tokenize("if node.animation != animation_data[\"emote\"]:"),
+                            ScriptTokenizer.Tokenize("if calico_emote_anim.animation != animation_data[\"emote\"]:"));
+                        replacedTokens = TokenUtil.ReplaceTokens(replacedTokens,
+                            ScriptTokenizer.Tokenize("var node_b = root.get_node(\"emote_anim_b\")"),
+                            []);
+                        replacedTokens = TokenUtil.ReplaceTokens(replacedTokens,
+                            ScriptTokenizer.Tokenize("node.set_animation(animation_data[\"emote\"])"),
+                            ScriptTokenizer.Tokenize("calico_emote_anim.set_animation(animation_data[\"emote\"])"));
+                        replacedTokens = TokenUtil.ReplaceTokens(replacedTokens,
+                            ScriptTokenizer.Tokenize("node_b.set_animation(animation_data[\"emote\"])"),
+                            ScriptTokenizer.Tokenize("calico_emote_anim_b.set_animation(animation_data[\"emote\"])"));
+                        foreach (var t1 in replacedTokens)
                         {
                             mod.Logger.Information(t1.ToString());
-                            yield return t1;
-                        }
-
-                        foreach (var t1 in _endProcessAnimation)
-                        {
                             yield return t1;
                         }
 
@@ -285,7 +195,7 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
             else if (extendsWaiter.Check(t))
             {
                 yield return t;
-                
+
                 mod.Logger.Information(string.Join(", ", _globals));
                 foreach (var t1 in _globals)
                     yield return t1;
@@ -297,14 +207,10 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
                 foreach (var t1 in _onReady)
                     yield return t1;
             }
-            else if (physicsProcessWaiter.Check(t))
+            else if (afterAnimTreeDupeWaiter.Check(t))
             {
                 yield return t;
-                mod.Logger.Information(string.Join(", ", _onPhysicsProcess));
-                foreach (var t1 in _onPhysicsProcess)
-                    yield return t1;
-                mod.Logger.Information(string.Join(", ", _calicoPhysicsProcess));
-                foreach (var t1 in _calicoPhysicsProcess)
+                foreach (var t1 in _afterAnimTreeDupe)
                     yield return t1;
             }
             else if (processAnimationWaiter.Check(t))
@@ -313,9 +219,6 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
 
                 mod.Logger.Information("[PlayerScript] Entering _process_animation");
                 inProcessAnimation = true;
-                mod.Logger.Information(string.Join(", ", _processAnimation));
-                foreach (var t1 in _processAnimation)
-                    yield return t1;
             }
             else if (setupNotControlledWaiter.Check(t))
             {
