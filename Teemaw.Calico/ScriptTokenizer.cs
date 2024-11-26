@@ -370,6 +370,11 @@ public static class ScriptTokenizer {
                         // Without this, `print` is tokenized as an identifier.
                         finalTokens.Add(new Token(TokenType.BuiltInFunc, (uint?) BuiltinFunction.TextPrint));
                     }
+                    else if (idName == "null")
+                    {
+                        // Without this, `print` is tokenized as an identifier.
+                        finalTokens.Add(new ConstantToken(new NilVariant()));
+                    }
                     else if (idName == "Color")
                     {
                         // Without this, `print` is tokenized as an identifier.

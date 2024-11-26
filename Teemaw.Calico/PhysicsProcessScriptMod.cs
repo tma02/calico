@@ -14,7 +14,6 @@ public class PhysicsProcessScriptMod(IModInterface mod): IScriptMod
 
         """);
 
-    // TODO: LERP or maybe don't patch players?
     private readonly IEnumerable<Token> _shutter = ScriptTokenizer.Tokenize(
         """
 

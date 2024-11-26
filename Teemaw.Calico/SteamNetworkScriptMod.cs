@@ -123,7 +123,7 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
         SEND_NET_MUTEX = Mutex.new()
         RECV_NET_THREAD = Thread.new()
         SEND_NET_THREAD = Thread.new()
-        print("[calico] Starting receiver network thread...")
+        print("[calico1] Starting receiver network thread...")
         RECV_NET_THREAD.start(self, "_calico_recv_net_thread")
         print("[calico] Starting sender network thread...")
         SEND_NET_THREAD.start(self, "_calico_send_net_thread")
@@ -149,7 +149,7 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
         	if !_validate_packet_information(DATA, ["actor_id", "pos", "rot"], [TYPE_INT, TYPE_VECTOR3, TYPE_VECTOR3]): return
         	if !ACTOR_UPDATE_STATE.keys().has(DATA["actor_id"]):
         		ACTOR_UPDATE_STATE[DATA["actor_id"]] = { "pos": Vector3.ZERO, "rot": Vector3.ZERO, "count": -1 }
-        	if ACTOR_UPDATE_STATE[DATA["actor_id"]].pos.distance_squared_to(DATA["pos"]) < 0.000001 && ACTOR_UPDATE_STATE[DATA["actor_id"]].rot.distance_squard_to(DATA["rot"]) < 0.000001:
+        	if ACTOR_UPDATE_STATE[DATA["actor_id"]].pos.distance_squared_to(DATA["pos"]) < 0.000001 && ACTOR_UPDATE_STATE[DATA["actor_id"]].rot.distance_squared_to(DATA["rot"]) < 0.000001:
         		return
         	ACTOR_UPDATE_STATE[DATA["actor_id"]].pos = DATA["pos"]
         	ACTOR_UPDATE_STATE[DATA["actor_id"]].rot = DATA["rot"]
@@ -202,7 +202,7 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
         SEND_NET_MUTEX.unlock()
         
         """, 1);
-
+    
     public bool ShouldRun(string path) => path == "res://Scenes/Singletons/SteamNetwork.gdc";
 
     public IEnumerable<Token> Modify(string path, IEnumerable<Token> tokens)
