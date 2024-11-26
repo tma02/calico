@@ -4,7 +4,7 @@
   "Metadata": {
     "Name": "Calico",
     "Author": "teemaw",
-    "Version": "1.0.0",
-    "Description": "Multiplayer optimizations suite."
+    "Version": "0.1.0",
+    "Description": "Multiplayer optimizations (anti-lag) suite."
   }
 }
