@@ -43,6 +43,19 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
         $SpringArm.queue_free()
         $fishing_update.queue_free()
         $prop_ray.queue_free()
+        $detection_zones/prop_detect/CollisionShape.disabled = true
+        $detection_zones/metal_detect/CollisionShape.disabled = true
+        $detection_zones/metal_detect_close/CollisionShape.disabled = true
+        $detection_zones/metal_detect_veryclose/CollisionShape.disabled = true
+        $detection_zones/punch/CollisionShape.disabled = true
+        $interact_range/CollisionShape.disabled = true
+        $water_detect/CollisionShape.disabled = true
+        $raincloud_check/CollisionShape.disabled = true
+        $detection_zones/metal_detect_consume/CollisionShape.disabled = true
+        $detection_zones/fishing_detect/fishing_area/CollisionShape.disabled = true
+        $detection_zones/shovel_detect/CollisionShape.disabled = true
+        $detection_zones/net_detect/CollisionShape.disabled = true
+        $paint_node/Area/CollisionShape.disabled = true
 
         """, 1);
 
