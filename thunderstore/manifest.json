@@ -2,7 +2,7 @@
     "name": "Calico",
     "version_number": "0.1.0",
     "website_url": "https://github.com/tma02/calico",
-    "description": "Multiplayer optimizations (antilag) suite",
+    "description": "Multiplayer optimizations (anti-lag) suite",
     "dependencies":
     [
         "NotNet-GDWeave-2.0.14"
