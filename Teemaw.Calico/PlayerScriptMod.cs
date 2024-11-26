@@ -43,19 +43,24 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
         $SpringArm.queue_free()
         $fishing_update.queue_free()
         $prop_ray.queue_free()
-        $detection_zones/prop_detect/CollisionShape.disabled = true
-        $detection_zones/metal_detect/CollisionShape.disabled = true
-        $detection_zones/metal_detect_close/CollisionShape.disabled = true
-        $detection_zones/metal_detect_veryclose/CollisionShape.disabled = true
-        $detection_zones/punch/CollisionShape.disabled = true
-        $interact_range/CollisionShape.disabled = true
-        $water_detect/CollisionShape.disabled = true
-        $raincloud_check/CollisionShape.disabled = true
-        $detection_zones/metal_detect_consume/CollisionShape.disabled = true
-        $detection_zones/fishing_detect/fishing_area/CollisionShape.disabled = true
-        $detection_zones/shovel_detect/CollisionShape.disabled = true
-        $detection_zones/net_detect/CollisionShape.disabled = true
-        $paint_node/Area/CollisionShape.disabled = true
+        $bobber_preview.queue_free()
+        $detection_zones.queue_free()
+        $interact_range.queue_free()
+        $catch_cam_position.queue_free()
+        $camera_freecam_anchor.queue_free()
+        $water_detect.queue_free()
+        $raincloud_check.queue_free()
+        $local_range.queue_free()
+        $rot_help.queue_free()
+        $lean_help.queue_free()
+        $safe_check.queue_free()
+        $paint_node.queue_free()
+        $fish_catch_timer.queue_free()
+        $step_timer.queue_free()
+        $image_update.queue_free()
+        $rain_timer.queue_free()
+        $metaldetect_timer.queue_free()
+        $cosmetic_refresh.queue_free()
 
         """, 1);
 
