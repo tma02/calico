@@ -14,7 +14,7 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
         var calico_emote_anim = false
         var calico_emote_anim_b = false
 
-        func _calico_cosmetic_data_needs_update(new_cosmetic_data):
+        func calico_cosmetic_data_needs_update(new_cosmetic_data):
         	for key in PlayerData.FALLBACK_COSM.keys():
         		if key == "accessory":
         			if cosmetic_data[key].size() != new_cosmetic_data[key].size(): return true
@@ -25,7 +25,7 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
         			return true
         	return false
         
-        func _calico_caught_item_needs_update(new_caught):
+        func calico_caught_item_needs_update(new_caught):
         	if new_caught.empty() != caught_item.empty():
         		return true
         	if !new_caught.keys().has("id") || !new_caught.keys().has("size") || !new_caught.keys().has("quality"):
@@ -66,7 +66,7 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
         // Note the tab for indent tokenization
         """
 
-        if !_calico_cosmetic_data_needs_update(data):
+        if !calico_cosmetic_data_needs_update(data):
         	print("[calico] Skipping unnecessary cosmetic update")
         	return
 
@@ -155,7 +155,7 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
                         mod.Logger.Information("Patching assignments in _process_animation");
                         var replacedTokens = TokenUtil.ReplaceTokens(inProcessAnimationTokens,
                             ScriptTokenizer.Tokenize("if animation_data[\"caught_item\"] != caught_item:"),
-                            ScriptTokenizer.Tokenize("if _calico_caught_item_needs_update(animation_data[\"caught_item\"]):"));
+                            ScriptTokenizer.Tokenize("if calico_caught_item_needs_update(animation_data[\"caught_item\"]):"));
                         replacedTokens = TokenUtil.ReplaceTokens(replacedTokens,
                             ScriptTokenizer.Tokenize("var root = anim_tree.tree_root"),
                             []);
