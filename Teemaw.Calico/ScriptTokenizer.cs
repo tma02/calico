@@ -284,6 +284,7 @@ public static class ScriptTokenizer {
         var idName = string.Empty;
 
         var toFlush = new List<Token>(2);
+        // CALICO: We don't need this since we're dealing with snippets
         //finalTokens.Add(new Token(TokenType.Newline, baseIndent));
         var enumerator = tokens.GetEnumerator();
         var reparse = false;
@@ -355,39 +356,35 @@ public static class ScriptTokenizer {
                 if (idName != string.Empty) {
                     if (idName.Trim() == "return")
                     {
-                        // Not sure why we sometimes hit this here. I think it has to do with return being the final
-                        // token of a line.
+                        // CALICO: Hack to handle `return` being the last token of a line
                         finalTokens.Add(new Token(TokenType.CfReturn));
                     }
                     else if (idName.Trim() == "self")
                     {
-                        // Not sure why we sometimes hit this here. I think it has to do with self being the final
-                        // token of a line.
+                        // CALICO: Hack to handle `self` being the last token of a line
                         finalTokens.Add(new Token(TokenType.Self));
                     }
-                    else if (idName == "print")
+                    else switch (idName)
                     {
-                        // Without this, `print` is tokenized as an identifier.
-                        finalTokens.Add(new Token(TokenType.BuiltInFunc, (uint?) BuiltinFunction.TextPrint));
-                    }
-                    else if (idName == "null")
-                    {
-                        // Without this, `print` is tokenized as an identifier.
-                        finalTokens.Add(new ConstantToken(new NilVariant()));
-                    }
-                    else if (idName == "Color")
-                    {
-                        // Without this, `print` is tokenized as an identifier.
-                        finalTokens.Add(new Token(TokenType.BuiltInType, 14));
-                    }
-                    else if (idName == "Vector3")
-                    {
-                        // Without this, `print` is tokenized as an identifier.
-                        finalTokens.Add(new Token(TokenType.BuiltInType, 7));
-                    }
-                    else
-                    {
-                        finalTokens.Add(new IdentifierToken(idName));
+                        case "print":
+                            // CALICO: Without this, `print` is tokenized as an identifier.
+                            finalTokens.Add(new Token(TokenType.BuiltInFunc, (uint?) BuiltinFunction.TextPrint));
+                            break;
+                        case "null":
+                            // CALICO: Without this, `null` is tokenized as an identifier.
+                            finalTokens.Add(new ConstantToken(new NilVariant()));
+                            break;
+                        case "Color":
+                            // CALICO: Without this, `Color` is tokenized as an identifier.
+                            finalTokens.Add(new Token(TokenType.BuiltInType, 14));
+                            break;
+                        case "Vector3":
+                            // CALICO: Without this, `Vector3` is tokenized as an identifier.
+                            finalTokens.Add(new Token(TokenType.BuiltInType, 7));
+                            break;
+                        default:
+                            finalTokens.Add(new IdentifierToken(idName));
+                            break;
                     }
                     idName = string.Empty;
                 }
@@ -396,6 +393,7 @@ public static class ScriptTokenizer {
             }
         }
 
+        // CALICO: We don't need this since we're dealing with snippets
         //finalTokens.Add(new(TokenType.Newline, baseIndent));
 
         foreach (var t in finalTokens) yield return t;

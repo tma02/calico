@@ -12,13 +12,11 @@ public static class TokenUtil
         Token? lastToken = null;
         var inAssignmentStatement = false;
         var skipLine = false;
-        var line = 0;
         foreach (var t in tokens)
         {
             switch (t)
             {
                 case { Type: Newline }:
-                    line += 1;
                     skipLine = false;
                     break;
                 case { Type: PrVar }:
@@ -47,7 +45,8 @@ public static class TokenUtil
             if (t.Type == Newline && inAssignmentStatement)
             {
                 inAssignmentStatement = false;
-                yield return lastToken;
+                if (lastToken != null)
+                    yield return lastToken;
                 // Close out the set_deferred call...
                 yield return new Token(ParenthesisClose);
                 // ...before the Newline token.
@@ -55,15 +54,6 @@ public static class TokenUtil
             }
             else if (lastToken != null)
                 yield return lastToken;
-            // TODO: this is for debugging 
-            // if (t is { Type: Newline } && line < 79)
-            // {
-            //     yield return t;
-            //     yield return new Token(BuiltInFunc, (uint?)BuiltinFunction.TextPrint);
-            //     yield return new Token(ParenthesisOpen);
-            //     yield return new ConstantToken(new IntVariant(line));
-            //     yield return new Token(ParenthesisClose);
-            // }
 
             lastToken = inAssignmentStatement && t is { Type: Identifier } ? StripAssociatedData(t) : t;
         }

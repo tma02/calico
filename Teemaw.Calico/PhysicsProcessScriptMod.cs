@@ -24,7 +24,6 @@ public class PhysicsProcessScriptMod(IModInterface mod): IScriptMod
 
         """, 1);
     
-    //public bool ShouldRun(string path) => path == "res://Scenes/Entities/Player/fishing_line.gdc";
     public bool ShouldRun(string path)
     {
         return path.StartsWith("res://Scenes/Entities/") && !path.EndsWith("/actor.gdc") &&
@@ -56,7 +55,7 @@ public class PhysicsProcessScriptMod(IModInterface mod): IScriptMod
         ]);
         _injectedGlobals[path] = false;
         
-        mod.Logger.Information($"Patching {path}");
+        mod.Logger.Information($"[calico.PhysicsProcessScriptMod] Patching {path}");
         foreach (var t in tokens)
         {
             if (extendsWaiter.Check(t))

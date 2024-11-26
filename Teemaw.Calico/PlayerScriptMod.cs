@@ -140,10 +140,9 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
         var skipNextToken = false;
         List<Token> inProcessAnimationTokens = [];
 
-        mod.Logger.Information($"[PlayerScript] Start patching {path}");
+        mod.Logger.Information($"[calico.PlayerScriptMod] Start patching {path}");
         foreach (var t in tokens)
         {
-            //mod.Logger.Information(t.ToString());
             if (skipNextToken)
             {
                 skipNextToken = false;
@@ -217,7 +216,7 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
             {
                 yield return t;
 
-                mod.Logger.Information("[PlayerScript] Entering _process_animation");
+                mod.Logger.Information("[calico.PlayerScriptMod] Entering _process_animation");
                 inProcessAnimation = true;
             }
             else if (setupNotControlledWaiter.Check(t))
