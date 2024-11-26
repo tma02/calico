@@ -18,6 +18,7 @@ public class Mod : IMod {
         if (config.PlayerPatchEnabled)
         {
             modInterface.RegisterScriptMod(new PlayerScriptMod(modInterface));
+            modInterface.RegisterScriptMod(new GuitarStringSoundScriptMod());
             modInterface.Logger.Information("Registered Player script patches");
         }
         if (config.RemoveDisconnectedPlayerProps)
