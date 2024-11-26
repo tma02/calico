@@ -1,80 +1,81 @@
 ﻿using GDWeave;
 using GDWeave.Godot;
 using GDWeave.Modding;
+using static GDWeave.Godot.TokenType;
 
 namespace Teemaw.Calico;
 
 public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
 {
     private readonly MultiTokenWaiter _extendsWaiter = new([
-        t => t.Type is TokenType.PrExtends,
-        t => t.Type is TokenType.Identifier,
-        t => t.Type is TokenType.Newline
+        t => t.Type is PrExtends,
+        t => t.Type is Identifier,
+        t => t.Type is Newline
     ]);
 
     private readonly MultiTokenWaiter _readyWaiter = new([
-        t => t is { Type: TokenType.PrFunction },
+        t => t is { Type: PrFunction },
         t => t is IdentifierToken { Name: "_ready" },
-        t => t.Type is TokenType.ParenthesisOpen,
-        t => t.Type is TokenType.ParenthesisClose,
-        t => t.Type is TokenType.Colon,
+        t => t.Type is ParenthesisOpen,
+        t => t.Type is ParenthesisClose,
+        t => t.Type is Colon,
     ]);
 
     private readonly MultiTokenWaiter _processWaiter = new([
-        t => t is { Type: TokenType.PrFunction },
+        t => t is { Type: PrFunction },
         t => t is IdentifierToken { Name: "_process" },
-        t => t.Type is TokenType.ParenthesisOpen,
+        t => t.Type is ParenthesisOpen,
         t => t is IdentifierToken { Name: "delta" },
-        t => t.Type is TokenType.ParenthesisClose,
+        t => t.Type is ParenthesisClose,
         t => t is IdentifierToken { Name: "run_callbacks" },
-        t => t.Type is TokenType.ParenthesisOpen,
-        t => t.Type is TokenType.ParenthesisClose,
+        t => t.Type is ParenthesisOpen,
+        t => t.Type is ParenthesisClose,
     ], allowPartialMatch: true);
 
     private readonly MultiTokenWaiter _packetFlushStartWaiter = new([
-        t => t is { Type: TokenType.PrFunction },
+        t => t is { Type: PrFunction },
         t => t is IdentifierToken { Name: "_packet_flush" },
-        t => t.Type is TokenType.ParenthesisOpen,
-        t => t.Type is TokenType.ParenthesisClose,
-        t => t.Type is TokenType.Colon
+        t => t.Type is ParenthesisOpen,
+        t => t.Type is ParenthesisClose,
+        t => t.Type is Colon
     ]);
 
     private readonly MultiTokenWaiter _packetFlushEndWaiter = new([
-        t => t is { Type: TokenType.PrFunction },
+        t => t is { Type: PrFunction },
         t => t is IdentifierToken { Name: "_packet_flush" },
-        t => t.Type is TokenType.ParenthesisOpen,
-        t => t.Type is TokenType.ParenthesisClose,
-        t => t.Type is TokenType.Colon,
+        t => t.Type is ParenthesisOpen,
+        t => t.Type is ParenthesisClose,
+        t => t.Type is Colon,
         t => t is IdentifierToken { Name: "FLUSH_PACKET_INFORMATION" },
-        t => t.Type is TokenType.OpAssign,
-        t => t.Type is TokenType.Newline
+        t => t.Type is OpAssign,
+        t => t.Type is Newline
     ], allowPartialMatch: true);
 
     // A bit sketchy since we're trying to match over so many tokens.
     private readonly MultiTokenWaiter _actuallyHandlePacketWaiter = new([
-        t => t is { Type: TokenType.PrFunction },
+        t => t is { Type: PrFunction },
         t => t is IdentifierToken { Name: "_read_P2P_Packet" },
-        t => t.Type is TokenType.ParenthesisOpen,
+        t => t.Type is ParenthesisOpen,
         // ...
         t => t is IdentifierToken { Name: "readP2PPacket" },
         // ...
         t => t is IdentifierToken { Name: "FLUSH_PACKET_INFORMATION" },
         // ...
-        t => t.Type is TokenType.OpAssignAdd,
+        t => t.Type is OpAssignAdd,
         // ...
-        t => t.Type is TokenType.Newline
+        t => t.Type is Newline
     ], allowPartialMatch: true);
 
     private readonly MultiTokenWaiter _sendP2PPacketWaiter = new([
-        t => t is { Type: TokenType.PrFunction },
+        t => t is { Type: PrFunction },
         t => t is IdentifierToken { Name: "_send_P2P_Packet" },
-        t => t.Type is TokenType.ParenthesisOpen,
+        t => t.Type is ParenthesisOpen,
         t => t is IdentifierToken { Name: "packet_data" },
         t => t is IdentifierToken { Name: "target" },
         t => t is IdentifierToken { Name: "type" },
         t => t is IdentifierToken { Name: "channel" },
-        t => t.Type is TokenType.ParenthesisClose,
-        t => t.Type is TokenType.Colon
+        t => t.Type is ParenthesisClose,
+        t => t.Type is Colon
     ], allowPartialMatch: true);
 
     private readonly IEnumerable<Token> _globals = ScriptTokenizer.Tokenize(
@@ -212,17 +213,17 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
                 foreach (var t1 in _globals)
                     yield return t1;
                 // TODO: figure out why these don't get declared as part of _globals...
-                yield return new Token(TokenType.Newline);
-                yield return new Token(TokenType.PrVar);
+                yield return new Token(Newline);
+                yield return new Token(PrVar);
                 yield return new IdentifierToken("RECV_NET_MUTEX");
-                yield return new Token(TokenType.Newline);
-                yield return new Token(TokenType.PrVar);
+                yield return new Token(Newline);
+                yield return new Token(PrVar);
                 yield return new IdentifierToken("RECV_NET_THREAD");
-                yield return new Token(TokenType.Newline);
-                yield return new Token(TokenType.PrVar);
+                yield return new Token(Newline);
+                yield return new Token(PrVar);
                 yield return new IdentifierToken("SEND_NET_MUTEX");
-                yield return new Token(TokenType.Newline);
-                yield return new Token(TokenType.PrVar);
+                yield return new Token(Newline);
+                yield return new Token(PrVar);
                 yield return new IdentifierToken("SEND_NET_THREAD");
             }
             else if (_readyWaiter.Check(t))
@@ -240,7 +241,7 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
                 foreach (var t1 in _onProcess)
                     yield return t1;
                 // End the _process function here
-                yield return new Token(TokenType.Newline);
+                yield return new Token(Newline);
 
                 // Then add func signature for our thread before tokens in original _process
                 mod.Logger.Information(string.Join(", ", _networkThreadFunctionSignatureTokens));
@@ -256,7 +257,7 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
                 foreach (var t1 in _onHandlePacket)
                     yield return t1;
                 // End the _read_P2P_Packet function here
-                yield return new Token(TokenType.Newline);
+                yield return new Token(Newline);
 
                 // Then add func for our thread before tokens in original func
                 mod.Logger.Information(string.Join(", ", _packetHandlerFunction));
