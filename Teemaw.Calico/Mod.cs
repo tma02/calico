@@ -20,6 +20,11 @@ public class Mod : IMod {
             modInterface.RegisterScriptMod(new PlayerScriptMod(modInterface));
             modInterface.Logger.Information("Registered Player script patches");
         }
+        if (config.RemoveDisconnectedPlayerProps)
+        {
+            modInterface.RegisterScriptMod(new RemoveDisconnectedPlayerPropsScriptMod());
+            modInterface.Logger.Information("Registered remove disconnected player props patches");
+        }
     }
 
     public void Dispose() {
