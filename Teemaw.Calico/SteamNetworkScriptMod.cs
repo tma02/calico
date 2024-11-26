@@ -145,14 +145,6 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
     private readonly IEnumerable<Token> _onHandlePacket = ScriptTokenizer.Tokenize(
         """
 
-        if type == "actor_update":
-        	if !_validate_packet_information(DATA, ["actor_id", "pos", "rot"], [TYPE_INT, TYPE_VECTOR3, TYPE_VECTOR3]): return
-        	if !ACTOR_UPDATE_STATE.keys().has(DATA["actor_id"]):
-        		ACTOR_UPDATE_STATE[DATA["actor_id"]] = { "pos": Vector3.ZERO, "rot": Vector3.ZERO, "count": -1 }
-        	if ACTOR_UPDATE_STATE[DATA["actor_id"]].pos.distance_squared_to(DATA["pos"]) < 0.000001 && ACTOR_UPDATE_STATE[DATA["actor_id"]].rot.distance_squared_to(DATA["rot"]) < 0.000001:
-        		return
-        	ACTOR_UPDATE_STATE[DATA["actor_id"]].pos = DATA["pos"]
-        	ACTOR_UPDATE_STATE[DATA["actor_id"]].rot = DATA["rot"]
         CALICO_RECV_PACKET_QUEUE.append({"PACKET_SIZE": PACKET_SIZE, "PACKET_SENDER": PACKET_SENDER, "DATA": DATA, "type": type, "from_host": from_host})
 
         """, 2);
