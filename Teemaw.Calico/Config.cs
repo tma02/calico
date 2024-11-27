@@ -6,7 +6,6 @@ public class Config
 {
     [JsonInclude] public bool MeshGpuInstancingEnabled = true;
     [JsonInclude] public bool MultiThreadNetworkingEnabled = true;
-    [JsonInclude] public bool MultiThreadRenderingEnabled = true;
     [JsonInclude] public bool PhysicsHalfSpeedEnabled = true;
     [JsonInclude] public bool PlayerOptimizationsEnabled = true;
 }

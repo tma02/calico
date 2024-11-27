@@ -21,9 +21,9 @@ public class Mod : IMod {
         {
             modInterface.RegisterScriptMod(new MainMapScriptMod(modInterface));
         }
-        if (config.PhysicsHalfSpeedEnabled || config.MultiThreadRenderingEnabled)
+        if (config.PhysicsHalfSpeedEnabled)
         {
-            modInterface.RegisterScriptMod(new GlobalsScriptMod(modInterface, config));
+            modInterface.RegisterScriptMod(new GlobalsScriptMod(modInterface));
         }
     }
 

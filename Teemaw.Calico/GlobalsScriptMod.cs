@@ -5,21 +5,13 @@ using static GDWeave.Godot.TokenType;
 
 namespace Teemaw.Calico;
 
-public class GlobalsScriptMod(IModInterface mod, Config config): IScriptMod
+public class GlobalsScriptMod(IModInterface mod): IScriptMod
 {
-    private readonly IEnumerable<Token> _onReadyRenderMultiThread = ScriptTokenizer.Tokenize(
-        """
-
-        print("[calico] Enabling multi-thread rendering...")
-        ProjectSettings.set_setting("rendering/driver/threads/thread_model", 2)
-
-        """, 1);
-    
     private readonly IEnumerable<Token> _onReadyPhysicsFps = ScriptTokenizer.Tokenize(
         """
 
         print("[calico] Setting physics FPS...")
-        ProjectSettings.set_setting("physics/common/physics_fps", 30)
+        Engine.set_iterations_per_second(30)
 
         """, 1);
     
@@ -42,16 +34,8 @@ public class GlobalsScriptMod(IModInterface mod, Config config): IScriptMod
             if (readyWaiter.Check(t))
             {
                 yield return t;
-                if (config.MultiThreadRenderingEnabled)
-                {
-                    foreach (var t1 in _onReadyRenderMultiThread)
-                        yield return t1;
-                }
-                if (config.PhysicsHalfSpeedEnabled)
-                {
-                    foreach (var t1 in _onReadyPhysicsFps)
-                        yield return t1;
-                }
+                foreach (var t1 in _onReadyPhysicsFps)
+                    yield return t1;
             }
             else
             {
