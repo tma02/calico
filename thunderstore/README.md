@@ -1,4 +1,4 @@
-﻿# Calico
+# Calico
 
 Calico; anti-lag improvements & client optimizations for WEBFISHING.
 
