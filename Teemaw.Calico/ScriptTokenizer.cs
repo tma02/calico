@@ -383,7 +383,8 @@ public static class ScriptTokenizer {
                             finalTokens.Add(new Token(TokenType.BuiltInType, 7));
                             break;
                         default:
-                            finalTokens.Add(new IdentifierToken(idName));
+                            // CALICO: We change this to trim the idName, otherwise the whitespace messes with the token
+                            finalTokens.Add(new IdentifierToken(idName.Trim()));
                             break;
                     }
                     idName = string.Empty;

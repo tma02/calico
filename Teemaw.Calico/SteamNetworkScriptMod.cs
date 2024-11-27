@@ -212,19 +212,6 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
                 mod.Logger.Information(string.Join(", ", _globals));
                 foreach (var t1 in _globals)
                     yield return t1;
-                // TODO: figure out why these don't get declared as part of _globals...
-                yield return new Token(Newline);
-                yield return new Token(PrVar);
-                yield return new IdentifierToken("RECV_NET_MUTEX");
-                yield return new Token(Newline);
-                yield return new Token(PrVar);
-                yield return new IdentifierToken("RECV_NET_THREAD");
-                yield return new Token(Newline);
-                yield return new Token(PrVar);
-                yield return new IdentifierToken("SEND_NET_MUTEX");
-                yield return new Token(Newline);
-                yield return new Token(PrVar);
-                yield return new IdentifierToken("SEND_NET_THREAD");
             }
             else if (_readyWaiter.Check(t))
             {

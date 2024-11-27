@@ -58,7 +58,7 @@ public class MainMapScriptMod(IModInterface mod): IScriptMod
         	for surface_idx in range(parent.get_child(0).get_surface_material_count()):
         		var material = parent.get_child(0).get_surface_material(surface_idx)
         		mm.mesh.surface_set_material(surface_idx, material)
-        	mm.transform_format = MultiMesh.TRANSFORM_3D
+        	mm.transform_format = 1
         	mm.instance_count = parent.get_child_count()
         	var i = 0
         	for tree in parent.get_children():
@@ -97,7 +97,7 @@ public class MainMapScriptMod(IModInterface mod): IScriptMod
         	for surface_idx in range(mesh_instance.mesh.get_surface_count()):
         		var material = mesh_instance.get_active_material(surface_idx)
         		mm.mesh.surface_set_material(surface_idx, material)
-        	mm.transform_format = MultiMesh.TRANSFORM_3D
+        	mm.transform_format = 1
         	mm.instance_count = children.size()
         	var i = 0
         	for tree in children:
@@ -115,20 +115,19 @@ public class MainMapScriptMod(IModInterface mod): IScriptMod
 
     public IEnumerable<Token> Modify(string path, IEnumerable<Token> tokens)
     {
-	    MultiTokenWaiter readyWaiter = new([
-		    t => t.Type is PrFunction,
-		    t => t is IdentifierToken { Name: "_ready" },
-		    t => t.Type is ParenthesisOpen,
-		    t => t.Type is ParenthesisClose,
-		    t => t.Type is Colon
+	    MultiTokenWaiter extendsWaiter = new([
+		    t => t.Type is PrExtends,
+		    t => t.Type is Identifier,
+		    t => t.Type is Newline
 	    ]);
 
 	    mod.Logger.Information($"[calico.MainMapScriptMod] Patching {path}");
 	    foreach (var t in tokens)
 	    {
-		    if (readyWaiter.Check(t))
+		    if (extendsWaiter.Check(t))
 		    {
 			    yield return t;
+			    mod.Logger.Information(string.Join(", ", _globals));
 			    foreach (var t1 in _globals)
 				    yield return t1;
 		    }
