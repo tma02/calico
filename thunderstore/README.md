@@ -8,12 +8,14 @@ Calico aims to improve the performance of WEBFISHING in multiplayer scenarios. T
 to networking code, as well as numerous other optimizations.
 
 ### Improvements & optimizations
+
 * Dedicated thread for compression and sending packets
 * Dedicated thread for receiving and decompressing packets
+* GPU instancing of common meshes (all trees, logs, bushes, mushrooms, etc.)
+* Reducing physics update rate
 * Skipping cosmetics loading for players that have not changed
 * Optimize player animation updates
-* Optimize player guitar processing (this happens even if you're not playing a guitar)
-* Other player optimizations
+* Other player processing optimizations (caught item, held item, guitar)
 
 ## Install
 
@@ -23,44 +25,51 @@ to networking code, as well as numerous other optimizations.
 4. You're done!
 
 ## Configuration
+
 The `Teemaw.Calico.json` configuration file has the following schema and default values:
+
 ```json
 {
-  "NetworkPatchEnabled": true,
-  "PlayerPatchEnabled": true,
-  "PhysicsPatchEnabled": false,
-  "RemoveDisconnectedPlayerProps": true
+  "MeshGpuInstancingEnabled": true,
+  "MultiThreadNetworkingEnabled": true,
+  "PlayerOptimizationsEnabled": true,
+  "ReducePhysicsUpdatesEnabled": true
 }
 ```
 
-### `NetworkPatchEnabled`
+### `MeshGpuInstancingEnabled`
+
+This enables patching of the `main_map` script to generate GPU instanced meshes before unloading the individual meshes.
+
+File modified:
+
+* `res://Scenes/Map/main_map.gdc`
+
+### `MultiThreadNetworkingEnabled`
 
 This enables patching of the networking script to use threads for sending and receiving packets.
 
 File modified:
+
 * `res://Scenes/Singletons/SteamNetwork.gdc`
 
-### `PlayerPatchEnabled`
+### `PlayerOptimizationsEnabled`
 
-This enables patching of player scripts to optimize cosmetic loading, animation updates, guitar processing, and more.
+This enables patching of player scripts to optimize cosmetic loading, animation updates, guitar processing, etc.
 
 Files modified:
-* `res://Scenes/Entities/Player/player.gdc`
+
 * `res://Scenes/Entities/Player/guitar_string_sound.gdc`
+* `res://Scenes/Entities/Player/held_item.gdc`
+* `res://Scenes/Entities/Player/player.gdc`
 
-### `PhysicsPatchEnabled`
+### `ReducePhysicsUpdatesEnabled`
 
-This enables patching of actor scripts to run only half of the scripted physics process.
+This enables patching of a few scripts to reduce the physics update rate. This will patch a few processes that are tied
+to the old physics update rate such that they feel the same with a reduced update rate.
 
 Files modified:
-* All scripts under `res://Scenes/Entities/` EXCEPT:
-    * `player.gdc`
-    * `actor.gdc`
-    * `prop.gdc`
 
-### `RemoveDisconnectedPlayerProps`
-
-This enables patching of the world script to remove player spawned props when they disconnect.
-
-File modified:
-* `res://Scenes/World/world.gdc`
+* `res://Scenes/Entities/Player/player.gdc`
+* `res://Scenes/Minigames/Fishing3/fishing3.gdc`
+* `res://Scenes/Singletons/globals.gdc`
