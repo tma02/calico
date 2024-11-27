@@ -172,7 +172,7 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
                         inProcessAnimation = false;
                         inProcessAnimationTokens.Add(t);
                         // We're about to leave the func, process the buffered tokens then return all of them.
-                        mod.Logger.Information("Patching assignments in _process_animation");
+                        mod.Logger.Information("[calico.PlayerScriptMod] Patching assignments in _process_animation");
                         var replacedTokens = TokenUtil.ReplaceTokens(inProcessAnimationTokens,
                             ScriptTokenizer.Tokenize("if animation_data[\"caught_item\"] != caught_item:"),
                             ScriptTokenizer.Tokenize(
@@ -260,6 +260,12 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
             t => t.Type is OpMul,
             t => t is ConstantToken c && c.Value.Equals(new IntVariant(60)),
         ]);
+        
+        MultiTokenWaiter primaryActionHoldWaiter = new([
+            t => t is IdentifierToken { Name: "primary_hold_timer" },
+            t => t is { Type: OpAssignAdd },
+            t => t is ConstantToken c && c.Value.Equals(new IntVariant(1)),
+        ]);
 
         mod.Logger.Information($"[calico.PlayerScriptMod] Patching {path}");
 
@@ -268,6 +274,10 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
             if (animationGoalWaiter.Check(t))
             {
                 yield return new ConstantToken(new IntVariant(30));
+            }
+            else if (primaryActionHoldWaiter.Check(t))
+            {
+                yield return new ConstantToken(new IntVariant(2));
             }
             else
             {

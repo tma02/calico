@@ -200,7 +200,7 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
 
     public IEnumerable<Token> Modify(string path, IEnumerable<Token> tokens)
     {
-        mod.Logger.Information($"[SteamNetworkScript] Patching {path}");
+        mod.Logger.Information($"[calico.SteamNetworkScript] Patching {path}");
         foreach (var t in tokens)
         {
             if (_extendsWaiter.Check(t))
