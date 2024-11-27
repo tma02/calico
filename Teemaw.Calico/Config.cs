@@ -8,4 +8,12 @@ public class Config
     [JsonInclude] public bool MultiThreadNetworkingEnabled = true;
     [JsonInclude] public bool PlayerOptimizationsEnabled = true;
     [JsonInclude] public bool ReducePhysicsUpdatesEnabled = true;
+    
+    public override string ToString()
+    {
+        return $"MeshGpuInstancingEnabled={MeshGpuInstancingEnabled}, " +
+               $"MultiThreadNetworkingEnabled={MultiThreadNetworkingEnabled}, " +
+               $"PlayerOptimizationsEnabled={PlayerOptimizationsEnabled}, " +
+               $"ReducePhysicsUpdatesEnabled={ReducePhysicsUpdatesEnabled}";
+    }
 }
