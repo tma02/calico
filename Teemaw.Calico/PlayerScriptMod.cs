@@ -156,6 +156,17 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
         List<Token> inProcessAnimationTokens = [];
 
         mod.Logger.Information($"[calico.PlayerScriptMod] Patching {path}");
+        
+        var patchFlags = new Dictionary<string, bool>
+        {
+            ["process_animation"] = false,
+            ["globals"] = false,
+            ["ready"] = false,
+            ["anim_tree_dupe"] = false,
+            ["setup_not_controlled"] = false,
+            ["cosmetics_update"] = false
+        };
+        
         foreach (var t in tokens)
         {
             if (skipNextToken)
@@ -172,7 +183,7 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
                         inProcessAnimation = false;
                         inProcessAnimationTokens.Add(t);
                         // We're about to leave the func, process the buffered tokens then return all of them.
-                        mod.Logger.Information("[calico.PlayerScriptMod] Patching assignments in _process_animation");
+                        mod.Logger.Information("[calico.PlayerScriptMod] Patching buffered _process_animation");
                         var replacedTokens = TokenUtil.ReplaceTokens(inProcessAnimationTokens,
                             ScriptTokenizer.Tokenize("if animation_data[\"caught_item\"] != caught_item:"),
                             ScriptTokenizer.Tokenize(
@@ -197,7 +208,9 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
                             ScriptTokenizer.Tokenize("calico_emote_anim_b.set_animation(animation_data[\"emote\"])"));
                         foreach (var t1 in replacedTokens)
                             yield return t1;
-
+                        
+                        patchFlags["process_animation"] = true;
+                        mod.Logger.Information("[calico.PlayerScriptMod] process_animation patch OK");
                         break;
                     default:
                         inProcessAnimationTokens.Add(t);
@@ -210,6 +223,8 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
 
                 foreach (var t1 in Globals)
                     yield return t1;
+                patchFlags["globals"] = true;
+                mod.Logger.Information("[calico.PlayerScriptMod] globals patch OK");
             }
             else if (readyWaiter.Check(t))
             {
@@ -217,12 +232,16 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
 
                 foreach (var t1 in OnReady)
                     yield return t1;
+                patchFlags["ready"] = true;
+                mod.Logger.Information("[calico.PlayerScriptMod] ready patch OK");
             }
             else if (afterAnimTreeDupeWaiter.Check(t))
             {
                 yield return t;
                 foreach (var t1 in AfterAnimTreeDupe)
                     yield return t1;
+                patchFlags["anim_tree_dupe"] = true;
+                mod.Logger.Information("[calico.PlayerScriptMod] anim_tree_dupe patch OK");
             }
             else if (processAnimationWaiter.Check(t))
             {
@@ -236,16 +255,28 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
                 yield return t;
 
                 foreach (var t1 in SetupNotControlled) yield return t1;
+                patchFlags["setup_not_controlled"] = true;
+                mod.Logger.Information("[calico.PlayerScriptMod] setup_not_controlled patch OK");
             }
             else if (updateCosmeticsGuardWaiter.Check(t))
             {
                 yield return t;
 
                 foreach (var t1 in GuardCreateCosmetics) yield return t1;
+                patchFlags["cosmetics_update"] = true;
+                mod.Logger.Information("[calico.PlayerScriptMod] cosmetics_update patch OK");
             }
             else
             {
                 yield return t;
+            }
+        }
+        
+        foreach (var patch in patchFlags)
+        {
+            if (!patch.Value)
+            {
+                mod.Logger.Error($"[calico.PlayerScriptMod] FAIL: {patch.Key} patch not applied");
             }
         }
     }
@@ -260,7 +291,7 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
             t => t.Type is OpMul,
             t => t is ConstantToken c && c.Value.Equals(new IntVariant(60)),
         ]);
-        
+
         MultiTokenWaiter primaryActionHoldWaiter = new([
             t => t is IdentifierToken { Name: "primary_hold_timer" },
             t => t is { Type: OpAssignAdd },
@@ -269,19 +300,37 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
 
         mod.Logger.Information($"[calico.PlayerScriptMod] Patching {path}");
 
+        var patchFlags = new Dictionary<string, bool>
+        {
+            ["animation_duration"] = false,
+            ["primary_action_rate"] = false
+        };
+
         foreach (var t in tokens)
         {
             if (animationGoalWaiter.Check(t))
             {
                 yield return new ConstantToken(new IntVariant(30));
+                patchFlags["animation_duration"] = true;
+                mod.Logger.Information("[calico.PlayerScriptMod] animation_duration patch OK");
             }
             else if (primaryActionHoldWaiter.Check(t))
             {
                 yield return new ConstantToken(new IntVariant(2));
+                patchFlags["primary_action_rate"] = true;
+                mod.Logger.Information("[calico.PlayerScriptMod] primary_action_rate patch OK");
             }
             else
             {
                 yield return t;
+            }
+        }
+        
+        foreach (var patch in patchFlags)
+        {
+            if (!patch.Value)
+            {
+                mod.Logger.Error($"[calico.PlayerScriptMod] FAIL: {patch.Key} patch not applied");
             }
         }
     }
@@ -289,16 +338,17 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
     public IEnumerable<Token> Modify(string path, IEnumerable<Token> tokens)
     {
         var currentTokens = tokens.ToList();
-    
+
         mod.Logger.Information(
             $"[calico.PlayerScriptMod] PlayerOptimizationsEnabled={config.PlayerOptimizationsEnabled}");
         if (config.PlayerOptimizationsEnabled)
             currentTokens = ModifyForPlayerOptimizations(mod, path, currentTokens).ToList();
-        
-        mod.Logger.Information($"[calico.PlayerScriptMod] PhysicsHalfSpeedEnabled={config.ReducePhysicsUpdatesEnabled}");
+
+        mod.Logger.Information(
+            $"[calico.PlayerScriptMod] PhysicsHalfSpeedEnabled={config.ReducePhysicsUpdatesEnabled}");
         if (config.ReducePhysicsUpdatesEnabled)
             currentTokens = ModifyForPhysicsHalfSpeed(mod, path, currentTokens).ToList();
-        
+
         return currentTokens;
     }
 }

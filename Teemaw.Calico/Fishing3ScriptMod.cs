@@ -26,6 +26,12 @@ public class Fishing3ScriptMod(IModInterface mod): IScriptMod
         
         mod.Logger.Information($"[calico.Fishing3ScriptMod] Patching {path}");
         
+        var patchFlags = new Dictionary<string, bool>
+        {
+            ["main_progress"] = false,
+            ["bad_progress"] = false
+        };
+        
         foreach (var t in tokens)
         {
             yield return t;
@@ -34,11 +40,23 @@ public class Fishing3ScriptMod(IModInterface mod): IScriptMod
             {
                 yield return new Token(OpMul);
                 yield return new ConstantToken(new IntVariant(2));
+                patchFlags["main_progress"] = true;
+                mod.Logger.Information("[calico.HeldItemScriptMod] main_progress patch OK");
             }
             else if (badProgressWaiter.Check(t))
             {
                 yield return new Token(OpMul);
                 yield return new ConstantToken(new IntVariant(2));
+                patchFlags["bad_progress"] = true;
+                mod.Logger.Information("[calico.HeldItemScriptMod] bad_progress patch OK");
+            }
+        }
+        
+        foreach (var patch in patchFlags)
+        {
+            if (!patch.Value)
+            {
+                mod.Logger.Error($"[calico.Fishing3ScriptMod] FAIL: {patch.Key} patch not applied");
             }
         }
     }

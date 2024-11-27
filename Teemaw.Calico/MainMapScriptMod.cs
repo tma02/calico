@@ -122,6 +122,12 @@ public class MainMapScriptMod(IModInterface mod): IScriptMod
 	    ]);
 
 	    mod.Logger.Information($"[calico.MainMapScriptMod] Patching {path}");
+	    
+	    var patchFlags = new Dictionary<string, bool>
+	    {
+		    ["globals"] = false
+	    };
+		
 	    foreach (var t in tokens)
 	    {
 		    if (extendsWaiter.Check(t))
@@ -129,10 +135,20 @@ public class MainMapScriptMod(IModInterface mod): IScriptMod
 			    yield return t;
 			    foreach (var t1 in Globals)
 				    yield return t1;
+			    patchFlags["globals"] = true;
+			    mod.Logger.Information("[calico.MainMapScriptMod] globals patch OK");
 		    }
 		    else
 		    {
 			    yield return t;
+		    }
+	    }
+	    
+	    foreach (var patch in patchFlags)
+	    {
+		    if (!patch.Value)
+		    {
+			    mod.Logger.Error($"[calico.MainMapScriptMod] FAIL: {patch.Key} patch not applied");
 		    }
 	    }
     }

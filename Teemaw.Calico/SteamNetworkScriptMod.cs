@@ -201,6 +201,16 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
     public IEnumerable<Token> Modify(string path, IEnumerable<Token> tokens)
     {
         mod.Logger.Information($"[calico.SteamNetworkScript] Patching {path}");
+        var patchFlags = new Dictionary<string, bool>
+        {
+            ["globals"] = false,
+            ["ready"] = false,
+            ["process"] = false,
+            ["handle_packet"] = false,
+            ["send_packet"] = false,
+            ["packet_flush_lock"] = false,
+            ["packet_flush_unlock"] = false
+        };
         foreach (var t in tokens)
         {
             if (_extendsWaiter.Check(t))
@@ -210,12 +220,16 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
                 // Insert our globals
                 foreach (var t1 in Globals)
                     yield return t1;
+                patchFlags["globals"] = true;
+                mod.Logger.Information("[calico.SteamNetworkScript] globals patch OK");
             }
             else if (_readyWaiter.Check(t))
             {
                 yield return t;
                 foreach (var t1 in OnReady)
                     yield return t1;
+                patchFlags["ready"] = true;
+                mod.Logger.Information("[calico.SteamNetworkScript] ready patch OK");
             }
             else if (_processWaiter.Check(t))
             {
@@ -229,6 +243,8 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
                 // Then add func signature for our thread before tokens in original _process
                 foreach (var t1 in NetworkThreadFunctionSignatureTokens)
                     yield return t1;
+                patchFlags["process"] = true;
+                mod.Logger.Information("[calico.SteamNetworkScript] process patch OK");
             }
             else if (_actuallyHandlePacketWaiter.Check(t))
             {
@@ -243,6 +259,8 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
                 // Then add func for our thread before tokens in original func
                 foreach (var t1 in PacketHandlerFunction)
                     yield return t1;
+                patchFlags["handle_packet"] = true;
+                mod.Logger.Information("[calico.SteamNetworkScript] handle_packet patch OK");
             }
             else if (_sendP2PPacketWaiter.Check(t))
             {
@@ -251,12 +269,16 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
                 // Fill body for enqueuing packets for send
                 foreach (var t1 in OnSend)
                     yield return t1;
+                patchFlags["send_packet"] = true;
+                mod.Logger.Information("[calico.SteamNetworkScript] send_packet patch OK");
             }
             else if (_packetFlushStartWaiter.Check(t))
             {
                 yield return t;
                 foreach (var t1 in LockMutex)
                     yield return t1;
+                patchFlags["packet_flush_lock"] = true;
+                mod.Logger.Information("[calico.SteamNetworkScript] _packet_flush mutex lock patch OK");
             }
             else if (_packetFlushEndWaiter.Check(t))
             {
@@ -265,10 +287,20 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
                     yield return t1;
                 // Yield the last newline after!
                 yield return t;
+                patchFlags["packet_flush_unlock"] = true;
+                mod.Logger.Information("[calico.SteamNetworkScript] _packet_flush mutex unlock patch OK");
             }
             else
             {
                 yield return t;
+            }
+        }
+        
+        foreach (var patch in patchFlags)
+        {
+            if (!patch.Value)
+            {
+                mod.Logger.Error($"[calico.SteamNetworkScript] FAIL: {patch.Key} patch not applied");
             }
         }
     }

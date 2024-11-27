@@ -70,6 +70,14 @@ public class GuitarStringSoundScriptMod(IModInterface mod): IScriptMod
         ]);
         
         mod.Logger.Information($"[calico.GuitarStringSoundScriptMod] Patching {path}");
+        
+        var patchFlags = new Dictionary<string, bool>
+        {
+            ["globals"] = false,
+            ["player"] = false,
+            ["call_guard"] = false,
+            ["node_stop"] = false
+        };
 
         foreach (var t in tokens)
         {
@@ -79,6 +87,8 @@ public class GuitarStringSoundScriptMod(IModInterface mod): IScriptMod
 
                 foreach (var t1 in Globals)
                     yield return t1;
+                patchFlags["globals"] = true;
+                mod.Logger.Information("[calico.GuitarStringSoundScriptMod] globals patch OK");
             }
             else if (nodePlayWaiter.Check(t))
             {
@@ -86,6 +96,8 @@ public class GuitarStringSoundScriptMod(IModInterface mod): IScriptMod
 
                 foreach (var t1 in IncrementPlayingCount)
                     yield return t1;
+                patchFlags["player"] = true;
+                mod.Logger.Information("[calico.GuitarStringSoundScriptMod] player patch OK");
             }
             else if (callWaiter.Check(t))
             {
@@ -93,6 +105,8 @@ public class GuitarStringSoundScriptMod(IModInterface mod): IScriptMod
 
                 foreach (var t1 in CallGuard)
                     yield return t1;
+                patchFlags["call_guard"] = true;
+                mod.Logger.Information("[calico.GuitarStringSoundScriptMod] call guard patch OK");
             }
             else if (nodeStopWaiter.Check(t))
             {
@@ -100,10 +114,20 @@ public class GuitarStringSoundScriptMod(IModInterface mod): IScriptMod
 
                 foreach (var t1 in DecrementPlayingCount)
                     yield return t1;
+                patchFlags["node_stop"] = true;
+                mod.Logger.Information("[calico.GuitarStringSoundScriptMod] node stop patch OK");
             }
             else
             {
                 yield return t;
+            }
+        }
+        
+        foreach (var patch in patchFlags)
+        {
+            if (!patch.Value)
+            {
+                mod.Logger.Error($"[calico.GuitarStringSoundScriptMod] FAIL: {patch.Key} patch not applied");
             }
         }
     }

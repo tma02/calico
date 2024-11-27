@@ -28,6 +28,11 @@ public class GlobalsScriptMod(IModInterface mod): IScriptMod
         ]);
         
         mod.Logger.Information($"[calico.GlobalsScriptMod] Patching {path}");
+        
+        var patchFlags = new Dictionary<string, bool>
+        {
+            ["ready"] = false
+        };
 
         foreach (var t in tokens)
         {
@@ -36,10 +41,20 @@ public class GlobalsScriptMod(IModInterface mod): IScriptMod
                 yield return t;
                 foreach (var t1 in OnReadyPhysicsFps)
                     yield return t1;
+                patchFlags["ready"] = true;
+                mod.Logger.Information("[calico.GlobalsScriptMod] _ready patch OK");
             }
             else
             {
                 yield return t;
+            }
+        }
+        
+        foreach (var patch in patchFlags)
+        {
+            if (!patch.Value)
+            {
+                mod.Logger.Error($"[calico.GlobalsScriptMod] FAIL: {patch.Key} patch not applied");
             }
         }
     }

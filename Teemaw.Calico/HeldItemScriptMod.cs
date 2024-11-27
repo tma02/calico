@@ -23,14 +23,29 @@ public class HeldItemScriptMod(IModInterface mod): IScriptMod
         
         mod.Logger.Information($"[calico.HeldItemScriptMod] Patching {path}");
         
+        var patchFlags = new Dictionary<string, bool>
+        {
+            ["physics_process"] = false
+        };
+        
         foreach (var t in tokens)
         {
             if (physicsProcessWaiter.Check(t))
             {
                 yield return t;
                 yield return new Token(CfReturn);
+                patchFlags["physics_process"] = true;
+                mod.Logger.Information("[calico.HeldItemScriptMod] _physics_process patch OK");
             }
             yield return t;
+        }
+        
+        foreach (var patch in patchFlags)
+        {
+            if (!patch.Value)
+            {
+                mod.Logger.Error($"[calico.HeldItemScriptMod] FAIL: {patch.Key} patch not applied");
+            }
         }
     }
 }
