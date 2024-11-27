@@ -6,9 +6,9 @@ using static GDWeave.Godot.TokenType;
 
 namespace Teemaw.Calico;
 
-public class PlayerScriptMod(IModInterface mod) : IScriptMod
+public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
 {
-    private readonly IEnumerable<Token> _globals = ScriptTokenizer.Tokenize(
+    private static readonly IEnumerable<Token> Globals = ScriptTokenizer.Tokenize(
         """
 
         var calico_emote_anim = false
@@ -24,7 +24,7 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
         		elif cosmetic_data[key] != new_cosmetic_data[key]:
         			return true
         	return false
-        
+
         func calico_caught_item_needs_update(new_caught):
         	if new_caught.empty() != caught_item.empty():
         		return true
@@ -34,7 +34,7 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
 
         """);
 
-    private readonly IEnumerable<Token> _setupNotControlled = ScriptTokenizer.Tokenize(
+    private static readonly IEnumerable<Token> SetupNotControlled = ScriptTokenizer.Tokenize(
         """
 
         $CollisionShape.disabled = true
@@ -64,7 +64,7 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
 
         """, 1);
 
-    private readonly IEnumerable<Token> _onReady = ScriptTokenizer.Tokenize(
+    private static readonly IEnumerable<Token> OnReady = ScriptTokenizer.Tokenize(
         """
 
         $Viewport.disable_3d = true
@@ -72,7 +72,7 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
 
         """, 1);
 
-    private readonly IEnumerable<Token> _afterAnimTreeDupe = ScriptTokenizer.Tokenize(
+    private static readonly IEnumerable<Token> AfterAnimTreeDupe = ScriptTokenizer.Tokenize(
         """
 
         calico_emote_anim = anim_tree.tree_root.get_node("emote_anim")
@@ -80,7 +80,7 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
 
         """, 1);
 
-    private readonly IEnumerable<Token> _guardCreateCosmetics = ScriptTokenizer.Tokenize(
+    private static readonly IEnumerable<Token> GuardCreateCosmetics = ScriptTokenizer.Tokenize(
         // Note the tab for indent tokenization
         """
 
@@ -92,7 +92,8 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
 
     public bool ShouldRun(string path) => path == "res://Scenes/Entities/Player/player.gdc";
 
-    public IEnumerable<Token> Modify(string path, IEnumerable<Token> tokens)
+    private static IEnumerable<Token> ModifyForPlayerOptimizations(IModInterface mod, string path,
+        IEnumerable<Token> tokens)
     {
         MultiTokenWaiter extendsWaiter = new([
             t => t.Type is PrExtends,
@@ -149,6 +150,7 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
             t => t.Type is ParenthesisOpen,
             t => t.Type is ParenthesisClose,
         ], allowPartialMatch: true);
+
         var inProcessAnimation = false;
         var skipNextToken = false;
         List<Token> inProcessAnimationTokens = [];
@@ -173,7 +175,8 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
                         mod.Logger.Information("Patching assignments in _process_animation");
                         var replacedTokens = TokenUtil.ReplaceTokens(inProcessAnimationTokens,
                             ScriptTokenizer.Tokenize("if animation_data[\"caught_item\"] != caught_item:"),
-                            ScriptTokenizer.Tokenize("if calico_caught_item_needs_update(animation_data[\"caught_item\"]):"));
+                            ScriptTokenizer.Tokenize(
+                                "if calico_caught_item_needs_update(animation_data[\"caught_item\"]):"));
                         replacedTokens = TokenUtil.ReplaceTokens(replacedTokens,
                             ScriptTokenizer.Tokenize("var root = anim_tree.tree_root"),
                             []);
@@ -193,10 +196,7 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
                             ScriptTokenizer.Tokenize("node_b.set_animation(animation_data[\"emote\"])"),
                             ScriptTokenizer.Tokenize("calico_emote_anim_b.set_animation(animation_data[\"emote\"])"));
                         foreach (var t1 in replacedTokens)
-                        {
-                            mod.Logger.Information(t1.ToString());
                             yield return t1;
-                        }
 
                         break;
                     default:
@@ -208,21 +208,20 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
             {
                 yield return t;
 
-                mod.Logger.Information(string.Join(", ", _globals));
-                foreach (var t1 in _globals)
+                foreach (var t1 in Globals)
                     yield return t1;
             }
             else if (readyWaiter.Check(t))
             {
                 yield return t;
 
-                foreach (var t1 in _onReady)
+                foreach (var t1 in OnReady)
                     yield return t1;
             }
             else if (afterAnimTreeDupeWaiter.Check(t))
             {
                 yield return t;
-                foreach (var t1 in _afterAnimTreeDupe)
+                foreach (var t1 in AfterAnimTreeDupe)
                     yield return t1;
             }
             else if (processAnimationWaiter.Check(t))
@@ -236,18 +235,60 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
             {
                 yield return t;
 
-                foreach (var t1 in _setupNotControlled) yield return t1;
+                foreach (var t1 in SetupNotControlled) yield return t1;
             }
             else if (updateCosmeticsGuardWaiter.Check(t))
             {
                 yield return t;
 
-                foreach (var t1 in _guardCreateCosmetics) yield return t1;
+                foreach (var t1 in GuardCreateCosmetics) yield return t1;
             }
             else
             {
                 yield return t;
             }
         }
+    }
+
+    private static IEnumerable<Token> ModifyForPhysicsHalfSpeed(IModInterface mod, string path,
+        IEnumerable<Token> tokens)
+    {
+        MultiTokenWaiter animationGoalWaiter = new([
+            t => t is IdentifierToken { Name: "anim" },
+            t => t is { Type: Period },
+            t => t is IdentifierToken { Name: "length" },
+            t => t.Type is OpMul,
+            t => t is ConstantToken c && c.Value.Equals(new IntVariant(60)),
+        ]);
+
+        mod.Logger.Information($"[calico.PlayerScriptMod] Patching {path}");
+
+        foreach (var t in tokens)
+        {
+            if (animationGoalWaiter.Check(t))
+            {
+                yield return new ConstantToken(new IntVariant(30));
+            }
+            else
+            {
+                yield return t;
+            }
+        }
+    }
+
+    public IEnumerable<Token> Modify(string path, IEnumerable<Token> tokens)
+    {
+        var currentTokens = tokens.ToList();
+    
+        mod.Logger.Information(
+            $"[calico.PlayerScriptMod] PlayerOptimizationsEnabled={config.PlayerOptimizationsEnabled}");
+        if (config.PlayerOptimizationsEnabled)
+            currentTokens = ModifyForPlayerOptimizations(mod, path, currentTokens).ToList();
+        
+        mod.Logger.Information($"[calico.PlayerScriptMod] PhysicsHalfSpeedEnabled={config.PhysicsHalfSpeedEnabled}");
+        if (config.PhysicsHalfSpeedEnabled)
+            currentTokens = ModifyForPhysicsHalfSpeed(mod, path, currentTokens).ToList();
+        
+        return currentTokens;
     }
 }

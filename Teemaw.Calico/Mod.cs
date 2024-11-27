@@ -9,9 +9,12 @@ public class Mod : IMod {
         {
             modInterface.RegisterScriptMod(new SteamNetworkScriptMod(modInterface));
         }
+        if (config.PlayerOptimizationsEnabled || config.PhysicsHalfSpeedEnabled)
+        {
+            modInterface.RegisterScriptMod(new PlayerScriptMod(modInterface, config));
+        }
         if (config.PlayerOptimizationsEnabled)
         {
-            modInterface.RegisterScriptMod(new PlayerScriptMod(modInterface));
             modInterface.RegisterScriptMod(new GuitarStringSoundScriptMod(modInterface));
         }
         if (config.MeshGpuInstancingEnabled)
