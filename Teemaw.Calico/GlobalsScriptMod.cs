@@ -7,7 +7,7 @@ namespace Teemaw.Calico;
 
 public class GlobalsScriptMod(IModInterface mod): IScriptMod
 {
-    private readonly IEnumerable<Token> _onReadyPhysicsFps = ScriptTokenizer.Tokenize(
+    private static readonly IEnumerable<Token> OnReadyPhysicsFps = ScriptTokenizer.Tokenize(
         """
 
         print("[calico] Setting physics FPS...")
@@ -34,7 +34,7 @@ public class GlobalsScriptMod(IModInterface mod): IScriptMod
             if (readyWaiter.Check(t))
             {
                 yield return t;
-                foreach (var t1 in _onReadyPhysicsFps)
+                foreach (var t1 in OnReadyPhysicsFps)
                     yield return t1;
             }
             else

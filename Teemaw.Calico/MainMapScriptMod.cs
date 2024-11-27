@@ -7,7 +7,7 @@ namespace Teemaw.Calico;
 
 public class MainMapScriptMod(IModInterface mod): IScriptMod
 {
-    private readonly IEnumerable<Token> _globals = ScriptTokenizer.Tokenize(
+    private static readonly IEnumerable<Token> Globals = ScriptTokenizer.Tokenize(
         """
 
         func _ready():
@@ -127,7 +127,7 @@ public class MainMapScriptMod(IModInterface mod): IScriptMod
 		    if (extendsWaiter.Check(t))
 		    {
 			    yield return t;
-			    foreach (var t1 in _globals)
+			    foreach (var t1 in Globals)
 				    yield return t1;
 		    }
 		    else

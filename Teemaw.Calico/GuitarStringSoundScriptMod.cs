@@ -8,28 +8,28 @@ namespace Teemaw.Calico;
 
 public class GuitarStringSoundScriptMod(IModInterface mod): IScriptMod
 {
-    private readonly IEnumerable<Token> _globals = ScriptTokenizer.Tokenize(
+    private static readonly IEnumerable<Token> Globals = ScriptTokenizer.Tokenize(
         """
 
         var calico_playing_count = 0
 
         """);
     
-    private readonly IEnumerable<Token> _callGuard = ScriptTokenizer.Tokenize(
+    private static readonly IEnumerable<Token> CallGuard = ScriptTokenizer.Tokenize(
         """
 
         if calico_playing_count == 0: return
 
         """, 1);
     
-    private readonly IEnumerable<Token> _incrementPlayingCount = ScriptTokenizer.Tokenize(
+    private static readonly IEnumerable<Token> IncrementPlayingCount = ScriptTokenizer.Tokenize(
         """
 
         calico_playing_count += 1
 
         """, 3);
     
-    private readonly IEnumerable<Token> _decrementPlayingCount = ScriptTokenizer.Tokenize(
+    private static readonly IEnumerable<Token> DecrementPlayingCount = ScriptTokenizer.Tokenize(
         """
 
         calico_playing_count -= 1
@@ -77,28 +77,28 @@ public class GuitarStringSoundScriptMod(IModInterface mod): IScriptMod
             {
                 yield return t;
 
-                foreach (var t1 in _globals)
+                foreach (var t1 in Globals)
                     yield return t1;
             }
             else if (nodePlayWaiter.Check(t))
             {
                 yield return t;
 
-                foreach (var t1 in _incrementPlayingCount)
+                foreach (var t1 in IncrementPlayingCount)
                     yield return t1;
             }
             else if (callWaiter.Check(t))
             {
                 yield return t;
 
-                foreach (var t1 in _callGuard)
+                foreach (var t1 in CallGuard)
                     yield return t1;
             }
             else if (nodeStopWaiter.Check(t))
             {
                 yield return t;
 
-                foreach (var t1 in _decrementPlayingCount)
+                foreach (var t1 in DecrementPlayingCount)
                     yield return t1;
             }
             else

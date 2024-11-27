@@ -78,7 +78,7 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
         t => t.Type is Colon
     ], allowPartialMatch: true);
 
-    private readonly IEnumerable<Token> _globals = ScriptTokenizer.Tokenize(
+    private static readonly IEnumerable<Token> Globals = ScriptTokenizer.Tokenize(
         """
         
         var CALICO_RECV_PACKET_QUEUE = []
@@ -116,7 +116,7 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
 
         """);
 
-    private readonly IEnumerable<Token> _onReady = ScriptTokenizer.Tokenize(
+    private static readonly IEnumerable<Token> OnReady = ScriptTokenizer.Tokenize(
         """
 
         if !STEAM_ENABLED: return
@@ -131,7 +131,7 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
 
         """, 1);
 
-    private readonly IEnumerable<Token> _onProcess = ScriptTokenizer.Tokenize(
+    private static readonly IEnumerable<Token> OnProcess = ScriptTokenizer.Tokenize(
         // Note the tab character instead of spaces. This is required by the tokenizer.
         """
         
@@ -143,17 +143,17 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
 
         """, 1);
 
-    private readonly IEnumerable<Token> _onHandlePacket = ScriptTokenizer.Tokenize(
+    private static readonly IEnumerable<Token> OnHandlePacket = ScriptTokenizer.Tokenize(
         """
 
         CALICO_RECV_PACKET_QUEUE.append({"PACKET_SIZE": PACKET_SIZE, "PACKET_SENDER": PACKET_SENDER, "DATA": DATA, "type": type, "from_host": from_host})
 
         """, 2);
 
-    private readonly IEnumerable<Token> _networkThreadFunctionSignatureTokens = ScriptTokenizer.Tokenize(
+    private static readonly IEnumerable<Token> NetworkThreadFunctionSignatureTokens = ScriptTokenizer.Tokenize(
         "func _calico_recv_net_process(delta): ");
 
-    private readonly IEnumerable<Token> _packetHandlerFunction = ScriptTokenizer.Tokenize(
+    private static readonly IEnumerable<Token> PacketHandlerFunction = ScriptTokenizer.Tokenize(
         """
         func _calico_process_P2P_packet_on_main(packet):
         	var PACKET_SIZE = packet["PACKET_SIZE"]
@@ -208,26 +208,26 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
                 yield return t;
 
                 // Insert our globals
-                foreach (var t1 in _globals)
+                foreach (var t1 in Globals)
                     yield return t1;
             }
             else if (_readyWaiter.Check(t))
             {
                 yield return t;
-                foreach (var t1 in _onReady)
+                foreach (var t1 in OnReady)
                     yield return t1;
             }
             else if (_processWaiter.Check(t))
             {
                 yield return t;
                 // Fill new func body for _process
-                foreach (var t1 in _onProcess)
+                foreach (var t1 in OnProcess)
                     yield return t1;
                 // End the _process function here
                 yield return new Token(Newline);
 
                 // Then add func signature for our thread before tokens in original _process
-                foreach (var t1 in _networkThreadFunctionSignatureTokens)
+                foreach (var t1 in NetworkThreadFunctionSignatureTokens)
                     yield return t1;
             }
             else if (_actuallyHandlePacketWaiter.Check(t))
@@ -235,13 +235,13 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
                 yield return t;
 
                 // Fill body for enqueuing received packets
-                foreach (var t1 in _onHandlePacket)
+                foreach (var t1 in OnHandlePacket)
                     yield return t1;
                 // End the _read_P2P_Packet function here
                 yield return new Token(Newline);
 
                 // Then add func for our thread before tokens in original func
-                foreach (var t1 in _packetHandlerFunction)
+                foreach (var t1 in PacketHandlerFunction)
                     yield return t1;
             }
             else if (_sendP2PPacketWaiter.Check(t))
