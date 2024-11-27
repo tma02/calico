@@ -6,7 +6,7 @@ using static GDWeave.Godot.TokenType;
 
 namespace Teemaw.Calico;
 
-public class GuitarStringSoundScriptMod(IModInterface mod): IScriptMod
+public class GuitarStringSoundScriptMod(IModInterface mod) : IScriptMod
 {
     private static readonly IEnumerable<Token> Globals = ScriptTokenizer.Tokenize(
         """
@@ -14,21 +14,21 @@ public class GuitarStringSoundScriptMod(IModInterface mod): IScriptMod
         var calico_playing_count = 0
 
         """);
-    
+
     private static readonly IEnumerable<Token> CallGuard = ScriptTokenizer.Tokenize(
         """
 
         if calico_playing_count == 0: return
 
         """, 1);
-    
+
     private static readonly IEnumerable<Token> IncrementPlayingCount = ScriptTokenizer.Tokenize(
         """
 
         calico_playing_count += 1
 
         """, 3);
-    
+
     private static readonly IEnumerable<Token> DecrementPlayingCount = ScriptTokenizer.Tokenize(
         """
 
@@ -51,7 +51,7 @@ public class GuitarStringSoundScriptMod(IModInterface mod): IScriptMod
             t => t is IdentifierToken { Name: "play" },
             t => t.Type is ParenthesisOpen,
             t => t is IdentifierToken { Name: "point" },
-            t => t.Type is ParenthesisClose,
+            t => t.Type is ParenthesisClose
         ]);
         MultiTokenWaiter callWaiter = new([
             t => t.Type is PrFunction,
@@ -65,12 +65,11 @@ public class GuitarStringSoundScriptMod(IModInterface mod): IScriptMod
             t => t.Type is Period,
             t => t is IdentifierToken { Name: "playing" },
             t => t.Type is OpAssign,
-            t => t is ConstantToken c && c.Value.Equals(new BoolVariant(false)),
-            t => t.Type is ParenthesisClose,
+            t => t is ConstantToken c && c.Value.Equals(new BoolVariant(false))
         ]);
-        
+
         mod.Logger.Information($"[calico.GuitarStringSoundScriptMod] Patching {path}");
-        
+
         var patchFlags = new Dictionary<string, bool>
         {
             ["globals"] = false,
@@ -122,7 +121,7 @@ public class GuitarStringSoundScriptMod(IModInterface mod): IScriptMod
                 yield return t;
             }
         }
-        
+
         foreach (var patch in patchFlags)
         {
             if (!patch.Value)
