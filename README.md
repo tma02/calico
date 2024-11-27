@@ -74,6 +74,10 @@ Files modified:
 * `res://Scenes/Minigames/Fishing3/fishing3.gdc`
 * `res://Scenes/Singletons/globals.gdc`
 
+> [!NOTE]  
+> There are many game processes which are tied to the physics update rate. If you see animations being slow or weird,
+> this is probably why. Like any issue you may have with the mod, please feel free to create an issue or PR.
+
 ## Building
 
 To build the project, you need to set the `GDWeavePath` environment variable to your game install's GDWeave directory (
