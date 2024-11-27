@@ -205,18 +205,15 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
         {
             if (_extendsWaiter.Check(t))
             {
-                mod.Logger.Information(t.ToString());
                 yield return t;
 
                 // Insert our globals
-                mod.Logger.Information(string.Join(", ", _globals));
                 foreach (var t1 in _globals)
                     yield return t1;
             }
             else if (_readyWaiter.Check(t))
             {
                 yield return t;
-                mod.Logger.Information(string.Join(", ", _onReady));
                 foreach (var t1 in _onReady)
                     yield return t1;
             }
@@ -224,14 +221,12 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
             {
                 yield return t;
                 // Fill new func body for _process
-                mod.Logger.Information(string.Join(", ", _onProcess));
                 foreach (var t1 in _onProcess)
                     yield return t1;
                 // End the _process function here
                 yield return new Token(Newline);
 
                 // Then add func signature for our thread before tokens in original _process
-                mod.Logger.Information(string.Join(", ", _networkThreadFunctionSignatureTokens));
                 foreach (var t1 in _networkThreadFunctionSignatureTokens)
                     yield return t1;
             }
@@ -240,14 +235,12 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
                 yield return t;
 
                 // Fill body for enqueuing received packets
-                mod.Logger.Information(string.Join(", ", _onHandlePacket));
                 foreach (var t1 in _onHandlePacket)
                     yield return t1;
                 // End the _read_P2P_Packet function here
                 yield return new Token(Newline);
 
                 // Then add func for our thread before tokens in original func
-                mod.Logger.Information(string.Join(", ", _packetHandlerFunction));
                 foreach (var t1 in _packetHandlerFunction)
                     yield return t1;
             }
@@ -256,7 +249,6 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
                 yield return t;
                 
                 // Fill body for enqueuing packets for send
-                mod.Logger.Information(string.Join(", ", _onSend));
                 foreach (var t1 in _onSend)
                     yield return t1;
             }

@@ -127,7 +127,6 @@ public class MainMapScriptMod(IModInterface mod): IScriptMod
 		    if (extendsWaiter.Check(t))
 		    {
 			    yield return t;
-			    mod.Logger.Information(string.Join(", ", _globals));
 			    foreach (var t1 in _globals)
 				    yield return t1;
 		    }
