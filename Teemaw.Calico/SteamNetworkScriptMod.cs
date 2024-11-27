@@ -166,7 +166,7 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
         """);
 
     // TODO: mutex lock anything that the original send func interacts with
-    private readonly IEnumerable<Token> _onSend = ScriptTokenizer.Tokenize(
+    private static readonly IEnumerable<Token> OnSend = ScriptTokenizer.Tokenize(
         // Note the tab character instead of spaces. This is required by the tokenizer.
         """
         	
@@ -182,14 +182,14 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
         	
         """);
 
-    private readonly IEnumerable<Token> _lockMutex = ScriptTokenizer.Tokenize(
+    private static readonly IEnumerable<Token> LockMutex = ScriptTokenizer.Tokenize(
         """
         
         SEND_NET_MUTEX.lock()
         
         """, 1);
 
-    private readonly IEnumerable<Token> _unlockMutex = ScriptTokenizer.Tokenize(
+    private static readonly IEnumerable<Token> UnlockMutex = ScriptTokenizer.Tokenize(
         """
         
         SEND_NET_MUTEX.unlock()
@@ -249,19 +249,19 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
                 yield return t;
                 
                 // Fill body for enqueuing packets for send
-                foreach (var t1 in _onSend)
+                foreach (var t1 in OnSend)
                     yield return t1;
             }
             else if (_packetFlushStartWaiter.Check(t))
             {
                 yield return t;
-                foreach (var t1 in _lockMutex)
+                foreach (var t1 in LockMutex)
                     yield return t1;
             }
             else if (_packetFlushEndWaiter.Check(t))
             {
                 // The next t is the newline closing this function, we want this in the func so don't yield it yet.
-                foreach (var t1 in _unlockMutex)
+                foreach (var t1 in UnlockMutex)
                     yield return t1;
                 // Yield the last newline after!
                 yield return t;
