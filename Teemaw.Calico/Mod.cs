@@ -9,7 +9,7 @@ public class Mod : IMod {
         {
             modInterface.RegisterScriptMod(new SteamNetworkScriptMod(modInterface));
         }
-        if (config.PlayerOptimizationsEnabled || config.PhysicsHalfSpeedEnabled)
+        if (config.PlayerOptimizationsEnabled || config.ReducePhysicsUpdatesEnabled)
         {
             modInterface.RegisterScriptMod(new PlayerScriptMod(modInterface, config));
         }
@@ -21,7 +21,7 @@ public class Mod : IMod {
         {
             modInterface.RegisterScriptMod(new MainMapScriptMod(modInterface));
         }
-        if (config.PhysicsHalfSpeedEnabled)
+        if (config.ReducePhysicsUpdatesEnabled)
         {
             modInterface.RegisterScriptMod(new GlobalsScriptMod(modInterface));
         }

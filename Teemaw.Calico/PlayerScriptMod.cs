@@ -285,8 +285,8 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
         if (config.PlayerOptimizationsEnabled)
             currentTokens = ModifyForPlayerOptimizations(mod, path, currentTokens).ToList();
         
-        mod.Logger.Information($"[calico.PlayerScriptMod] PhysicsHalfSpeedEnabled={config.PhysicsHalfSpeedEnabled}");
-        if (config.PhysicsHalfSpeedEnabled)
+        mod.Logger.Information($"[calico.PlayerScriptMod] PhysicsHalfSpeedEnabled={config.ReducePhysicsUpdatesEnabled}");
+        if (config.ReducePhysicsUpdatesEnabled)
             currentTokens = ModifyForPhysicsHalfSpeed(mod, path, currentTokens).ToList();
         
         return currentTokens;
