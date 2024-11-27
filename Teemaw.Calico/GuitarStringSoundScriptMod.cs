@@ -1,11 +1,12 @@
-﻿using GDWeave.Godot;
+﻿using GDWeave;
+using GDWeave.Godot;
 using GDWeave.Godot.Variants;
 using GDWeave.Modding;
 using static GDWeave.Godot.TokenType;
 
 namespace Teemaw.Calico;
 
-public class GuitarStringSoundScriptMod: IScriptMod
+public class GuitarStringSoundScriptMod(IModInterface mod): IScriptMod
 {
     private readonly IEnumerable<Token> _globals = ScriptTokenizer.Tokenize(
         """
@@ -67,6 +68,8 @@ public class GuitarStringSoundScriptMod: IScriptMod
             t => t is ConstantToken c && c.Value.Equals(new BoolVariant(false)),
             t => t.Type is ParenthesisClose,
         ]);
+        
+        mod.Logger.Information($"[calico.GuitarStringSoundScriptMod] Patching {path}");
 
         foreach (var t in tokens)
         {

@@ -4,8 +4,9 @@ namespace Teemaw.Calico;
 
 public class Config
 {
-    [JsonInclude] public bool NetworkPatchEnabled = true;
-    [JsonInclude] public bool PlayerPatchEnabled = true;
-    [JsonInclude] public bool PhysicsPatchEnabled = false;
-    [JsonInclude] public bool RemoveDisconnectedPlayerProps = true;
+    [JsonInclude] public bool MeshGpuInstancingEnabled = true;
+    [JsonInclude] public bool MultiThreadNetworkingEnabled = true;
+    [JsonInclude] public bool MultiThreadRenderingEnabled = true;
+    [JsonInclude] public bool PhysicsHalfSpeedEnabled = true;
+    [JsonInclude] public bool PlayerOptimizationsEnabled = true;
 }

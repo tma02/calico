@@ -5,26 +5,22 @@ namespace Teemaw.Calico;
 public class Mod : IMod {
     public Mod(IModInterface modInterface) {
         var config = modInterface.ReadConfig<Config>();
-        if (config.NetworkPatchEnabled)
+        if (config.MultiThreadNetworkingEnabled)
         {
             modInterface.RegisterScriptMod(new SteamNetworkScriptMod(modInterface));
-            modInterface.Logger.Information("Registered Steam network script patches");
         }
-        if (config.PhysicsPatchEnabled)
-        {
-            modInterface.RegisterScriptMod(new PhysicsProcessScriptMod(modInterface));
-            modInterface.Logger.Information("Registered physics patches");
-        }
-        if (config.PlayerPatchEnabled)
+        if (config.PlayerOptimizationsEnabled)
         {
             modInterface.RegisterScriptMod(new PlayerScriptMod(modInterface));
-            modInterface.RegisterScriptMod(new GuitarStringSoundScriptMod());
-            modInterface.Logger.Information("Registered Player script patches");
+            modInterface.RegisterScriptMod(new GuitarStringSoundScriptMod(modInterface));
         }
-        if (config.RemoveDisconnectedPlayerProps)
+        if (config.MeshGpuInstancingEnabled)
         {
-            modInterface.RegisterScriptMod(new RemoveDisconnectedPlayerPropsScriptMod());
-            modInterface.Logger.Information("Registered remove disconnected player props patches");
+            modInterface.RegisterScriptMod(new MainMapScriptMod(modInterface));
+        }
+        if (config.PhysicsHalfSpeedEnabled || config.MultiThreadRenderingEnabled)
+        {
+            modInterface.RegisterScriptMod(new GlobalsScriptMod(modInterface, config));
         }
     }
 

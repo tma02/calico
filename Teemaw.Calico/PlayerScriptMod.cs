@@ -153,7 +153,7 @@ public class PlayerScriptMod(IModInterface mod) : IScriptMod
         var skipNextToken = false;
         List<Token> inProcessAnimationTokens = [];
 
-        mod.Logger.Information($"[calico.PlayerScriptMod] Start patching {path}");
+        mod.Logger.Information($"[calico.PlayerScriptMod] Patching {path}");
         foreach (var t in tokens)
         {
             if (skipNextToken)
