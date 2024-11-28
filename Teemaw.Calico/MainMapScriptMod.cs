@@ -7,6 +7,7 @@ namespace Teemaw.Calico;
 
 public class MainMapScriptMod(IModInterface mod): IScriptMod
 {
+	// TODO: Clean this up somehow -- this was way simpler when it was supposed to be just three tree nodes. 
     private static readonly IEnumerable<Token> Globals = ScriptTokenizer.Tokenize(
         """
 
@@ -48,6 +49,30 @@ public class MainMapScriptMod(IModInterface mod): IScriptMod
         	$zones/main_zone/props.add_child(fence_icosphere_mmi)
         	var fence_icosphere2_mmi = calico_build_node_parented_static_body_mmi($zones/main_zone/props, "fence.tscn", "Icosphere2")
         	$zones/main_zone/props.add_child(fence_icosphere2_mmi)
+        	var extreme_water_small_mmi = calico_build_node_parented_static_body_mmi($zones/main_zone/lake_water, "extreme_water_small.tscn", "main")
+        	$zones/main_zone/props.add_child(extreme_water_small_mmi)
+        	var extreme_water_small_sand_mmi = calico_build_node_parented_static_body_mmi($zones/main_zone/lake_water, "extreme_water_small.tscn", "sand")
+        	$zones/main_zone/props.add_child(extreme_water_small_sand_mmi)
+        	var extreme_water_small_fade_mmi = calico_build_node_parented_static_body_mmi($zones/main_zone/lake_water, "extreme_water_small.tscn", "sand/fade")
+        	$zones/main_zone/props.add_child(extreme_water_small_fade_mmi)
+        	var extreme_water_small_fade2_mmi = calico_build_node_parented_static_body_mmi($zones/main_zone/lake_water, "extreme_water_small.tscn", "sand/fade2")
+        	$zones/main_zone/props.add_child(extreme_water_small_fade2_mmi)
+        	var extreme_water_small_fade3_mmi = calico_build_node_parented_static_body_mmi($zones/main_zone/lake_water, "extreme_water_small.tscn", "sand/fade3")
+        	$zones/main_zone/props.add_child(extreme_water_small_fade3_mmi)
+        	var extreme_water_small_fade4_mmi = calico_build_node_parented_static_body_mmi($zones/main_zone/lake_water, "extreme_water_small.tscn", "sand/fade4")
+        	$zones/main_zone/props.add_child(extreme_water_small_fade4_mmi)
+        	var extreme_water_mmi = calico_build_node_parented_static_body_mmi($zones/main_zone/ocean_water, "extreme_water.tscn", "main")
+        	$zones/main_zone/props.add_child(extreme_water_mmi)
+        	var extreme_water_sand_mmi = calico_build_node_parented_static_body_mmi($zones/main_zone/ocean_water, "extreme_water.tscn", "sand")
+        	$zones/main_zone/props.add_child(extreme_water_sand_mmi)
+        	var extreme_water_fade_mmi = calico_build_node_parented_static_body_mmi($zones/main_zone/ocean_water, "extreme_water.tscn", "fade")
+        	$zones/main_zone/props.add_child(extreme_water_fade_mmi)
+        	var extreme_water_fade2_mmi = calico_build_node_parented_static_body_mmi($zones/main_zone/ocean_water, "extreme_water.tscn", "fade2")
+        	$zones/main_zone/props.add_child(extreme_water_fade2_mmi)
+        	var extreme_water_fade3_mmi = calico_build_node_parented_static_body_mmi($zones/main_zone/ocean_water, "extreme_water.tscn", "fade3")
+        	$zones/main_zone/props.add_child(extreme_water_fade3_mmi)
+        	var extreme_water_fade4_mmi = calico_build_node_parented_static_body_mmi($zones/main_zone/ocean_water, "extreme_water.tscn", "fade4")
+        	$zones/main_zone/props.add_child(extreme_water_fade4_mmi)
         	print("[calico] Mesh instances complete!")
         
         func calico_build_mesh_parented_static_body_mmi(parent):
@@ -73,9 +98,9 @@ public class MainMapScriptMod(IModInterface mod): IScriptMod
         		parent.remove_child(tree)
         	return mmi
         
-        func calico_get_children_with_filename(parent, filename):
+        func calico_get_all_children_with_filename(parent, filename):
         	var matching_children = []
-        	for child in parent.get_children():
+        	for child in calico_get_all_children(parent):
         		if child.filename.ends_with(filename):
         			matching_children.append(child)
         	return matching_children
@@ -86,18 +111,25 @@ public class MainMapScriptMod(IModInterface mod): IScriptMod
         		if child.name.begins_with(prefix):
         			matching_children.append(child)
         	return matching_children
+        	
+        func calico_get_all_children(node: Node) -> Array:
+        	var children = []
+        	for child in node.get_children():
+        		children.append(child)
+        		children.append_array(calico_get_all_children(child))
+        	return children
         
         func calico_build_node_parented_static_body_mmi(parent, filename, mesh_node_name):
         	var mmi = MultiMeshInstance.new()
         	var mm = MultiMesh.new()
         	mmi.multimesh = mm
-        	var children = calico_get_children_with_filename(parent, filename)
+        	var children = calico_get_all_children_with_filename(parent, filename)
         	var mesh_instance = children[0].get_node(mesh_node_name)
         	mm.mesh = mesh_instance.mesh.duplicate()
         	for surface_idx in range(mesh_instance.mesh.get_surface_count()):
         		var material = mesh_instance.get_active_material(surface_idx)
         		mm.mesh.surface_set_material(surface_idx, material)
-        	mm.transform_format = 1
+        	mm.transform_format = MultiMesh.TRANSFORM_3D
         	mm.instance_count = children.size()
         	var i = 0
         	for tree in children:
