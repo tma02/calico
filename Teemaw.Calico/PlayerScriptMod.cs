@@ -344,12 +344,33 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
             t => t is ConstantToken c && c.Value.Equals(new IntVariant(1)),
         ]);
 
+        MultiTokenWaiter rotationLerpWaiter = new([
+            t => t is IdentifierToken { Name: "rotation" },
+            t => t is { Type: Period },
+            t => t is IdentifierToken { Name: "y" },
+            t => t is { Type: OpAssign },
+            t => t is { Type: BuiltInFunc, AssociatedData: (uint?) BuiltinFunction.MathLerpAngle },
+            t => t is { Type: ParenthesisOpen },
+            t => t is IdentifierToken { Name: "rotation" },
+            t => t is { Type: Period },
+            t => t is IdentifierToken { Name: "y" },
+            t => t is { Type: Comma },
+            t => t is IdentifierToken { Name: "rot_help" },
+            t => t is { Type: Period },
+            t => t is IdentifierToken { Name: "rotation" },
+            t => t is { Type: Period },
+            t => t is IdentifierToken { Name: "y" },
+            t => t is { Type: Comma },
+            t => t is ConstantToken c && c.Value.Equals(new RealVariant(0.2)),
+        ]);
+
         mod.Logger.Information($"[calico.PlayerScriptMod] Patching {path}");
 
-        var patchFlags = new Dictionary<string, bool>
+        var patchFlags = new Dictionary<string, int>
         {
-            ["animation_duration"] = false,
-            ["primary_action_rate"] = false
+            ["animation_duration"] = 0,
+            ["primary_action_rate"] = 0,
+            ["rotation_lerp"] = 0,
         };
 
         foreach (var t in tokens)
@@ -357,14 +378,24 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
             if (animationGoalWaiter.Check(t))
             {
                 yield return new ConstantToken(new IntVariant(30));
-                patchFlags["animation_duration"] = true;
+                patchFlags["animation_duration"]++;
                 mod.Logger.Information("[calico.PlayerScriptMod] animation_duration patch OK");
             }
             else if (primaryActionHoldWaiter.Check(t))
             {
                 yield return new ConstantToken(new IntVariant(2));
-                patchFlags["primary_action_rate"] = true;
+                patchFlags["primary_action_rate"]++;
                 mod.Logger.Information("[calico.PlayerScriptMod] primary_action_rate patch OK");
+            }
+            else if (rotationLerpWaiter.Check(t))
+            {
+                rotationLerpWaiter.Reset();
+                // Original is 0.2, at 60fps that's 12/s
+                yield return new ConstantToken(new IntVariant(12));
+                yield return new Token(OpMul);
+                yield return new IdentifierToken("delta");
+                patchFlags["rotation_lerp"]++;
+                mod.Logger.Information("[calico.PlayerScriptMod] rotation_lerp patch OK");
             }
             else
             {
@@ -374,7 +405,7 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
 
         foreach (var patch in patchFlags)
         {
-            if (!patch.Value)
+            if (patch.Value == 0)
             {
                 mod.Logger.Error($"[calico.PlayerScriptMod] FAIL: {patch.Key} patch not applied");
             }
