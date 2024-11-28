@@ -112,7 +112,7 @@ public class MainMapScriptMod(IModInterface mod): IScriptMod
         			matching_children.append(child)
         	return matching_children
         	
-        func calico_get_all_children(node: Node) -> Array:
+        func calico_get_all_children(node: Node):
         	var children = []
         	for child in node.get_children():
         		children.append(child)
