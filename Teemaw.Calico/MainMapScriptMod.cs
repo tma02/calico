@@ -132,11 +132,18 @@ public class MainMapScriptMod(IModInterface mod): IScriptMod
         	mm.transform_format = MultiMesh.TRANSFORM_3D
         	mm.instance_count = children.size()
         	var i = 0
-        	for tree in children:
-        		var new_transform = tree.get_node(mesh_node_name).global_transform
+        	for mesh_parent in children:
+        		var mesh = mesh_parent.get_node(mesh_node_name)
+        		var new_transform = mesh.global_transform
         		mm.set_instance_transform(i, new_transform)
-        		tree.get_node(mesh_node_name).queue_free()
-        		for child in tree.get_children():
+        		for mesh_child in mesh.get_children():
+        			if mesh_child is StaticBody:
+        				var old_hitbox_transform = mesh_child.global_transform
+        				mesh.remove_child(mesh_child)
+        				mesh_parent.add_child(mesh_child)
+        				mesh_child.global_transform = old_hitbox_transform
+        		mesh.queue_free()
+        		for child in mesh_parent.get_children():
         			if child.name == "shadow": child.queue_free()
         		i += 1
         	return mmi
