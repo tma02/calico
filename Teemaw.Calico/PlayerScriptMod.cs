@@ -136,6 +136,9 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
             t => t.Type is Colon,
         ]);
 
+        // This waiter is intended to trigger a match somewhere inside `_update_cosmetics` after the cosmetic data is
+        // ready (missing/bad values replaced with fallbacks), but before the `cosmetic_data` is actually set.
+        // Include the assignment to `data` to maintain compatability with other mods patching this area.
         MultiTokenWaiter updateCosmeticsGuardWaiter = new([
             t => t is { Type: PrFunction },
             t => t is IdentifierToken { Name: "_update_cosmetics" },
@@ -144,12 +147,16 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
             t => t.Type is ParenthesisClose,
             t => t.Type is Colon,
             // ...
+            t => t.Type is OpAssign,
+            t => t is IdentifierToken { Name: "PlayerData" },
+            t => t.Type is Period,
             t => t is IdentifierToken { Name: "FALLBACK_COSM" },
             t => t.Type is Period,
             t => t is IdentifierToken { Name: "duplicate" },
             t => t.Type is ParenthesisOpen,
             t => t.Type is ParenthesisClose,
         ], allowPartialMatch: true);
+        ]);
 
         var inProcessAnimation = false;
         var skipNextToken = false;
