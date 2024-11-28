@@ -490,7 +490,6 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
                                              var cam_speed = 4.8 * delta
                                              
                                              """, 1));
-                mod.Logger.Information(string.Join("\n", replacedTokens));
                 foreach (var t1 in replacedTokens)
                     yield return t1;
 
