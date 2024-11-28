@@ -8,7 +8,7 @@ namespace Teemaw.Calico;
 
 public class PlayerHudScriptMod(IModInterface mod): IScriptMod
 {
-    public bool ShouldRun(string path) => path == "res://Scenes/HUD/player_hud.gdc";
+    public bool ShouldRun(string path) => path == "res://Scenes/HUD/playerhud.gdc";
 
     public IEnumerable<Token> Modify(string path, IEnumerable<Token> tokens)
     {
@@ -52,6 +52,15 @@ public class PlayerHudScriptMod(IModInterface mod): IScriptMod
                 yield return new ConstantToken(new IntVariant(60));
                 yield return new Token(OpMul);
                 yield return new IdentifierToken("delta");
+                yield return new Token(Newline, 2);
+                yield return new Token(CfIf);
+                yield return new IdentifierToken("interact_timer");
+                yield return new Token(OpLess);
+                yield return new ConstantToken(new IntVariant(0));
+                yield return new Token(Colon);
+                yield return new IdentifierToken("interact_timer");
+                yield return new Token(OpAssign);
+                yield return new ConstantToken(new IntVariant(0));
                 patchFlags["interact_decrement"] = true;
                 mod.Logger.Information("[calico.PlayerHudScriptMod] interact_decrement patch OK");
             }
