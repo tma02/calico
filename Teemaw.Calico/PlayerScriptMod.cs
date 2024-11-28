@@ -418,11 +418,14 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
             t => t.Type is Colon
         ]);
 
-        MultiTokenWaiter cameraSpeedWaiter = new([
-            t => t is { Type: PrVar },
-            t => t is IdentifierToken { Name: "cam_speed" },
+        MultiTokenWaiter rotationTransformWaiter = new([
+            t => t is IdentifierToken { Name: "rot_help" },
+            t => t is { Type: Period },
+            t => t is IdentifierToken { Name: "global_transform" },
+            t => t is { Type: Period },
+            t => t is IdentifierToken { Name: "origin" },
             t => t.Type is OpAssign,
-            t => t is ConstantToken c && c.Value.Equals(new RealVariant(0.08))
+            t => t is IdentifierToken { Name: "global_transform" },
         ]);
 
         mod.Logger.Information($"[calico.PlayerScriptMod] Patching {path}");
@@ -480,6 +483,7 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
                     []);
                 replacedTokens = TokenUtil.ReplaceTokens(replacedTokens,
                     [new Token(PrVar), new IdentifierToken("cam_speed"), new Token(OpAssign), new ConstantToken(new RealVariant(0.08))],
+                    // The old speed is 0.08/frame, at 60fps this is 4.8/s
                     ScriptTokenizer.Tokenize("""
                                              
                                              cam_base.global_transform.origin = cam_base_pos
@@ -521,13 +525,15 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
                 patchFlags["camera_update"] = true;
                 mod.Logger.Information("[calico.PlayerScriptMod] camera_update patch OK");
             }
-            else if (cameraSpeedWaiter.Check(t))
+            else if (rotationTransformWaiter.Check(t))
             {
                 // The old speed is 0.08/frame, at 60fps this is 4.8/s
                 // 4.8 * delta
-                yield return new ConstantToken(new RealVariant(4.8));
-                yield return new Token(OpMul);
-                yield return new IdentifierToken("delta");
+                yield return new Token(Dollar);
+                yield return new IdentifierToken("body");
+                yield return new Token(Period);
+                // global_transform
+                yield return t;
             }
             else
             {
