@@ -83,7 +83,9 @@ this is probably why. Like any issue you may have with the mod, please feel free
 
 Files modified:
 
+* `res://Scenes/Entities/Player/Face/player_face.gdc`
 * `res://Scenes/Entities/Player/player.gdc`
+* `res://Scenes/Entities/Player/tail_root.gdc`
 * `res://Scenes/Minigames/Fishing3/fishing3.gdc`
 * `res://Scenes/Singletons/globals.gdc`
 
@@ -94,6 +96,11 @@ if your framerate is faster than the physics update rate. Normally, the game run
 enabled, it may feel like your game is locked to 60fps during camera panning or player movement. This is much more
 noticeable with the reduced physics update rate of `ReducePhysicsUpdatesEnabled`, so is highly recommended to be enabled
 along with `ReducePhysicsUpdatesEnabled`.
+
+Files modified:
+
+* `res://Scenes/Entities/Player/player.gdc`
+* `res://Scenes/Entities/Player/player_headhud.gdc`
 
 ## Building
 
