@@ -65,6 +65,19 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
         // ...
         t => t.Type is Newline
     ], allowPartialMatch: true);
+    
+    private readonly MultiTokenWaiter _steamReadP2PPacketWaiter = new([
+        t => t is { Type: OpAssign },
+        t => t is IdentifierToken { Name: "Steam" },
+        t => t.Type is Period,
+        t => t is IdentifierToken { Name: "readP2PPacket" },
+        t => t.Type is ParenthesisOpen,
+        t => t is IdentifierToken { Name: "PACKET_SIZE" },
+        t => t.Type is Comma,
+        t => t is IdentifierToken { Name: "channel" },
+        t => t.Type is ParenthesisClose,
+        t => t.Type is Newline
+    ]);
 
     private readonly MultiTokenWaiter _sendP2PPacketWaiter = new([
         t => t is { Type: PrFunction },
@@ -124,7 +137,7 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
         SEND_NET_MUTEX = Mutex.new()
         RECV_NET_THREAD = Thread.new()
         SEND_NET_THREAD = Thread.new()
-        print("[calico1] Starting receiver network thread...")
+        print("[calico] Starting receiver network thread...")
         RECV_NET_THREAD.start(self, "_calico_recv_net_thread")
         print("[calico] Starting sender network thread...")
         SEND_NET_THREAD.start(self, "_calico_send_net_thread")
@@ -147,6 +160,13 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
         """
 
         CALICO_RECV_PACKET_QUEUE.append({"PACKET_SIZE": PACKET_SIZE, "PACKET_SENDER": PACKET_SENDER, "DATA": DATA, "type": type, "from_host": from_host})
+
+        """, 2);
+
+    private static readonly IEnumerable<Token> AfterSteamReadPacket = ScriptTokenizer.Tokenize(
+        """
+
+        if PACKET.empty(): return
 
         """, 2);
 
@@ -207,6 +227,7 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
             ["ready"] = false,
             ["process"] = false,
             ["handle_packet"] = false,
+            ["after_steam_read"] = false,
             ["send_packet"] = false,
             ["packet_flush_lock"] = false,
             ["packet_flush_unlock"] = false
@@ -261,6 +282,13 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
                     yield return t1;
                 patchFlags["handle_packet"] = true;
                 mod.Logger.Information("[calico.SteamNetworkScript] handle_packet patch OK");
+            }
+            else if (_steamReadP2PPacketWaiter.Check(t))
+            {
+                yield return t;
+                foreach (var t1 in AfterSteamReadPacket) yield return t1;
+                patchFlags["after_steam_read"] = true;
+                mod.Logger.Information("[calico.SteamNetworkScript] after_steam_read patch OK");
             }
             else if (_sendP2PPacketWaiter.Check(t))
             {
