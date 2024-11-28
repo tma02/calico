@@ -7,15 +7,15 @@ public class Mod : IMod
     public Mod(IModInterface modInterface)
     {
         var config = modInterface.ReadConfig<Config>();
-        
+
         modInterface.Logger.Information($"[calico.Mod] Running with config {config}");
-        
+
         if (config.MultiThreadNetworkingEnabled)
         {
             modInterface.RegisterScriptMod(new SteamNetworkScriptMod(modInterface));
         }
 
-        if (config.PlayerOptimizationsEnabled || config.ReducePhysicsUpdatesEnabled)
+        if (config.PlayerOptimizationsEnabled || config.ReducePhysicsUpdatesEnabled || config.SmoothCameraEnabled)
         {
             modInterface.RegisterScriptMod(new PlayerScriptMod(modInterface, config));
         }
@@ -39,6 +39,11 @@ public class Mod : IMod
         if (config.ReducePhysicsUpdatesEnabled)
         {
             modInterface.RegisterScriptMod(new GlobalsScriptMod(modInterface));
+        }
+
+        if (config.SmoothCameraEnabled)
+        {
+            modInterface.RegisterScriptMod(new PlayerHeadHudScriptMod(modInterface));
         }
     }
 

@@ -382,6 +382,10 @@ public static class ScriptTokenizer {
                             // CALICO: Without this, `Vector3` is tokenized as an identifier.
                             finalTokens.Add(new Token(TokenType.BuiltInType, 7));
                             break;
+                        case "lerp_angle":
+                            // CALICO: Without this, `lerp_angle` is tokenized as an identifier.
+                            finalTokens.Add(new Token(TokenType.BuiltInFunc, (uint?) BuiltinFunction.MathLerpAngle));
+                            break;
                         default:
                             // CALICO: We change this to trim the idName, otherwise the whitespace messes with the token
                             finalTokens.Add(new IdentifierToken(idName.Trim()));

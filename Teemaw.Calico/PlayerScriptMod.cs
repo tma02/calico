@@ -31,6 +31,21 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
         	if !new_caught.keys().has("id") || !new_caught.keys().has("size") || !new_caught.keys().has("quality"):
         		return false
         	return new_caught["id"] != caught_item["id"] || new_caught["size"] != caught_item["size"] || new_caught["quality"] != caught_item["quality"]
+        	
+        var calico_title_mesh
+        
+        func calico_body_interpolate(delta):
+        	var body_origin = $body.global_transform.origin
+        	if body_origin.distance_squared_to(global_transform.origin) > 16:
+        		$body.global_transform = global_transform.translated(Vector3.DOWN)
+        		return
+        	var weight = Engine.get_physics_interpolation_fraction()
+        	var virtual_origin = global_transform.translated(Vector3.DOWN).origin
+        	$body.global_transform.origin = body_origin.linear_interpolate(virtual_origin, weight)
+        	var body_rotation = $body.rotation
+        	$body.rotation.x = lerp_angle(body_rotation.x, rotation.x, weight)
+        	$body.rotation.y = lerp_angle(body_rotation.y, rotation.y - PI, weight)
+        	$body.rotation.z = lerp_angle(body_rotation.z, rotation.z, weight)
 
         """);
 
@@ -90,6 +105,37 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
 
         """, 1);
 
+    private static readonly IEnumerable<Token> CallSmoothCameraUpdate = ScriptTokenizer.Tokenize(
+        // The sequence in which these calls are made is very important. Unfortunately we are calling title._process
+        // twice per cycle
+        """
+        
+        calico_body_interpolate(delta)
+        if controlled:
+        	calico_camera_update(delta)
+
+        """, 1);
+
+    private static readonly IEnumerable<Token> SmoothCameraOnReady = ScriptTokenizer.Tokenize(
+        """
+
+        $body.set_as_toplevel(true)
+        $body.global_transform = self.global_transform
+        calico_title_mesh = $title
+        calico_title_mesh.calico_setup($body, Vector3(0, 3, 0))
+        
+        """, 1);
+
+    private static readonly IEnumerable<Token> CameraUpdate = ScriptTokenizer.Tokenize(
+        // Note the tabs for indent tokenization
+        """
+        
+        	return
+
+        func calico_camera_update(delta):
+        	
+        """);
+
     public bool ShouldRun(string path) => path == "res://Scenes/Entities/Player/player.gdc";
 
     private static IEnumerable<Token> ModifyForPlayerOptimizations(IModInterface mod, string path,
@@ -140,13 +186,7 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
         // ready (missing/bad values replaced with fallbacks), but before the `cosmetic_data` is actually set.
         // Include the assignment to `data` to maintain compatability with other mods patching this area.
         MultiTokenWaiter updateCosmeticsGuardWaiter = new([
-            t => t is { Type: PrFunction },
-            t => t is IdentifierToken { Name: "_update_cosmetics" },
-            t => t.Type is ParenthesisOpen,
             t => t is IdentifierToken { Name: "data" },
-            t => t.Type is ParenthesisClose,
-            t => t.Type is Colon,
-            // ...
             t => t.Type is OpAssign,
             t => t is IdentifierToken { Name: "PlayerData" },
             t => t.Type is Period,
@@ -155,7 +195,6 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
             t => t is IdentifierToken { Name: "duplicate" },
             t => t.Type is ParenthesisOpen,
             t => t.Type is ParenthesisClose,
-        ], allowPartialMatch: true);
         ]);
 
         var inProcessAnimation = false;
@@ -163,7 +202,7 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
         List<Token> inProcessAnimationTokens = [];
 
         mod.Logger.Information($"[calico.PlayerScriptMod] Patching {path}");
-        
+
         var patchFlags = new Dictionary<string, bool>
         {
             ["process_animation"] = false,
@@ -173,7 +212,7 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
             ["setup_not_controlled"] = false,
             ["cosmetics_update"] = false
         };
-        
+
         foreach (var t in tokens)
         {
             if (skipNextToken)
@@ -215,7 +254,7 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
                             ScriptTokenizer.Tokenize("calico_emote_anim_b.set_animation(animation_data[\"emote\"])"));
                         foreach (var t1 in replacedTokens)
                             yield return t1;
-                        
+
                         patchFlags["process_animation"] = true;
                         mod.Logger.Information("[calico.PlayerScriptMod] process_animation patch OK");
                         break;
@@ -278,7 +317,7 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
                 yield return t;
             }
         }
-        
+
         foreach (var patch in patchFlags)
         {
             if (!patch.Value)
@@ -332,7 +371,170 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
                 yield return t;
             }
         }
+
+        foreach (var patch in patchFlags)
+        {
+            if (!patch.Value)
+            {
+                mod.Logger.Error($"[calico.PlayerScriptMod] FAIL: {patch.Key} patch not applied");
+            }
+        }
+    }
+
+    private static IEnumerable<Token> ModifyForSmoothCamera(IModInterface mod, string path,
+        IEnumerable<Token> tokens)
+    {
+        MultiTokenWaiter readyWaiter = new([
+            t => t is { Type: PrFunction },
+            t => t is IdentifierToken { Name: "_ready" },
+            t => t.Type is ParenthesisOpen,
+            t => t.Type is ParenthesisClose,
+            t => t.Type is Colon
+        ]);
         
+        MultiTokenWaiter processWaiter = new([
+            t => t is { Type: PrFunction },
+            t => t is IdentifierToken { Name: "_process" },
+            t => t.Type is ParenthesisOpen,
+            t => t is IdentifierToken { Name: "delta" },
+            t => t.Type is ParenthesisClose,
+            t => t.Type is Colon
+        ]);
+
+        MultiTokenWaiter controlledProcessWaiter = new([
+            t => t is { Type: PrFunction },
+            t => t is IdentifierToken { Name: "_controlled_process" },
+            t => t.Type is ParenthesisOpen,
+            t => t is IdentifierToken { Name: "delta" },
+            t => t.Type is ParenthesisClose,
+            t => t.Type is Colon
+        ]);
+
+        MultiTokenWaiter cameraUpdateWaiter = new([
+            t => t is { Type: PrFunction },
+            t => t is IdentifierToken { Name: "_camera_update" },
+            t => t.Type is ParenthesisOpen,
+            t => t.Type is ParenthesisClose,
+            t => t.Type is Colon
+        ]);
+
+        MultiTokenWaiter cameraSpeedWaiter = new([
+            t => t is { Type: PrVar },
+            t => t is IdentifierToken { Name: "cam_speed" },
+            t => t.Type is OpAssign,
+            t => t is ConstantToken c && c.Value.Equals(new RealVariant(0.08))
+        ]);
+
+        mod.Logger.Information($"[calico.PlayerScriptMod] Patching {path}");
+
+        var patchFlags = new Dictionary<string, bool>
+        {
+            ["controlled_process"] = false,
+            ["smooth_camera_on_ready"] = false,
+            ["call_smooth_camera"] = false,
+            ["camera_update"] = false
+        };
+
+        List<Token> inControlledProcessTokens = [];
+        var inControlledProcess = false;
+        List<Token> inCameraUpdateTokens = [];
+        var inCameraUpdate = false;
+
+        foreach (var t in tokens)
+        {
+            if (inControlledProcess)
+            {
+                inControlledProcessTokens.Add(t);
+                if (t.Type is not Newline || t.AssociatedData is not null) continue;
+                inControlledProcess = false;
+                // We're about to leave the func, process the buffered tokens then return all of them.
+                mod.Logger.Information("[calico.PlayerScriptMod] Patching buffered _controlled_process");
+                var replacedTokens = TokenUtil.ReplaceTokens(inControlledProcessTokens,
+                    ScriptTokenizer.Tokenize("_camera_update()"),
+                    []);
+                foreach (var t1 in replacedTokens)
+                    yield return t1;
+
+                patchFlags["controlled_process"] = true;
+                mod.Logger.Information("[calico.PlayerScriptMod] controlled_process patch OK");
+            }
+            else if (inCameraUpdate)
+            {
+                inCameraUpdateTokens.Add(t);
+                if (t.Type is not Newline || t.AssociatedData is not null) continue;
+                inCameraUpdate = false;
+                // We're about to leave the func, process the buffered tokens then return all of them.
+                mod.Logger.Information("[calico.PlayerScriptMod] Patching buffered _camera_update");
+                var replacedTokens = TokenUtil.ReplaceTokens(inCameraUpdateTokens,
+                    ScriptTokenizer.Tokenize("var push = global_transform.basis.z * cam_push_cur"),
+                    ScriptTokenizer.Tokenize("var push = $body.global_transform.basis.z * cam_push_cur"));
+                replacedTokens = TokenUtil.ReplaceTokens(replacedTokens,
+                    ScriptTokenizer.Tokenize("var cam_zoom_lerp = 0.4"),
+                    ScriptTokenizer.Tokenize("var cam_zoom_lerp = 24 * delta"));
+                replacedTokens = TokenUtil.ReplaceTokens(replacedTokens,
+                    ScriptTokenizer.Tokenize("var cam_base_pos = global_transform.origin + push + sit_add"),
+                    ScriptTokenizer.Tokenize("var cam_base_pos = $body.global_transform.origin - push + sit_add + Vector3.UP"));
+                // Looks a bit weird, a hack to move this line up
+                replacedTokens = TokenUtil.ReplaceTokens(replacedTokens,
+                    ScriptTokenizer.Tokenize("cam_base.global_transform.origin = cam_base_pos"),
+                    []);
+                replacedTokens = TokenUtil.ReplaceTokens(replacedTokens,
+                    [new Token(PrVar), new IdentifierToken("cam_speed"), new Token(OpAssign), new ConstantToken(new RealVariant(0.08))],
+                    ScriptTokenizer.Tokenize("""
+                                             
+                                             cam_base.global_transform.origin = cam_base_pos
+                                             var cam_speed = 4.8 * delta
+                                             
+                                             """, 1));
+                mod.Logger.Information(string.Join("\n", replacedTokens));
+                foreach (var t1 in replacedTokens)
+                    yield return t1;
+
+                patchFlags["camera_update"] = true;
+                mod.Logger.Information("[calico.PlayerScriptMod] controlled_process patch OK");
+            }
+            else if (readyWaiter.Check(t))
+            {
+                yield return t;
+                foreach (var t1 in SmoothCameraOnReady) yield return t1;
+                patchFlags["smooth_camera_on_ready"] = true;
+                mod.Logger.Information("[calico.PlayerScriptMod] smooth_camera_on_ready patch OK");
+            }
+            else if (processWaiter.Check(t))
+            {
+                yield return t;
+                foreach (var t1 in CallSmoothCameraUpdate) yield return t1;
+                patchFlags["call_smooth_camera"] = true;
+                mod.Logger.Information("[calico.PlayerScriptMod] call_smooth_camera patch OK");
+            }
+            else if (controlledProcessWaiter.Check(t))
+            {
+                yield return t;
+                inControlledProcess = true;
+                mod.Logger.Information("[calico.PlayerScriptMod] Entering _controlled_process");
+            }
+            else if (cameraUpdateWaiter.Check(t))
+            {
+                yield return t;
+                foreach (var t1 in CameraUpdate) yield return t1;
+                inCameraUpdate = true;
+                patchFlags["camera_update"] = true;
+                mod.Logger.Information("[calico.PlayerScriptMod] camera_update patch OK");
+            }
+            else if (cameraSpeedWaiter.Check(t))
+            {
+                // The old speed is 0.08/frame, at 60fps this is 4.8/s
+                // 4.8 * delta
+                yield return new ConstantToken(new RealVariant(4.8));
+                yield return new Token(OpMul);
+                yield return new IdentifierToken("delta");
+            }
+            else
+            {
+                yield return t;
+            }
+        }
+
         foreach (var patch in patchFlags)
         {
             if (!patch.Value)
@@ -352,9 +554,14 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
             currentTokens = ModifyForPlayerOptimizations(mod, path, currentTokens).ToList();
 
         mod.Logger.Information(
-            $"[calico.PlayerScriptMod] PhysicsHalfSpeedEnabled={config.ReducePhysicsUpdatesEnabled}");
+            $"[calico.PlayerScriptMod] ReducePhysicsUpdatesEnabled={config.ReducePhysicsUpdatesEnabled}");
         if (config.ReducePhysicsUpdatesEnabled)
             currentTokens = ModifyForPhysicsHalfSpeed(mod, path, currentTokens).ToList();
+
+        mod.Logger.Information(
+            $"[calico.PlayerScriptMod] SmoothCameraEnabled={config.SmoothCameraEnabled}");
+        if (config.SmoothCameraEnabled)
+            currentTokens = ModifyForSmoothCamera(mod, path, currentTokens).ToList();
 
         return currentTokens;
     }
