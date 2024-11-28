@@ -10,7 +10,11 @@ public class MainMapScriptMod(IModInterface mod): IScriptMod
 	// TODO: Clean this up somehow -- this was way simpler when it was supposed to be just three tree nodes. 
     private static readonly IEnumerable<Token> Globals = ScriptTokenizer.Tokenize(
         """
-
+        
+        var calico_water_ld_mat: Material
+        var calico_water_hd_mat: Material
+        var calico_water_mmis = []
+        
         func _ready():
         	print("[calico] Building mesh instances...")
         	var tree_a_mmi = calico_build_mesh_parented_static_body_mmi($zones/main_zone/trees/tree_a)
@@ -49,8 +53,13 @@ public class MainMapScriptMod(IModInterface mod): IScriptMod
         	$zones/main_zone/props.add_child(fence_icosphere_mmi)
         	var fence_icosphere2_mmi = calico_build_node_parented_static_body_mmi($zones/main_zone/props, "fence.tscn", "Icosphere2")
         	$zones/main_zone/props.add_child(fence_icosphere2_mmi)
+        	
+        	calico_water_ld_mat = preload("res://Assets/Materials/blue.tres")
+        	calico_water_hd_mat = preload("res://Assets/Shaders/extreme_water_main.tres")
+        	calico_water_mmis = []
         	var extreme_water_small_mmi = calico_build_node_parented_static_body_mmi($zones/main_zone/lake_water, "extreme_water_small.tscn", "main")
         	$zones/main_zone/props.add_child(extreme_water_small_mmi)
+        	calico_water_mmis.append(extreme_water_small_mmi)
         	var extreme_water_small_sand_mmi = calico_build_node_parented_static_body_mmi($zones/main_zone/lake_water, "extreme_water_small.tscn", "sand")
         	$zones/main_zone/props.add_child(extreme_water_small_sand_mmi)
         	var extreme_water_small_fade_mmi = calico_build_node_parented_static_body_mmi($zones/main_zone/lake_water, "extreme_water_small.tscn", "sand/fade")
@@ -63,6 +72,7 @@ public class MainMapScriptMod(IModInterface mod): IScriptMod
         	$zones/main_zone/props.add_child(extreme_water_small_fade4_mmi)
         	var extreme_water_mmi = calico_build_node_parented_static_body_mmi($zones/main_zone/ocean_water, "extreme_water.tscn", "main")
         	$zones/main_zone/props.add_child(extreme_water_mmi)
+        	calico_water_mmis.append(extreme_water_mmi)
         	var extreme_water_sand_mmi = calico_build_node_parented_static_body_mmi($zones/main_zone/ocean_water, "extreme_water.tscn", "sand")
         	$zones/main_zone/props.add_child(extreme_water_sand_mmi)
         	var extreme_water_fade_mmi = calico_build_node_parented_static_body_mmi($zones/main_zone/ocean_water, "extreme_water.tscn", "fade")
@@ -73,6 +83,8 @@ public class MainMapScriptMod(IModInterface mod): IScriptMod
         	$zones/main_zone/props.add_child(extreme_water_fade3_mmi)
         	var extreme_water_fade4_mmi = calico_build_node_parented_static_body_mmi($zones/main_zone/ocean_water, "extreme_water.tscn", "fade4")
         	$zones/main_zone/props.add_child(extreme_water_fade4_mmi)
+        	
+        	OptionsMenu.connect("_options_update", self, "calico_water_mat_check")
         	print("[calico] Mesh instances complete!")
         
         func calico_build_mesh_parented_static_body_mmi(parent):
@@ -147,6 +159,16 @@ public class MainMapScriptMod(IModInterface mod): IScriptMod
         			if child.name == "shadow": child.queue_free()
         		i += 1
         	return mmi
+        
+        func calico_water_mat_check():
+        	var use_ld_mat = PlayerData.player_options.water == 0
+        	for mmi in calico_water_mmis:
+        		calico_update_mmi_surface_material(mmi, calico_water_ld_mat if use_ld_mat else calico_water_hd_mat)
+        
+        func calico_update_mmi_surface_material(mmi: MultiMeshInstance, material: Material):
+        	var mm = mmi.multimesh
+        	for i in mm.instance_count:
+        		mm.mesh.surface_set_material(i, material)
 
         """);
     
