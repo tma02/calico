@@ -22,7 +22,7 @@ public class PlayerHeadHudScriptMod(IModInterface mod): IScriptMod
         """
 
         process_priority = get_parent().process_priority - (1)
-
+        
         """, 1);
     
     public bool ShouldRun(string path) => path == "res://Scenes/Entities/Player/player_headhud.gdc";

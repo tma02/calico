@@ -39,6 +39,9 @@ public class Mod : IMod
         if (config.ReducePhysicsUpdatesEnabled)
         {
             modInterface.RegisterScriptMod(new GlobalsScriptMod(modInterface));
+            modInterface.RegisterScriptMod(new TailRootScriptMod(modInterface));
+            modInterface.RegisterScriptMod(new PlayerFaceScriptMod(modInterface));
+            modInterface.RegisterScriptMod(new PlayerHudScriptMod(modInterface));
         }
 
         if (config.SmoothCameraEnabled)
