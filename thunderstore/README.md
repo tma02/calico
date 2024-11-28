@@ -12,6 +12,7 @@ to networking code, as well as numerous other optimizations.
 * Dedicated thread for compression and sending packets
 * Dedicated thread for receiving and decompressing packets
 * GPU instancing of common meshes (all trees, logs, bushes, mushrooms, etc.)
+* Smoothing camera panning/motion by decoupling it from physics updates
 * Reducing physics update rate
 * Skipping cosmetics loading for players that have not changed
 * Optimize player animation updates
@@ -33,13 +34,15 @@ The `Teemaw.Calico.json` configuration file has the following schema and default
   "MeshGpuInstancingEnabled": true,
   "MultiThreadNetworkingEnabled": true,
   "PlayerOptimizationsEnabled": true,
-  "ReducePhysicsUpdatesEnabled": true
+  "ReducePhysicsUpdatesEnabled": true,
+  "SmoothCameraEnabled": true
 }
 ```
 
 ### `MeshGpuInstancingEnabled`
 
-This enables patching of the `main_map` script to generate GPU instanced meshes before unloading the individual meshes.
+This reduces the number of GPU draw calls by combining draw calls from multiple copies of the same mesh into the same
+call. Game objects which currently benefit from this include trees, bushes, mushrooms, water, etc.
 
 File modified:
 
@@ -47,7 +50,8 @@ File modified:
 
 ### `MultiThreadNetworkingEnabled`
 
-This enables patching of the networking script to use threads for sending and receiving packets.
+This enables dedicated send and receive threads for sending and reading network packets. Packet compression and
+decompression are also offloaded from the main thread to these threads.
 
 File modified:
 
@@ -65,11 +69,35 @@ Files modified:
 
 ### `ReducePhysicsUpdatesEnabled`
 
-This enables patching of a few scripts to reduce the physics update rate. This will patch a few processes that are tied
-to the old physics update rate such that they feel the same with a reduced update rate.
+> [!IMPORTANT]  
+> It's highly recommended to set `SmoothCameraEnabled` to `true` if this option is enabled. The game camera's movement
+> is normally tied to the physics update rate. If you enable reduced physics updates without smooth camera, it may feel
+> like the game is running slower during camera panning or player movement. `SmoothCameraEnabled` will decouple camera
+> updates from physics updates.
+
+This reduces the physics update rate to free up CPU cycles for other tasks. This will patch a few processes that are
+tied to the normal physics update rate such that they feel the same with a reduced update rate.
+
+There are many game processes which are tied to the physics update rate. If you see animations being slow or weird,
+this is probably why. Like any issue you may have with the mod, please feel free to create an issue or PR.
+
+Files modified:
+
+* `res://Scenes/Entities/Player/Face/player_face.gdc`
+* `res://Scenes/Entities/Player/player.gdc`
+* `res://Scenes/Entities/Player/tail_root.gdc`
+* `res://Scenes/Minigames/Fishing3/fishing3.gdc`
+* `res://Scenes/Singletons/globals.gdc`
+
+### `SmoothCameraEnabled`
+
+This option decouples camera position updates from the physics cycle. This will help make the game feel more responsive
+if your framerate is faster than the physics update rate. Normally, the game runs physics at 60fps. Without this option
+enabled, it may feel like your game is locked to 60fps during camera panning or player movement. This is much more
+noticeable with the reduced physics update rate of `ReducePhysicsUpdatesEnabled`, so is highly recommended to be enabled
+along with `ReducePhysicsUpdatesEnabled`.
 
 Files modified:
 
 * `res://Scenes/Entities/Player/player.gdc`
-* `res://Scenes/Minigames/Fishing3/fishing3.gdc`
-* `res://Scenes/Singletons/globals.gdc`
+* `res://Scenes/Entities/Player/player_headhud.gdc`
