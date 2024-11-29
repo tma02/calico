@@ -31,22 +31,6 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
         	if !new_caught.keys().has("id") || !new_caught.keys().has("size") || !new_caught.keys().has("quality"):
         		return false
         	return new_caught["id"] != caught_item["id"] || new_caught["size"] != caught_item["size"] || new_caught["quality"] != caught_item["quality"]
-        	
-        var calico_title_mesh
-        
-        func calico_body_interpolate(delta):
-        	var body_origin = $body.global_transform.origin
-        	if body_origin.distance_squared_to(global_transform.origin) > 16:
-        		$body.global_transform = global_transform.translated(Vector3.DOWN)
-        		return
-        	var weight = Engine.get_physics_interpolation_fraction()
-        	var virtual_origin = global_transform.translated(Vector3.DOWN).origin
-        	$body.global_transform.origin = body_origin.linear_interpolate(virtual_origin, weight)
-        	$body.scale = scale
-        	var body_rotation = $body.rotation
-        	$body.rotation.x = lerp_angle(body_rotation.x, rotation.x, weight)
-        	$body.rotation.y = lerp_angle(body_rotation.y, rotation.y - PI, weight)
-        	$body.rotation.z = lerp_angle(body_rotation.z, rotation.z, weight)
 
         """);
 
@@ -105,6 +89,27 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
         	return
 
         """, 1);
+    
+    private static readonly IEnumerable<Token> SmoothCameraGlobals = ScriptTokenizer.Tokenize(
+        """
+
+        var calico_title_mesh
+        
+        func calico_body_interpolate(delta):
+        	var body_origin = $body.global_transform.origin
+        	if body_origin.distance_squared_to(global_transform.origin) > 16:
+        		$body.global_transform = global_transform.translated(Vector3.DOWN)
+        		return
+        	var weight = Engine.get_physics_interpolation_fraction()
+        	var virtual_origin = global_transform.translated(Vector3.DOWN).origin
+        	$body.global_transform.origin = body_origin.linear_interpolate(virtual_origin, weight)
+        	$body.scale = scale
+        	var body_rotation = $body.rotation
+        	$body.rotation.x = lerp_angle(body_rotation.x, rotation.x, weight)
+        	$body.rotation.y = lerp_angle(body_rotation.y, rotation.y - PI, weight)
+        	$body.rotation.z = lerp_angle(body_rotation.z, rotation.z, weight)
+
+        """);
 
     private static readonly IEnumerable<Token> CallSmoothCameraUpdate = ScriptTokenizer.Tokenize(
         // The sequence in which these calls are made is very important. Unfortunately we are calling title._process
@@ -416,6 +421,12 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
     private static IEnumerable<Token> ModifyForSmoothCamera(IModInterface mod, string path,
         IEnumerable<Token> tokens)
     {
+        MultiTokenWaiter extendsWaiter = new([
+            t => t.Type is PrExtends,
+            t => t.Type is Identifier,
+            t => t.Type is Newline
+        ]);
+        
         MultiTokenWaiter readyWaiter = new([
             t => t is { Type: PrFunction },
             t => t is IdentifierToken { Name: "_ready" },
@@ -465,6 +476,7 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
         var patchFlags = new Dictionary<string, bool>
         {
             ["controlled_process"] = false,
+            ["smooth_camera_globals"] = false,
             ["smooth_camera_on_ready"] = false,
             ["call_smooth_camera"] = false,
             ["camera_update"] = false
@@ -528,6 +540,13 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
                 patchFlags["camera_update"] = true;
                 mod.Logger.Information("[calico.PlayerScriptMod] controlled_process patch OK");
             }
+            else if (extendsWaiter.Check(t))
+            {
+                yield return t;
+                foreach (var t1 in SmoothCameraGlobals) yield return t1;
+                patchFlags["smooth_camera_globals"] = true;
+                mod.Logger.Information("[calico.PlayerScriptMod] smooth_camera_globals patch OK");
+            }
             else if (readyWaiter.Check(t))
             {
                 yield return t;
@@ -558,8 +577,6 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
             }
             else if (rotationTransformWaiter.Check(t))
             {
-                // The old speed is 0.08/frame, at 60fps this is 4.8/s
-                // 4.8 * delta
                 yield return new Token(Dollar);
                 yield return new IdentifierToken("body");
                 yield return new Token(Period);
