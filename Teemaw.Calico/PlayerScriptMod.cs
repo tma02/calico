@@ -444,15 +444,6 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
             t => t.Type is Colon
         ]);
 
-        MultiTokenWaiter controlledProcessWaiter = new([
-            t => t is { Type: PrFunction },
-            t => t is IdentifierToken { Name: "_controlled_process" },
-            t => t.Type is ParenthesisOpen,
-            t => t is IdentifierToken { Name: "delta" },
-            t => t.Type is ParenthesisClose,
-            t => t.Type is Colon
-        ]);
-
         MultiTokenWaiter cameraUpdateWaiter = new([
             t => t is { Type: PrFunction },
             t => t is IdentifierToken { Name: "_camera_update" },
@@ -475,37 +466,18 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
 
         var patchFlags = new Dictionary<string, bool>
         {
-            ["controlled_process"] = false,
             ["smooth_camera_globals"] = false,
             ["smooth_camera_on_ready"] = false,
             ["call_smooth_camera"] = false,
             ["camera_update"] = false
         };
 
-        List<Token> inControlledProcessTokens = [];
-        var inControlledProcess = false;
         List<Token> inCameraUpdateTokens = [];
         var inCameraUpdate = false;
 
         foreach (var t in tokens)
         {
-            if (inControlledProcess)
-            {
-                inControlledProcessTokens.Add(t);
-                if (t.Type is not Newline || t.AssociatedData is not null) continue;
-                inControlledProcess = false;
-                // We're about to leave the func, process the buffered tokens then return all of them.
-                mod.Logger.Information("[calico.PlayerScriptMod] Patching buffered _controlled_process");
-                var replacedTokens = TokenUtil.ReplaceTokens(inControlledProcessTokens,
-                    ScriptTokenizer.Tokenize("_camera_update()"),
-                    []);
-                foreach (var t1 in replacedTokens)
-                    yield return t1;
-
-                patchFlags["controlled_process"] = true;
-                mod.Logger.Information("[calico.PlayerScriptMod] controlled_process patch OK");
-            }
-            else if (inCameraUpdate)
+            if (inCameraUpdate)
             {
                 inCameraUpdateTokens.Add(t);
                 if (t.Type is not Newline || t.AssociatedData is not null) continue;
@@ -560,12 +532,6 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
                 foreach (var t1 in CallSmoothCameraUpdate) yield return t1;
                 patchFlags["call_smooth_camera"] = true;
                 mod.Logger.Information("[calico.PlayerScriptMod] call_smooth_camera patch OK");
-            }
-            else if (controlledProcessWaiter.Check(t))
-            {
-                yield return t;
-                inControlledProcess = true;
-                mod.Logger.Information("[calico.PlayerScriptMod] Entering _controlled_process");
             }
             else if (cameraUpdateWaiter.Check(t))
             {
