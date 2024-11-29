@@ -214,14 +214,7 @@ public static class ScriptTokenizer {
         }
 
         var tabCount = uint.Parse(enumerator.Current);
-        if (tabCount + baseIndent > 0)
-        {
-            toFlush.Add(new Token(TokenType.Newline, tabCount + baseIndent));
-        }
-        else
-        {
-            toFlush.Add(new Token(TokenType.Newline));
-        }
+        toFlush.Add(new Token(TokenType.Newline, tabCount + baseIndent));
     }
 
     private static void BuildIdentifierName(IEnumerator<string> enumerator, List<Token> toFlush, out string? found) {
