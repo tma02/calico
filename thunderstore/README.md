@@ -85,7 +85,7 @@ Files modified:
 
 * `res://Scenes/Entities/Player/Face/player_face.gdc`
 * `res://Scenes/Entities/Player/player.gdc`
-* `res://Scenes/Entities/Player/tail_root.gdc`
+* `res://Scenes/HUD/playerhud.gdc`
 * `res://Scenes/Minigames/Fishing3/fishing3.gdc`
 * `res://Scenes/Singletons/globals.gdc`
 
@@ -101,3 +101,4 @@ Files modified:
 
 * `res://Scenes/Entities/Player/player.gdc`
 * `res://Scenes/Entities/Player/player_headhud.gdc`
+* `res://Scenes/Entities/Player/tail_root.gdc`
