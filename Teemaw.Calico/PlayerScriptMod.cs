@@ -42,6 +42,7 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
         	var weight = Engine.get_physics_interpolation_fraction()
         	var virtual_origin = global_transform.translated(Vector3.DOWN).origin
         	$body.global_transform.origin = body_origin.linear_interpolate(virtual_origin, weight)
+        	$body.scale = scale
         	var body_rotation = $body.rotation
         	$body.rotation.x = lerp_angle(body_rotation.x, rotation.x, weight)
         	$body.rotation.y = lerp_angle(body_rotation.y, rotation.y - PI, weight)
