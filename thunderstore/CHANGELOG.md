@@ -8,8 +8,8 @@
 * Fixed player rotation speed with `ReducePhysicsUpdatesEnabled`.
 * Fixed dialog cooldown speed with `ReducePhysicsUpdatesEnabled`.
 * Fixed player size scaling with `SmoothCameraEnabled`.
-* Fixed compatibility with SmoothCamera with `SmoothCameraEnabled` __set to `false`__.
-    * `SmoothCameraEnabled` remains incompatible with SmoothCamera.
+* Fixed compatibility with SmoothCam with `SmoothCameraEnabled` __set to `false`__.
+    * `SmoothCameraEnabled` remains incompatible with SmoothCam.
 * Removed a debug log. Sorry for polluting your GDWeave logs!
 
 ## 0.2.0
