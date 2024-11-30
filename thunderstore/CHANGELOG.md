@@ -1,3 +1,14 @@
+## 0.3.0
+
+* Added dynamic zones
+    * Zones are dynamically detached and attached to the scene tree as you move between them.
+* Improved compatibility with other mods that hook into _controlled_process
+    * This fixes compatibility with YAAM
+* Fixed a crash when `PlayerOptimizationsEnabled` is disabled and `SmoothCameraEnabled` is enabled.
+* Fixed the direction of player rotation on the X axis (pitch) with `SmoothCameraEnabled`.
+    * This fixes the rotation of the player when using Flyfishing for example.
+* Minor changes to `PlayerOptimizationsEnabled`
+
 ## 0.2.1
 
 * Fixed some rocks/objects not having collision with `MeshGpuInstancingEnabled`.
