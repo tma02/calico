@@ -5,7 +5,7 @@ using static GDWeave.Godot.TokenType;
 
 namespace Teemaw.Calico;
 
-public class MainMapScriptMod(IModInterface mod): IScriptMod
+public class MainMapScriptMod(IModInterface mod, Config config): IScriptMod
 {
 	// TODO: Clean this up somehow -- this was way simpler when it was supposed to be just three tree nodes. 
     private static readonly IEnumerable<Token> Globals = ScriptTokenizer.Tokenize(
@@ -171,10 +171,120 @@ public class MainMapScriptMod(IModInterface mod): IScriptMod
         		mm.mesh.surface_set_material(i, material)
 
         """);
+
+    private static readonly IEnumerable<Token> SetZone = ScriptTokenizer.Tokenize(
+	    """
+	    
+	    if calico_zones.empty():
+	    	calico_zones["main_zone"] = $zones/main_zone
+	    	calico_zones["tent_zone"] = $zones/tent_zone
+	    	calico_zones["hub_building_zone"] = $zones/hub_building_zone
+	    	calico_zones["aquarium_zone"] = $zones/aquarium_zone
+	    	calico_zones["tutorial_zone"] = $zones/tutorial_zone
+	    	calico_zones["island_tiny_zone"] = $zones/island_tiny_zone
+	    	calico_zones["island_med_zone"] = $zones/island_med_zone
+	    	calico_zones["island_big_zone"] = $zones/island_big_zone
+	    	calico_zones["void_zone"] = $zones.get_node("void_zone")
+	    for child in $zones.get_children():
+	    	if child.name != "main_zone":
+	    		$zones.remove_child(child)
+	    if id != "main_zone":
+	    	$zones.add_child(calico_zones[id])
+	    
+	    """, 1);
+    
+    private static readonly IEnumerable<Token> GetZone = ScriptTokenizer.Tokenize(
+	    """
+	    
+	    if calico_zones.has(id): return calico_zones[id]
+	    
+	    """, 1);
+    
+    private static readonly IEnumerable<Token> DynamicZonesGlobals = ScriptTokenizer.Tokenize(
+	    """
+	    
+	    var calico_zones = {}
+
+	    """);
     
     public bool ShouldRun(string path) => path == "res://Scenes/Map/main_map.gdc";
+    
+    private static IEnumerable<Token> ModifyForDynamicZones(IModInterface mod, string path, IEnumerable<Token> tokens)
+    {
+	    MultiTokenWaiter extendsWaiter = new([
+		    t => t.Type is PrExtends,
+		    t => t.Type is Identifier,
+		    t => t.Type is Newline
+	    ]);
+	    MultiTokenWaiter setZoneWaiter = new([
+		    t => t.Type is PrFunction,
+		    t => t is IdentifierToken { Name: "_set_zone" },
+		    t => t.Type is ParenthesisOpen,
+		    t => t is IdentifierToken { Name: "id" },
+		    t => t.Type is ParenthesisClose,
+		    t => t.Type is Colon
+	    ]);
+	    MultiTokenWaiter getZoneWaiter = new([
+		    t => t.Type is PrFunction,
+		    t => t is IdentifierToken { Name: "_get_zone" },
+		    t => t.Type is ParenthesisOpen,
+		    t => t is IdentifierToken { Name: "id" },
+		    t => t.Type is ParenthesisClose,
+		    t => t.Type is Colon
+	    ]);
 
-    public IEnumerable<Token> Modify(string path, IEnumerable<Token> tokens)
+	    mod.Logger.Information($"[calico.MainMapScriptMod] Patching for dynamic zones {path}");
+	    
+	    var patchFlags = new Dictionary<string, bool>
+	    {
+		    ["dynamic_zones_globals"] = false,
+		    ["set_zone"] = false,
+		    ["get_zone"] = false
+	    };
+	    
+	    foreach (var t in tokens)
+	    {
+		    if (extendsWaiter.Check(t))
+		    {
+			    yield return t;
+			    foreach (var t1 in DynamicZonesGlobals)
+				    yield return t1;
+			    patchFlags["dynamic_zones_globals"] = true;
+			    mod.Logger.Information("[calico.MainMapScriptMod] dynamic_zones_globals patch OK");
+		    }
+		    else if (setZoneWaiter.Check(t))
+		    {
+			    yield return t;
+			    mod.Logger.Information(string.Join("\n", SetZone));
+			    foreach (var t1 in SetZone)
+				    yield return t1;
+			    patchFlags["set_zone"] = true;
+			    mod.Logger.Information("[calico.MainMapScriptMod] set_zone patch OK");
+		    }
+		    else if (getZoneWaiter.Check(t))
+		    {
+			    yield return t;
+			    foreach (var t1 in GetZone)
+				    yield return t1;
+			    patchFlags["get_zone"] = true;
+			    mod.Logger.Information("[calico.MainMapScriptMod] get_zone patch OK");
+		    }
+		    else
+		    {
+			    yield return t;
+		    }
+	    }
+	    
+	    foreach (var patch in patchFlags)
+	    {
+		    if (!patch.Value)
+		    {
+			    mod.Logger.Error($"[calico.MainMapScriptMod] FAIL: {patch.Key} patch not applied");
+		    }
+	    }
+    }
+
+    private static IEnumerable<Token> ModifyForMeshGpuInstancing(IModInterface mod, string path, IEnumerable<Token> tokens)
     {
 	    MultiTokenWaiter extendsWaiter = new([
 		    t => t.Type is PrExtends,
@@ -212,5 +322,22 @@ public class MainMapScriptMod(IModInterface mod): IScriptMod
 			    mod.Logger.Error($"[calico.MainMapScriptMod] FAIL: {patch.Key} patch not applied");
 		    }
 	    }
+    }
+
+    public IEnumerable<Token> Modify(string path, IEnumerable<Token> tokens)
+    {
+	    var currentTokens = tokens.ToList();
+
+	    mod.Logger.Information(
+		    $"[calico.MainMapScriptMod] MeshGpuInstancingEnabled={config.MeshGpuInstancingEnabled}");
+	    if (config.MeshGpuInstancingEnabled)
+		    currentTokens = ModifyForMeshGpuInstancing(mod, path, currentTokens).ToList();
+
+	    mod.Logger.Information(
+		    $"[calico.MainMapScriptMod] DynamicZoneLoadingEnabled={config.DynamicZoneLoadingEnabled}");
+	    if (config.DynamicZoneLoadingEnabled)
+		    currentTokens = ModifyForDynamicZones(mod, path, currentTokens).ToList();
+
+	    return currentTokens;
     }
 }

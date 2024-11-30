@@ -31,9 +31,9 @@ public class Mod : IMod
             modInterface.RegisterScriptMod(new Fishing3ScriptMod(modInterface));
         }
 
-        if (config.MeshGpuInstancingEnabled)
+        if (config.MeshGpuInstancingEnabled || config.DynamicZoneLoadingEnabled)
         {
-            modInterface.RegisterScriptMod(new MainMapScriptMod(modInterface));
+            modInterface.RegisterScriptMod(new MainMapScriptMod(modInterface, config));
         }
 
         if (config.ReducePhysicsUpdatesEnabled)
@@ -47,6 +47,11 @@ public class Mod : IMod
         {
             modInterface.RegisterScriptMod(new PlayerHeadHudScriptMod(modInterface));
             modInterface.RegisterScriptMod(new TailRootScriptMod(modInterface));
+        }
+
+        if (config.DynamicZoneLoadingEnabled)
+        {
+            modInterface.RegisterScriptMod(new TransitionZoneScriptMod(modInterface));
         }
     }
 
