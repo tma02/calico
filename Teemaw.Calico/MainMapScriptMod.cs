@@ -334,8 +334,8 @@ public class MainMapScriptMod(IModInterface mod, Config config): IScriptMod
 		    currentTokens = ModifyForMeshGpuInstancing(mod, path, currentTokens).ToList();
 
 	    mod.Logger.Information(
-		    $"[calico.MainMapScriptMod] DynamicZoneLoadingEnabled={config.DynamicZoneLoadingEnabled}");
-	    if (config.DynamicZoneLoadingEnabled)
+		    $"[calico.MainMapScriptMod] DynamicZoneLoadingEnabled={config.DynamicZonesEnabled}");
+	    if (config.DynamicZonesEnabled)
 		    currentTokens = ModifyForDynamicZones(mod, path, currentTokens).ToList();
 
 	    return currentTokens;

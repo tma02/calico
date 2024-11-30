@@ -31,6 +31,7 @@ The `Teemaw.Calico.json` configuration file has the following schema and default
 
 ```json
 {
+  "DynamicZonesEnabled": false,
   "MeshGpuInstancingEnabled": true,
   "MultiThreadNetworkingEnabled": true,
   "PlayerOptimizationsEnabled": true,
@@ -38,6 +39,16 @@ The `Teemaw.Calico.json` configuration file has the following schema and default
   "SmoothCameraEnabled": true
 }
 ```
+
+### `DynamicZonesEnabled` (Experimental)
+
+Normally, the game will load and hold all zones (shop, aquarium, islands, etc.) in the scene tree regardless of where
+your character currently is. This will dynamically attach and detach zones from the scene tree as you move between them.
+
+Files modified:
+
+* `res://Scenes/Map/main_map.gdc`
+* `res://Scenes/Map/Tools/transition_zone.gdc`
 
 ### `MeshGpuInstancingEnabled`
 
