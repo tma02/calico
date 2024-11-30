@@ -69,6 +69,9 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
 
         $Viewport.disable_3d = true
         $Viewport.usage = 0
+        $body/player_body/Armature/Skeleton/head_dog.queue_free()
+        $body/player_body/Armature/Skeleton/head_cat.queue_free()
+        $body/player_body/Armature/Skeleton/tool_placeholder.queue_free()
 
         """, 1);
 
