@@ -2,6 +2,7 @@
 
 * Added dynamic zones
     * Zones are dynamically detached and attached to the scene tree as you move between them.
+    * This is currently disabled by default in the config
 * Improved compatibility with other mods that hook into _controlled_process
     * This fixes compatibility with YAAM
 * Fixed a crash when `PlayerOptimizationsEnabled` is disabled and `SmoothCameraEnabled` is enabled.
