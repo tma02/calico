@@ -110,7 +110,7 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
         	var body_rotation = $body.rotation
         	$body.rotation.x = lerp_angle(body_rotation.x, -rotation.x, weight)
         	$body.rotation.y = lerp_angle(body_rotation.y, rotation.y - PI, weight)
-        	$body.rotation.z = lerp_angle(body_rotation.z, rotation.z, weight)
+        	$body.rotation.z = lerp_angle(body_rotation.z, -rotation.z, weight)
 
         """);
 
