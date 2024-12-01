@@ -4,7 +4,7 @@
   "Metadata": {
     "Name": "Calico",
     "Author": "teemaw",
-    "Version": "0.3.0",
+    "Version": "0.3.1",
     "Description": "Calico; anti-lag improvements & client optimizations."
   }
 }
