@@ -239,6 +239,7 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
                 yield return t;
 
                 // Insert our globals
+                mod.Logger.Information(string.Join("\n", Globals));
                 foreach (var t1 in Globals)
                     yield return t1;
                 patchFlags["globals"] = true;
