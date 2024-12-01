@@ -97,6 +97,7 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
         """
 
         var calico_title_mesh
+        var calico_last_physics_origin
         
         func calico_body_interpolate(delta):
         	var body_origin = $body.global_transform.origin
@@ -105,7 +106,7 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
         		return
         	var weight = Engine.get_physics_interpolation_fraction()
         	var virtual_origin = global_transform.translated(Vector3.DOWN).origin
-        	$body.global_transform.origin = body_origin.linear_interpolate(virtual_origin, weight)
+        	$body.global_transform.origin = calico_last_physics_origin.linear_interpolate(virtual_origin, weight)
         	$body.scale = scale
         	var body_rotation = $body.rotation
         	$body.rotation.x = lerp_angle(body_rotation.x, -rotation.x, weight)
@@ -130,9 +131,17 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
 
         $body.set_as_toplevel(true)
         $body.global_transform = self.global_transform
+        calico_last_physics_origin = global_transform.origin + Vector3.DOWN
         calico_title_mesh = $title
         calico_title_mesh.calico_setup($body, Vector3(0, 3, 0))
         
+        """, 1);
+    
+    private static readonly IEnumerable<Token> SmoothCameraOnPhysicsProcess = ScriptTokenizer.Tokenize(
+        """
+
+        calico_last_physics_origin = global_transform.origin + Vector3.DOWN
+
         """, 1);
 
     private static readonly IEnumerable<Token> CameraUpdate = ScriptTokenizer.Tokenize(
@@ -464,6 +473,15 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
             t => t.Type is OpAssign,
             t => t is IdentifierToken { Name: "global_transform" },
         ]);
+        
+        MultiTokenWaiter physicsProcessWaiter = new([
+            t => t is { Type: PrFunction },
+            t => t is IdentifierToken { Name: "_physics_process" },
+            t => t.Type is ParenthesisOpen,
+            t => t is IdentifierToken { Name: "delta" },
+            t => t.Type is ParenthesisClose,
+            t => t.Type is Colon
+        ]);
 
         mod.Logger.Information($"[calico.PlayerScriptMod] Patching {path}");
 
@@ -471,6 +489,7 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
         {
             ["smooth_camera_globals"] = false,
             ["smooth_camera_on_ready"] = false,
+            ["smooth_camera_physics_process"] = false,
             ["call_smooth_camera"] = false,
             ["camera_update"] = false
         };
@@ -535,6 +554,13 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
                 foreach (var t1 in CallSmoothCameraUpdate) yield return t1;
                 patchFlags["call_smooth_camera"] = true;
                 mod.Logger.Information("[calico.PlayerScriptMod] call_smooth_camera patch OK");
+            }
+            else if (physicsProcessWaiter.Check(t))
+            {
+                yield return t;
+                foreach (var t1 in SmoothCameraOnPhysicsProcess) yield return t1;
+                patchFlags["smooth_camera_physics_process"] = true;
+                mod.Logger.Information("[calico.PlayerScriptMod] smooth_camera_physics_process patch OK");
             }
             else if (cameraUpdateWaiter.Check(t))
             {
