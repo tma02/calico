@@ -1,3 +1,10 @@
+## 0.3.1
+
+* Fixed the direction of player rotation on the Z axis (roll) with `SmoothCameraEnabled`.
+    * This fixes the rotation of the player when using Ragdoll for example.
+* Improved linearity of the camera with `SmoothCameraEnabled`.
+    * This should help with player movement feeling strange/off. If it still feels strange, v-sync may also help.
+
 ## 0.3.0
 
 * Added dynamic zones
