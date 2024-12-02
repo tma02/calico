@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 using System.Text;
+using GDWeave;
 using GDWeave.Godot;
 using GDWeave.Godot.Variants;
 
@@ -441,7 +442,9 @@ public static class ScriptTokenizer {
 
             var matched = false;
             foreach (var delimiter in Symbols) {
+                Serilog.Log.Information($"At position {i}: checking '{text[i]}' against delimiter '{delimiter}'");
                 if (Match(text, i, delimiter)) {
+                    Serilog.Log.Information($"  -> MATCHED with {delimiter}");
                     yield return ClearBuilder();
                     yield return delimiter;
                     i += delimiter.Length - 1;
