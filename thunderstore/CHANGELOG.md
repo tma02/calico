@@ -1,3 +1,8 @@
+## 0.3.3
+
+* Fixed camera jitter when player is rotated on the X axis (pitch) with `SmoothCameraEnabled`.
+* Improved compatibility with some system environments.
+
 ## 0.3.2
 
 * Fixed camera jitter when player scale changes with `SmoothCameraEnabled`.
