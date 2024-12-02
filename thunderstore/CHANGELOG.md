@@ -1,3 +1,7 @@
+## 0.3.2
+
+* Fixed camera jitter when player scale changes with `SmoothCameraEnabled`.
+
 ## 0.3.1
 
 * Fixed the direction of player rotation on the Z axis (roll) with `SmoothCameraEnabled`.
