@@ -255,7 +255,6 @@ public class MainMapScriptMod(IModInterface mod, Config config): IScriptMod
 		    else if (setZoneWaiter.Check(t))
 		    {
 			    yield return t;
-			    mod.Logger.Information(string.Join("\n", SetZone));
 			    foreach (var t1 in SetZone)
 				    yield return t1;
 			    patchFlags["set_zone"] = true;
