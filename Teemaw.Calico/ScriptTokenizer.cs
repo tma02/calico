@@ -470,6 +470,10 @@ public static class ScriptTokenizer {
     }
 
     private static bool Match(string text, int index, string match) {
-        return string.Compare(text, index, match, 0, match.Length) == 0;
+        if (index + match.Length > text.Length) return false;
+        for (var i = 0; i < match.Length; i++) {
+            if (text[index + i] != match[i]) return false;
+        }
+        return true;
     }
 }
