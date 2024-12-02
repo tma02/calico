@@ -131,7 +131,7 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
 
         $body.set_as_toplevel(true)
         $body.global_transform = self.global_transform
-        calico_last_physics_origin = global_transform.origin + Vector3.DOWN
+        calico_last_physics_origin = global_transform.origin + (Vector3.DOWN * scale)
         calico_title_mesh = $title
         calico_title_mesh.calico_setup($body, Vector3(0, 3, 0))
         
@@ -140,7 +140,7 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
     private static readonly IEnumerable<Token> SmoothCameraOnPhysicsProcess = ScriptTokenizer.Tokenize(
         """
 
-        calico_last_physics_origin = global_transform.origin + Vector3.DOWN
+        calico_last_physics_origin = global_transform.origin + (Vector3.DOWN * scale)
 
         """, 1);
 
