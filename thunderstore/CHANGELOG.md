@@ -1,3 +1,7 @@
+## 0.3.4
+
+* Fixed changing accessories with `PlayerOptimizationsEnabled`.
+
 ## 0.3.3
 
 * Fixed camera jitter when player is rotated on the X axis (pitch) with `SmoothCameraEnabled`.
