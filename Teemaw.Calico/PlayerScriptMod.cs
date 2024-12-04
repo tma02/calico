@@ -13,14 +13,17 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
 
         var calico_emote_anim = false
         var calico_emote_anim_b = false
+        var calico_old_accessory = []
 
         func calico_cosmetic_data_needs_update(new_cosmetic_data):
         	for key in PlayerData.FALLBACK_COSM.keys():
         		if key == "accessory":
-        			if cosmetic_data[key].size() != new_cosmetic_data[key].size(): return true
-        			for item in cosmetic_data[key]:
-        				if !new_cosmetic_data[key] || !new_cosmetic_data[key].has(item): return true
-        				if cosmetic_data[key].count(item) != new_cosmetic_data[key].count(item): return true
+        			if calico_old_accessory.size() != new_cosmetic_data[key].size(): return true
+        			for item in new_cosmetic_data[key]:
+        				if !calico_old_accessory.has(item): return true
+        				if calico_old_accessory.count(item) != new_cosmetic_data[key].count(item): return true
+        		elif !new_cosmetic_data.has(key) || !cosmetic_data.has(key):
+        			return true
         		elif cosmetic_data[key] != new_cosmetic_data[key]:
         			return true
         	return false
@@ -90,6 +93,7 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
         if !calico_cosmetic_data_needs_update(data):
         	print("[calico] Skipping unnecessary cosmetic update")
         	return
+        calico_old_accessory = data["accessory"].duplicate()
 
         """, 1);
     
