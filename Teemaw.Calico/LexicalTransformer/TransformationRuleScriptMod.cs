@@ -4,10 +4,10 @@ using GDWeave.Modding;
 using Teemaw.Calico.Util;
 using static Teemaw.Calico.Util.Operation;
 
-namespace Teemaw.Calico;
+namespace Teemaw.Calico.LexicalTransformer;
 
 /// <summary>
-/// An IScriptMod implementation that handles patching through the provided list of ScriptPatchDescriptors.
+/// An IScriptMod implementation that handles patching through the provided list of TransformationRules.
 /// </summary>
 /// <param name="mod">IModInterface of the current mod.</param>
 /// <param name="name">The name of this script mod. Used for logging.</param>

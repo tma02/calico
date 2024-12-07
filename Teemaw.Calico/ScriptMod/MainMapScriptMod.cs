@@ -4,7 +4,7 @@ using GDWeave.Modding;
 using static GDWeave.Godot.TokenType;
 using ScriptTokenizer = Teemaw.Calico.Util.ScriptTokenizer;
 
-namespace Teemaw.Calico.ScriptMods;
+namespace Teemaw.Calico.ScriptMod;
 
 public class MainMapScriptMod(IModInterface mod, Config config): IScriptMod
 {

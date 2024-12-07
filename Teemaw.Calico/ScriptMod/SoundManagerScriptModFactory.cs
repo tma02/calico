@@ -1,10 +1,11 @@
 ﻿using GDWeave;
 using GDWeave.Godot;
 using GDWeave.Modding;
+using Teemaw.Calico.LexicalTransformer;
 using Teemaw.Calico.Util;
 using static Teemaw.Calico.Util.WaiterDefinitions;
 
-namespace Teemaw.Calico.ScriptMods;
+namespace Teemaw.Calico.ScriptMod;
 
 public static class SoundManagerScriptModFactory
 {

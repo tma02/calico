@@ -1,5 +1,5 @@
 ﻿using GDWeave;
-using Teemaw.Calico.ScriptMods;
+using Teemaw.Calico.ScriptMod;
 
 namespace Teemaw.Calico;
 

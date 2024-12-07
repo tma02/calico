@@ -6,7 +6,7 @@ using Teemaw.Calico.Util;
 using static GDWeave.Godot.TokenType;
 using ScriptTokenizer = Teemaw.Calico.Util.ScriptTokenizer;
 
-namespace Teemaw.Calico.ScriptMods;
+namespace Teemaw.Calico.ScriptMod;
 
 public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
 {

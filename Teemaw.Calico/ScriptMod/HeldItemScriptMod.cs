@@ -3,7 +3,7 @@ using GDWeave.Godot;
 using GDWeave.Modding;
 using static GDWeave.Godot.TokenType;
 
-namespace Teemaw.Calico.ScriptMods;
+namespace Teemaw.Calico.ScriptMod;
 
 public class HeldItemScriptMod(IModInterface mod): IScriptMod
 {

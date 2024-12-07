@@ -1,10 +1,11 @@
 ﻿using GDWeave;
 using GDWeave.Modding;
+using Teemaw.Calico.LexicalTransformer;
 using Teemaw.Calico.Util;
 using static Teemaw.Calico.Util.WaiterDefinitions;
 using ScriptTokenizer = Teemaw.Calico.Util.ScriptTokenizer;
 
-namespace Teemaw.Calico.ScriptMods;
+namespace Teemaw.Calico.ScriptMod;
 
 public static class GuitarStringSoundScriptModFactory
 {
