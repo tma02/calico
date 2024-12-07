@@ -2,7 +2,7 @@
 using GDWeave.Modding;
 using Teemaw.Calico.LexicalTransformer;
 using Teemaw.Calico.Util;
-using static Teemaw.Calico.Util.WaiterDefinitions;
+using static Teemaw.Calico.LexicalTransformer.TransformationPatternFactory;
 using ScriptTokenizer = Teemaw.Calico.Util.ScriptTokenizer;
 
 namespace Teemaw.Calico.ScriptMod;
@@ -13,7 +13,7 @@ public static class BushParticleDetectScriptModFactory
     {
         return new TransformationRuleScriptMod(mod, "BushParticleDetectScriptMod",
             "res://Scenes/Map/Props/bush_particle_detect.gdc", [
-                new TransformationRule("globals", CreateGlobalsChecks(),
+                new TransformationRule("globals", CreateGlobalsPattern(),
                     """
 
                     var calico_player
@@ -24,7 +24,7 @@ public static class BushParticleDetectScriptModFactory
                     	remove_child(calico_player)
 
                     """),
-                new TransformationRule("play", CreateSnippetChecks("$AudioStreamPlayer3D.play()"),
+                new TransformationRule("play", CreateGdSnippetPattern("$AudioStreamPlayer3D.play()"),
                     ScriptTokenizer.Tokenize(
                         """
                         add_child(calico_player)

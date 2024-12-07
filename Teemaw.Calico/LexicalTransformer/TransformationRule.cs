@@ -1,7 +1,8 @@
 ﻿using GDWeave.Godot;
 using GDWeave.Modding;
+using ScriptTokenizer = Teemaw.Calico.Util.ScriptTokenizer;
 
-namespace Teemaw.Calico.Util;
+namespace Teemaw.Calico.LexicalTransformer;
 
 using MultiTokenPattern = Func<Token, bool>[];
 

@@ -2,7 +2,7 @@
 using GDWeave.Modding;
 using Teemaw.Calico.LexicalTransformer;
 using Teemaw.Calico.Util;
-using static Teemaw.Calico.Util.WaiterDefinitions;
+using static Teemaw.Calico.LexicalTransformer.TransformationPatternFactory;
 using ScriptTokenizer = Teemaw.Calico.Util.ScriptTokenizer;
 
 namespace Teemaw.Calico.ScriptMod;
@@ -13,23 +13,23 @@ public static class GuitarStringSoundScriptModFactory
     {
         return new TransformationRuleScriptMod(mod, "GuitarStringSoundScriptMod",
             "res://Scenes/Entities/Player/guitar_string_sound.gdc", [
-                new TransformationRule("globals", CreateGlobalsChecks(),
+                new TransformationRule("globals", CreateGlobalsPattern(),
                     ScriptTokenizer.Tokenize(
                         """
 
                         var calico_playing_count = 0
 
                         """).ToArray()),
-                new TransformationRule("add_child_in_ready", CreateSnippetChecks("add_child(new)"), [],
+                new TransformationRule("add_child_in_ready", CreateGdSnippetPattern("add_child(new)"), [],
                     Operation.ReplaceAll),
-                new TransformationRule("call_guard", CreateFunctionDefinitionChecks("_call"),
+                new TransformationRule("call_guard", CreateFunctionDefinitionPattern("_call"),
                     ScriptTokenizer.Tokenize(
                         """
 
                         if calico_playing_count == 0: return
 
                         """, 1)),
-                new TransformationRule("node_play", CreateSnippetChecks("node.play(point)"),
+                new TransformationRule("node_play", CreateGdSnippetPattern("node.play(point)"),
                     ScriptTokenizer.Tokenize(
                         """
 
@@ -37,7 +37,7 @@ public static class GuitarStringSoundScriptModFactory
                         calico_playing_count += 1
 
                         """, 3), Operation.Prepend),
-                new TransformationRule("node_stopped", CreateSnippetChecks("sound.playing = false"),
+                new TransformationRule("node_stopped", CreateGdSnippetPattern("sound.playing = false"),
                     ScriptTokenizer.Tokenize(
                         """
 

@@ -1,18 +1,19 @@
 ﻿using GDWeave.Godot;
+using Teemaw.Calico.Util;
 using static GDWeave.Godot.TokenType;
 
-namespace Teemaw.Calico.Util;
+namespace Teemaw.Calico.LexicalTransformer;
 
-using MultiTokenChecks = Func<Token, bool>[];
+using MultiTokenPattern = Func<Token, bool>[];
 
-public static class WaiterDefinitions
+public static class TransformationPatternFactory
 {
     /// <summary>
-    /// Creates a new array of checks which matches `extends &lt;Identifier&gt;\n`. Useful for patching into the global
+    /// Creates a new pattern array which matches `extends &lt;Identifier&gt;\n`. Useful for patching into the global
     /// scope.
     /// </summary>
     /// <returns></returns>
-    public static MultiTokenChecks CreateGlobalsChecks()
+    public static MultiTokenPattern CreateGlobalsPattern()
     {
         return
         [
@@ -23,7 +24,7 @@ public static class WaiterDefinitions
     }
 
     /// <summary>
-    /// Creates a new array of checks which matches a function definition. This will not match the preceding or trailing
+    /// Creates a new pattern array which matches a function definition. This will not match the preceding or trailing
     /// Newline tokens.
     /// </summary>
     /// <param name="name">The name of the function to match.</param>
@@ -32,7 +33,7 @@ public static class WaiterDefinitions
     /// match a function which does not accept arguments.
     /// </param>
     /// <returns></returns>
-    public static MultiTokenChecks CreateFunctionDefinitionChecks(string name, string[]? args = null)
+    public static MultiTokenPattern CreateFunctionDefinitionPattern(string name, string[]? args = null)
     {
         var checks = new List<Func<Token, bool>>();
 
@@ -57,11 +58,11 @@ public static class WaiterDefinitions
     }
 
     /// <summary>
-    /// Creates a new array of checks which matches the provided GDScript snippet.
+    /// Creates a new pattern array which matches the provided GDScript snippet.
     /// </summary>
     /// <param name="snippet">A GDScript snippet to match.</param>
     /// <returns></returns>
-    public static MultiTokenChecks CreateSnippetChecks(string snippet)
+    public static MultiTokenPattern CreateGdSnippetPattern(string snippet)
     {
         var tokens = ScriptTokenizer.Tokenize(snippet);
 

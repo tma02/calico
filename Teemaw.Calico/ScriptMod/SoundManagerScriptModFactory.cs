@@ -3,7 +3,7 @@ using GDWeave.Godot;
 using GDWeave.Modding;
 using Teemaw.Calico.LexicalTransformer;
 using Teemaw.Calico.Util;
-using static Teemaw.Calico.Util.WaiterDefinitions;
+using static Teemaw.Calico.LexicalTransformer.TransformationPatternFactory;
 
 namespace Teemaw.Calico.ScriptMod;
 
@@ -12,7 +12,7 @@ public static class SoundManagerScriptModFactory
     public static IScriptMod Create(IModInterface mod)
     {
         return new TransformationRuleScriptMod(mod, "SoundManagerScriptMod", "res://Scenes/Entities/Player/sound_manager.gdc", [
-            new TransformationRule("globals", CreateGlobalsChecks(),
+            new TransformationRule("globals", CreateGlobalsPattern(),
                 """
 
                 const CALICO_PERSIST = ["dive_scrape", "reel_slow", "reel_fast"]
@@ -37,7 +37,7 @@ public static class SoundManagerScriptModFactory
                 	return calico_players[id]
 
                 """),
-            new TransformationRule("get_node_or_null", CreateSnippetChecks("var node = get_node_or_null"),
+            new TransformationRule("get_node_or_null", CreateGdSnippetPattern("var node = get_node_or_null"),
                 new IdentifierToken("calico_get_player_or_null"), Operation.ReplaceLast),
         ]);
     }

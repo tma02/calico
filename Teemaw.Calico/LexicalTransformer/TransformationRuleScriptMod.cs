@@ -1,8 +1,7 @@
 ﻿using GDWeave;
 using GDWeave.Godot;
 using GDWeave.Modding;
-using Teemaw.Calico.Util;
-using static Teemaw.Calico.Util.Operation;
+using static Teemaw.Calico.LexicalTransformer.Operation;
 
 namespace Teemaw.Calico.LexicalTransformer;
 
