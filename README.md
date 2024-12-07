@@ -2,10 +2,11 @@
 
 Calico; anti-lag improvements & client optimizations for WEBFISHING.
 
+[Install](#install) &bullet; [Configuration](#configuration) &bullet; [Troubleshooting](#troubleshooting)
+
 ## About
 
-Calico aims to improve the performance of WEBFISHING in multiplayer scenarios. This is achieved by introducing threading
-to networking code, as well as numerous other optimizations.
+Calico aims to improve the performance of WEBFISHING in multiplayer scenarios.
 
 ### Improvements & optimizations
 
@@ -16,14 +17,20 @@ to networking code, as well as numerous other optimizations.
 * Reducing physics update rate
 * Skipping cosmetics loading for players that have not changed
 * Optimize player animation updates
-* Other player processing optimizations (caught item, held item, guitar)
+* Other player processing optimizations (caught item, held item, sound effects)
 
 ## Install
 
-1. Download the release zip
+### Manual
+
+1. Download the latest [release](https://github.com/tma02/calico/releases/latest) zip
 2. Unzip into your WEBFISHING directory such that the `Teemaw.Calico` folder ends up in `WEBFISHING\GDWeave\mods\`
 3. Optionally edit the configuration file in `WEBFISHING\GDWeave\configs\Teemaw.Calico.json`
 4. You're done!
+
+### Thunderstore
+
+Visit the [Thunderstore page for Calico](https://thunderstore.io/c/webfishing/p/Teemaw/Calico/).
 
 ## Configuration
 
