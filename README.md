@@ -39,7 +39,7 @@ The `Teemaw.Calico.json` configuration file has the following schema and default
 ```json
 {
   "DynamicZonesEnabled": true,
-  "MapSoundOptimizationsEnabled": false,
+  "MapSoundOptimizationsEnabled": true,
   "MeshGpuInstancingEnabled": true,
   "MultiThreadNetworkingEnabled": true,
   "PlayerOptimizationsEnabled": true,
@@ -59,7 +59,7 @@ Files modified:
 * `res://Scenes/Map/main_map.gdc`
 * `res://Scenes/Map/Tools/transition_zone.gdc`
 
-### `MapSoundOptimizationsEnabled` (Experimental)
+### `MapSoundOptimizationsEnabled`
 
 This enables optimizations relating to sound effects of the map.
 

@@ -4,7 +4,7 @@ namespace Teemaw.Calico;
 
 public class Config
 {
-    [JsonInclude] public bool DynamicZonesEnabled = false;
+    [JsonInclude] public bool DynamicZonesEnabled = true;
     [JsonInclude] public bool MapSoundOptimizationsEnabled = true;
     [JsonInclude] public bool MeshGpuInstancingEnabled = true;
     [JsonInclude] public bool MultiThreadNetworkingEnabled = true;
