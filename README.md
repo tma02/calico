@@ -122,7 +122,7 @@ Files modified:
 ### `SmoothCameraEnabled`
 
 This option decouples camera position updates from the physics cycle. This will help make the game feel more responsive
-if your framerate is faster than the physics update rate. Normally, the game runs physics at 60fps. Without this option
+if your framerate is faster than the physics update rate. Normally, the game runs physics at 60Hz. Without this option
 enabled, it may feel like your game is locked to 60fps during camera panning or player movement. This is much more
 noticeable with the reduced physics update rate of `ReducePhysicsUpdatesEnabled`, so is highly recommended to be enabled
 along with `ReducePhysicsUpdatesEnabled`.
@@ -139,8 +139,8 @@ If Calico is causing your game to crash, it's likely that there is a conflict wi
 guidelines to help get your game running by disabling some of Calico's features.
 
 > [!TIP]  
-> If you are experiencing a conflict using Calico with some other mod, feel free to open an issue or PR. While we work
-> on a fix, try the following.
+> If you are experiencing a conflict using Calico with some other mod, feel free to open an 
+> [issue](https://github.com/tma02/calico/issues/new/choose) or PR. While we work on a fix, try the following.
 
 ### I have a guitar mod
 Try disabling `PlayerOptimizationsEnabled`.
