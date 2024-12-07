@@ -76,7 +76,52 @@ public record TransformationRule(
     public MultiTokenWaiter CreateMultiTokenWaiter() => new(Pattern);
 }
 
+public class TransformationRuleBuilder
+{
+    private string? _name;
+    private MultiTokenPattern? _pattern;
+    private IEnumerable<Token>? _tokens;
+    private Operation _operation = Operation.Append;
 
+    public TransformationRuleBuilder Named(string name)
+    {
+        _name = name;
+        return this;
+    }
 
+    public TransformationRuleBuilder Matching(MultiTokenPattern pattern)
+    {
+        _pattern = pattern;
+        return this;
+    }
 
+    public TransformationRuleBuilder With(IEnumerable<Token> tokens)
+    {
+        _tokens = tokens;
+        return this;
+    }
+
+    public TransformationRuleBuilder Do(Operation operation)
+    {
+        _operation = operation;
+        return this;
+    }
+    
+    public TransformationRule Build()
+    {
+        if (string.IsNullOrEmpty(_name))
+        {
+            throw new ArgumentNullException(nameof(_name), "Name cannot be null or empty");
+        }
+        if (_pattern == null) 
+        {
+            throw new ArgumentNullException(nameof(_pattern), "Pattern cannot be null");
+        }
+        if (_tokens == null)
+        {
+            throw new ArgumentNullException(nameof(_tokens), "Tokens cannot be null");
+        }
+
+        return new TransformationRule(_name, _pattern, _tokens, _operation);
+    }
 }
