@@ -22,7 +22,7 @@ public class GuitarStringSoundScriptModFactory
                         var calico_playing_count = 0
 
                         """).ToArray()),
-                new ScriptPatchDescriptor("add_in_ready", [
+                new ScriptPatchDescriptor("add_child_in_ready", [
                         t => t is IdentifierToken { Name: "add_child" },
                         t => t.Type is ParenthesisOpen,
                         t => t is IdentifierToken { Name: "new" },
