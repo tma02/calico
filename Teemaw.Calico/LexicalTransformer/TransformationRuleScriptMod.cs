@@ -24,7 +24,7 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
             .ToList();
         mod.Logger.Information($"[calico.{name}] Patching {path}");
 
-        var patchResults = rules.ToDictionary(r => r.GetName(), _ => false);
+        var patchResults = rules.ToDictionary(r => r.Name, _ => false);
         var yieldAfter = true;
         var buffersAtThisToken = 0;
 
@@ -56,10 +56,10 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
 
                 w.Waiter.Reset();
 
-                switch (w.Rule.GetPatchType())
+                switch (w.Rule.Operation)
                 {
                     case Prepend:
-                        foreach (var patchToken in w.Rule.GetTokens())
+                        foreach (var patchToken in w.Rule.Tokens)
                         {
                             yield return patchToken;
                         }
@@ -84,7 +84,7 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
                         goto case ReplaceAll;
                     case ReplaceAll:
                         w.Buffer.Clear();
-                        foreach (var patchToken in w.Rule.GetTokens())
+                        foreach (var patchToken in w.Rule.Tokens)
                         {
                             yield return patchToken;
                         }
@@ -101,8 +101,8 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
                         break;
                 }
 
-                mod.Logger.Information($"[calico.{name}] Patch {w.Rule.GetName()} OK!");
-                patchResults[w.Rule.GetName()] = true;
+                mod.Logger.Information($"[calico.{name}] Patch {w.Rule.Name} OK!");
+                patchResults[w.Rule.Name] = true;
             }
 
             if (yieldAfter)

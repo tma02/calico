@@ -12,7 +12,7 @@ public enum Operation
     /// Do not patch.
     /// </summary>
     None,
-    
+
     /// <summary>
     /// Replace all tokens of the waiter.
     /// </summary>
@@ -27,7 +27,7 @@ public enum Operation
     /// Appends after the final token of the waiter.
     /// </summary>
     Append,
-    
+
     /// <summary>
     /// Prepends before the first token of the waiter.
     /// </summary>
@@ -37,15 +37,15 @@ public enum Operation
 /// <summary>
 /// This holds the information required to perform a patch at a single locus.
 /// </summary>
-/// <param name="name">The name of this descriptor. Used for logging.</param>
-/// <param name="pattern">A list of checks to be used in a MultiTokenWaiter.</param>
-/// <param name="tokens">A list of GDScript tokens which will be patched in.</param>
-/// <param name="operation">The type of patch.</param>
-public class TransformationRule(
-    string name,
-    MultiTokenPattern pattern,
-    IEnumerable<Token> tokens,
-    Operation operation = Operation.Append)
+/// <param name="Name">The name of this descriptor. Used for logging.</param>
+/// <param name="Pattern">A list of checks to be used in a MultiTokenWaiter.</param>
+/// <param name="Tokens">A list of GDScript tokens which will be patched in.</param>
+/// <param name="Operation">The type of patch.</param>
+public record TransformationRule(
+    string Name,
+    MultiTokenPattern Pattern,
+    IEnumerable<Token> Tokens,
+    Operation Operation = Operation.Append)
 {
     /// <summary>
     /// This holds the information required to perform a patch at a single locus.
@@ -72,12 +72,11 @@ public class TransformationRule(
         this(name, pattern, [token], operation)
     {
     }
+    
+    public MultiTokenWaiter CreateMultiTokenWaiter() => new(Pattern);
+}
 
-    public string GetName() => name;
 
-    public MultiTokenWaiter CreateMultiTokenWaiter() => new(pattern);
 
-    public IEnumerable<Token> GetTokens() => tokens;
 
-    public Operation GetPatchType() => operation;
 }
