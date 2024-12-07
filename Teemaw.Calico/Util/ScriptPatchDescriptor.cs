@@ -5,7 +5,7 @@ namespace Teemaw.Calico.Util;
 
 using MultiTokenChecks = Func<Token, bool>[];
 
-public enum PatchType
+public enum PatchOperation
 {
     /// <summary>
     /// Do not patch.
@@ -26,6 +26,11 @@ public enum PatchType
     /// Appends after the final token of the waiter.
     /// </summary>
     Append,
+    
+    /// <summary>
+    /// Prepends before the first token of the waiter.
+    /// </summary>
+    Prepend,
 }
 
 /// <summary>
@@ -34,12 +39,12 @@ public enum PatchType
 /// <param name="name">The name of this descriptor. Used for logging.</param>
 /// <param name="checks">A list of checks to be used in a MultiTokenWaiter.</param>
 /// <param name="tokens">A list of GDScript tokens which will be patched in.</param>
-/// <param name="patchType">The type of patch.</param>
+/// <param name="patchOperation">The type of patch.</param>
 public class ScriptPatchDescriptor(
     string name,
     MultiTokenChecks checks,
     IEnumerable<Token> tokens,
-    PatchType patchType = PatchType.Append)
+    PatchOperation patchOperation = PatchOperation.Append)
 {
     /// <summary>
     /// This holds the information required to perform a patch at a single locus.
@@ -47,10 +52,10 @@ public class ScriptPatchDescriptor(
     /// <param name="name">The name of this descriptor. Used for logging.</param>
     /// <param name="checks">A list of checks to be used in a MultiTokenWaiter.</param>
     /// <param name="snippet">A snippet of GDScript which will be patched in.</param>
-    /// <param name="patchType">The type of patch.</param>
+    /// <param name="patchOperation">The type of patch.</param>
     public ScriptPatchDescriptor(string name, MultiTokenChecks checks, string snippet,
-        PatchType patchType = PatchType.Append) :
-        this(name, checks, ScriptTokenizer.Tokenize(snippet), patchType)
+        PatchOperation patchOperation = PatchOperation.Append) :
+        this(name, checks, ScriptTokenizer.Tokenize(snippet), patchOperation)
     {
     }
 
@@ -60,10 +65,10 @@ public class ScriptPatchDescriptor(
     /// <param name="name">The name of this descriptor. Used for logging.</param>
     /// <param name="check">A check to be used in a MultiTokenWaiter.</param>
     /// <param name="snippet">A snippet of GDScript which will be patched in.</param>
-    /// <param name="patchType">The type of patch.</param>
+    /// <param name="patchOperation">The type of patch.</param>
     public ScriptPatchDescriptor(string name, Func<Token, bool> check, string snippet,
-        PatchType patchType = PatchType.Append) :
-        this(name, [check], ScriptTokenizer.Tokenize(snippet), patchType)
+        PatchOperation patchOperation = PatchOperation.Append) :
+        this(name, [check], ScriptTokenizer.Tokenize(snippet), patchOperation)
     {
     }
 
@@ -73,5 +78,5 @@ public class ScriptPatchDescriptor(
 
     public IEnumerable<Token> GetTokens() => tokens;
 
-    public PatchType GetPatchType() => patchType;
+    public PatchOperation GetPatchType() => patchOperation;
 }

@@ -2,7 +2,7 @@
 using GDWeave.Godot;
 using GDWeave.Modding;
 using Teemaw.Calico.Util;
-using static Teemaw.Calico.Util.PatchType;
+using static Teemaw.Calico.Util.PatchOperation;
 
 namespace Teemaw.Calico;
 

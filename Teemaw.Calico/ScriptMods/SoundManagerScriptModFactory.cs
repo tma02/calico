@@ -42,7 +42,7 @@ public static class SoundManagerScriptModFactory
                 t => t is IdentifierToken { Name: "node" },
                 t => t.Type is OpAssign,
                 t => t is IdentifierToken { Name: "get_node_or_null" },
-            ], [new IdentifierToken("calico_get_player_or_null")], PatchType.ReplaceFinal),
+            ], [new IdentifierToken("calico_get_player_or_null")], PatchOperation.ReplaceFinal),
         ]);
     }
 }
