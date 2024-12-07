@@ -24,6 +24,7 @@ public class Mod : IMod
         {
             modInterface.RegisterScriptMod(new GuitarStringSoundScriptMod(modInterface));
             modInterface.RegisterScriptMod(new HeldItemScriptMod(modInterface));
+            modInterface.RegisterScriptMod(SoundManagerScriptModFactory.Create(modInterface));
         }
 
         if (config.ReducePhysicsUpdatesEnabled)
