@@ -23,7 +23,8 @@ public class Mod : IMod
 
         if (config.PlayerOptimizationsEnabled)
         {
-            modInterface.RegisterScriptMod(new GuitarStringSoundScriptMod(modInterface));
+            //modInterface.RegisterScriptMod(new GuitarStringSoundScriptMod(modInterface));
+            modInterface.RegisterScriptMod(GuitarStringSoundScriptModFactory.Create(modInterface));
             modInterface.RegisterScriptMod(new HeldItemScriptMod(modInterface));
             modInterface.RegisterScriptMod(SoundManagerScriptModFactory.Create(modInterface));
         }

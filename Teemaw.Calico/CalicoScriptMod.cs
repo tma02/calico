@@ -54,6 +54,17 @@ public class CalicoScriptMod(IModInterface mod, string name, string scriptPath, 
 
                 switch (w.Patch.GetPatchType())
                 {
+                    case Prepend:
+                        foreach (var patchToken in w.Patch.GetTokens())
+                        {
+                            yield return patchToken;
+                        }
+                        foreach (var bufferedToken in w.Buffer)
+                        {
+                            yield return bufferedToken;
+                        }
+                        w.Buffer.Clear();
+                        break;
                     case ReplaceFinal:
                         w.Buffer.RemoveAt(w.Buffer.Count - 1);
 
@@ -66,7 +77,6 @@ public class CalicoScriptMod(IModInterface mod, string name, string scriptPath, 
 
                         goto case ReplaceAll;
                     case ReplaceAll:
-                        // All other patch cases terminate here to clear the buffer and return the patch tokens.
                         w.Buffer.Clear();
                         foreach (var patchToken in w.Patch.GetTokens())
                         {

@@ -63,12 +63,12 @@ public class ScriptPatchDescriptor(
     /// This holds the information required to perform a patch at a single locus.
     /// </summary>
     /// <param name="name">The name of this descriptor. Used for logging.</param>
-    /// <param name="check">A check to be used in a MultiTokenWaiter.</param>
-    /// <param name="snippet">A snippet of GDScript which will be patched in.</param>
+    /// <param name="checks">A list of checks to be used in a MultiTokenWaiter.</param>
+    /// <param name="token">A GDScript Token which will be patched in.</param>
     /// <param name="patchOperation">The type of patch.</param>
-    public ScriptPatchDescriptor(string name, Func<Token, bool> check, string snippet,
+    public ScriptPatchDescriptor(string name, MultiTokenChecks checks, Token token,
         PatchOperation patchOperation = PatchOperation.Append) :
-        this(name, [check], ScriptTokenizer.Tokenize(snippet), patchOperation)
+        this(name, checks, [token], patchOperation)
     {
     }
 
