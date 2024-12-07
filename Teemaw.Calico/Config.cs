@@ -5,6 +5,7 @@ namespace Teemaw.Calico;
 public class Config
 {
     [JsonInclude] public bool DynamicZonesEnabled = false;
+    [JsonInclude] public bool MapSoundOptimizationsEnabled = true;
     [JsonInclude] public bool MeshGpuInstancingEnabled = true;
     [JsonInclude] public bool MultiThreadNetworkingEnabled = true;
     [JsonInclude] public bool PlayerOptimizationsEnabled = true;
@@ -14,6 +15,7 @@ public class Config
     public override string ToString()
     {
         return $"DynamicZonesEnabled={DynamicZonesEnabled}, " + 
+               $"MapSoundOptimizationsEnabled={MapSoundOptimizationsEnabled}, " +
                $"MeshGpuInstancingEnabled={MeshGpuInstancingEnabled}, " +
                $"MultiThreadNetworkingEnabled={MultiThreadNetworkingEnabled}, " +
                $"PlayerOptimizationsEnabled={PlayerOptimizationsEnabled}, " +
