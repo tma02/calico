@@ -26,6 +26,7 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
 
         var patchResults = rules.ToDictionary(r => r.GetName(), _ => false);
         var yieldAfter = true;
+        var buffersAtThisToken = 0;
 
         foreach (var t in tokens)
         {
@@ -45,6 +46,7 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
             foreach (var w in transformers.Where(w => w.Waiter.Step > 0))
             {
                 w.Buffer.Add(t);
+                buffersAtThisToken += 1;
                 yieldAfter = false;
 
                 if (!w.Waiter.Matched)
@@ -111,6 +113,14 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
             {
                 yieldAfter = true;
             }
+
+            if (buffersAtThisToken > 1)
+            {
+                mod.Logger.Warning(
+                    $"[calico.{name}] {t} Token buffered by multiple transformers. This may cause unexpected behavior!");
+            }
+
+            buffersAtThisToken = 0;
         }
 
         foreach (var result in patchResults.Where(result => !result.Value))
