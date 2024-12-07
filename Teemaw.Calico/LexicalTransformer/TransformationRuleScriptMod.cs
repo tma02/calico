@@ -137,36 +137,66 @@ public class TransformationRuleScriptModBuilder
     private string? _scriptPath;
     private List<TransformationRule> _rules = [];
 
+    /// <summary>
+    /// Sets the IModInterface to be used by the ScriptMod.
+    /// </summary>
+    /// <param name="mod"></param>
+    /// <returns></returns>
     public TransformationRuleScriptModBuilder ForMod(IModInterface mod)
     {
         _mod = mod;
         return this;
     }
 
+    /// <summary>
+    /// Sets the name of the ScriptMod. Used for logging.
+    /// </summary>
+    /// <param name="name"></param>
+    /// <returns></returns>
     public TransformationRuleScriptModBuilder Named(string name)
     {
         _name = name;
         return this;
     }
     
+    /// <summary>
+    /// Sets the Godot resource path of the script to be patched.
+    /// </summary>
+    /// <param name="scriptPath"></param>
+    /// <returns></returns>
     public TransformationRuleScriptModBuilder Patching(string scriptPath)
     {
         _scriptPath = scriptPath;
         return this;
     }
 
+    /// <summary>
+    /// Adds a TransformationRule to the TransformationRuleScriptMod.
+    /// </summary>
+    /// <param name="rule"></param>
+    /// <returns></returns>
     public TransformationRuleScriptModBuilder AddRule(TransformationRule rule)
     {
         _rules.Add(rule);
         return this;
     }
 
+    /// <summary>
+    /// Adds the TransformationRule built by calling Build() on the provided builder to the TransformationRuleScriptMod.
+    /// </summary>
+    /// <param name="rule"></param>
+    /// <returns></returns>
     public TransformationRuleScriptModBuilder AddRule(TransformationRuleBuilder rule)
     {
         _rules.Add(rule.Build());
         return this;
     }
 
+    /// <summary>
+    /// Build the TransformationRuleScriptMod.
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException">Thrown if any required fields were not set.</exception>
     public TransformationRuleScriptMod Build()
     {
         if (_mod == null)
