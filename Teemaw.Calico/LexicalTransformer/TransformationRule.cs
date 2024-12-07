@@ -101,6 +101,18 @@ public class TransformationRuleBuilder
         return this;
     }
 
+    public TransformationRuleBuilder With(Token token)
+    {
+        _tokens = [token];
+        return this;
+    }
+
+    public TransformationRuleBuilder With(string snippet, uint indent = 0)
+    {
+        _tokens = ScriptTokenizer.Tokenize(snippet, indent);
+        return this;
+    }
+
     public TransformationRuleBuilder Do(Operation operation)
     {
         _operation = operation;

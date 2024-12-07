@@ -2,6 +2,7 @@
 using GDWeave.Modding;
 using Teemaw.Calico.LexicalTransformer;
 using Teemaw.Calico.Util;
+using static Teemaw.Calico.LexicalTransformer.Operation;
 using static Teemaw.Calico.LexicalTransformer.TransformationPatternFactory;
 using ScriptTokenizer = Teemaw.Calico.Util.ScriptTokenizer;
 
@@ -19,9 +20,9 @@ public static class GuitarStringSoundScriptModFactory
 
                         var calico_playing_count = 0
 
-                        """).ToArray()),
+                        """)),
                 new TransformationRule("add_child_in_ready", CreateGdSnippetPattern("add_child(new)"), [],
-                    Operation.ReplaceAll),
+                    ReplaceAll),
                 new TransformationRule("call_guard", CreateFunctionDefinitionPattern("_call"),
                     ScriptTokenizer.Tokenize(
                         """
@@ -36,7 +37,7 @@ public static class GuitarStringSoundScriptModFactory
                         add_child(node)
                         calico_playing_count += 1
 
-                        """, 3), Operation.Prepend),
+                        """, 3), Prepend),
                 new TransformationRule("node_stopped", CreateGdSnippetPattern("sound.playing = false"),
                     ScriptTokenizer.Tokenize(
                         """

@@ -129,3 +129,61 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
         }
     }
 }
+
+public class TransformationRuleScriptModBuilder
+{
+    private IModInterface? _mod;
+    private string? _name;
+    private string? _scriptPath;
+    private List<TransformationRule> _rules = [];
+
+    public TransformationRuleScriptModBuilder ForMod(IModInterface mod)
+    {
+        _mod = mod;
+        return this;
+    }
+
+    public TransformationRuleScriptModBuilder Named(string name)
+    {
+        _name = name;
+        return this;
+    }
+    
+    public TransformationRuleScriptModBuilder Patching(string scriptPath)
+    {
+        _scriptPath = scriptPath;
+        return this;
+    }
+
+    public TransformationRuleScriptModBuilder AddRule(TransformationRule rule)
+    {
+        _rules.Add(rule);
+        return this;
+    }
+
+    public TransformationRuleScriptModBuilder AddRule(TransformationRuleBuilder rule)
+    {
+        _rules.Add(rule.Build());
+        return this;
+    }
+
+    public TransformationRuleScriptMod Build()
+    {
+        if (_mod == null)
+        {
+            throw new ArgumentNullException(nameof(_mod), "Mod cannot be null");
+        }
+        
+        if (string.IsNullOrEmpty(_name))
+        {
+            throw new ArgumentNullException(nameof(_name), "Name cannot be null or empty");
+        }
+
+        if (string.IsNullOrEmpty(_scriptPath))
+        {
+            throw new ArgumentNullException(nameof(_scriptPath), "Script path cannot be null or empty");
+        }
+        
+        return new TransformationRuleScriptMod(_mod, _name, _scriptPath, _rules.ToArray());
+    }
+}

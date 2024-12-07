@@ -1,9 +1,8 @@
 ﻿using GDWeave;
 using GDWeave.Modding;
 using Teemaw.Calico.LexicalTransformer;
-using Teemaw.Calico.Util;
+using static Teemaw.Calico.LexicalTransformer.Operation;
 using static Teemaw.Calico.LexicalTransformer.TransformationPatternFactory;
-using ScriptTokenizer = Teemaw.Calico.Util.ScriptTokenizer;
 
 namespace Teemaw.Calico.ScriptMod;
 
@@ -11,9 +10,15 @@ public static class BushParticleDetectScriptModFactory
 {
     public static IScriptMod Create(IModInterface mod)
     {
-        return new TransformationRuleScriptMod(mod, "BushParticleDetectScriptMod",
-            "res://Scenes/Map/Props/bush_particle_detect.gdc", [
-                new TransformationRule("globals", CreateGlobalsPattern(),
+        return new TransformationRuleScriptModBuilder()
+            .ForMod(mod)
+            .Named("BushParticleDetectScriptMod")
+            .Patching("res://Scenes/Map/Props/bush_particle_detect.gdc")
+            .AddRule(new TransformationRuleBuilder()
+                .Named("globals")
+                .Matching(CreateGlobalsPattern())
+                .Do(Append)
+                .With(
                     """
 
                     var calico_player
@@ -23,13 +28,17 @@ public static class BushParticleDetectScriptModFactory
                     	calico_player.connect("finished", self, "remove_child", [calico_player])
                     	remove_child(calico_player)
 
-                    """),
-                new TransformationRule("play", CreateGdSnippetPattern("$AudioStreamPlayer3D.play()"),
-                    ScriptTokenizer.Tokenize(
-                        """
-                        add_child(calico_player)
-                        calico_player.play()
-                        """, 2), Operation.ReplaceAll),
-            ]);
+                    """))
+            .AddRule(new TransformationRuleBuilder()
+                .Named("play")
+                .Matching(CreateGdSnippetPattern("$AudioStreamPlayer3D.play()"))
+                .Do(ReplaceAll)
+                .With(
+                    """
+                    add_child(calico_player)
+                    calico_player.play()
+                    """, indent: 2
+                ))
+            .Build();
     }
 }
