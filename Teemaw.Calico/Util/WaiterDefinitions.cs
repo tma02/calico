@@ -7,9 +7,11 @@ using MultiTokenChecks = Func<Token, bool>[];
 
 public static class WaiterDefinitions
 {
-    /**
-     * Creates a new array of checks which matches `extends [Identifier]`
-     */
+    /// <summary>
+    /// Creates a new array of checks which matches `extends &lt;Identifier&gt;\n`. Useful for patching into the global
+    /// scope.
+    /// </summary>
+    /// <returns></returns>
     public static MultiTokenChecks CreateGlobalsChecks()
     {
         return
@@ -52,5 +54,32 @@ public static class WaiterDefinitions
         checks.Add(t => t.Type is Colon);
 
         return checks.ToArray();
+    }
+
+    /// <summary>
+    /// Creates a new array of checks which matches the provided GDScript snippet.
+    /// </summary>
+    /// <param name="snippet">A GDScript snippet to match.</param>
+    /// <returns></returns>
+    public static MultiTokenChecks CreateSnippetChecks(string snippet)
+    {
+        var tokens = ScriptTokenizer.Tokenize(snippet);
+
+        return tokens.Select(snippetToken => (Func<Token, bool>)(t =>
+        {
+            if (t.Type == Identifier)
+            {
+                return snippetToken is IdentifierToken snippetIdentifier && t is IdentifierToken identifier &&
+                       snippetIdentifier.Name == identifier.Name;
+            }
+
+            if (t.Type == Constant)
+            {
+                return snippetToken is ConstantToken snippetConstant && t is ConstantToken constant &&
+                       snippetConstant.Value.Equals(constant.Value);
+            }
+
+            return t.Type == snippetToken.Type;
+        })).ToArray();
     }
 }

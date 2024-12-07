@@ -2,7 +2,6 @@
 using GDWeave.Godot;
 using GDWeave.Modding;
 using Teemaw.Calico.Util;
-using static GDWeave.Godot.TokenType;
 using static Teemaw.Calico.Util.WaiterDefinitions;
 
 namespace Teemaw.Calico.ScriptMods;
@@ -37,12 +36,8 @@ public static class SoundManagerScriptModFactory
                 	return calico_players[id]
 
                 """),
-            new ScriptPatchDescriptor("get_node_or_null", [
-                t => t.Type is PrVar,
-                t => t is IdentifierToken { Name: "node" },
-                t => t.Type is OpAssign,
-                t => t is IdentifierToken { Name: "get_node_or_null" },
-            ], new IdentifierToken("calico_get_player_or_null"), PatchOperation.ReplaceFinal),
+            new ScriptPatchDescriptor("get_node_or_null", CreateSnippetChecks("var node = get_node_or_null"),
+                new IdentifierToken("calico_get_player_or_null"), PatchOperation.ReplaceFinal),
         ]);
     }
 }
