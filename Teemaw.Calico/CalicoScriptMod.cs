@@ -12,7 +12,7 @@ namespace Teemaw.Calico;
 /// <param name="mod">IModInterface of the current mod.</param>
 /// <param name="name">The name of this script mod. Used for logging.</param>
 /// <param name="scriptPath">The GD res:// path of the script which will be patched.</param>
-/// <param name="patches">A list of patches to perform. Multiple descriptors which patch at the same locus is not supported.</param>
+/// <param name="patches">A list of patches to perform. Multiple descriptors with overlapping checks is not supported.</param>
 public class CalicoScriptMod(IModInterface mod, string name, string scriptPath, ScriptPatchDescriptor[] patches)
     : IScriptMod
 {
@@ -38,9 +38,11 @@ public class CalicoScriptMod(IModInterface mod, string name, string scriptPath, 
                 {
                     yield return bufferedToken;
                 }
+
                 w.Buffer.Clear();
                 // We didn't buffer the current token so we can leave yieldAfter as what it is.
             }
+
             foreach (var w in waiters.Where(w => w.Waiter.Step > 0))
             {
                 w.Buffer.Add(t);
@@ -50,6 +52,7 @@ public class CalicoScriptMod(IModInterface mod, string name, string scriptPath, 
                 {
                     continue;
                 }
+
                 w.Waiter.Reset();
 
                 switch (w.Patch.GetPatchType())
@@ -59,10 +62,12 @@ public class CalicoScriptMod(IModInterface mod, string name, string scriptPath, 
                         {
                             yield return patchToken;
                         }
+
                         foreach (var bufferedToken in w.Buffer)
                         {
                             yield return bufferedToken;
                         }
+
                         w.Buffer.Clear();
                         break;
                     case ReplaceFinal:
@@ -90,6 +95,7 @@ public class CalicoScriptMod(IModInterface mod, string name, string scriptPath, 
                         {
                             yield return bufferedToken;
                         }
+
                         w.Buffer.Clear();
                         break;
                 }
