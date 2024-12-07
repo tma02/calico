@@ -24,7 +24,7 @@ using System.Text;
 using GDWeave.Godot;
 using GDWeave.Godot.Variants;
 
-namespace Teemaw.Calico;
+namespace Teemaw.Calico.Util;
 
 /**
  * This is copied from https://github.com/NotNite/GDWeave/blob/main/GDWeave/Script/ScriptTokenizer.cs since this class

@@ -2,7 +2,7 @@
 using GDWeave.Godot.Variants;
 using static GDWeave.Godot.TokenType;
 
-namespace Teemaw.Calico;
+namespace Teemaw.Calico.Util;
 
 public static class TokenUtil
 {

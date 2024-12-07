@@ -4,7 +4,7 @@ using GDWeave.Godot.Variants;
 using GDWeave.Modding;
 using static GDWeave.Godot.TokenType;
 
-namespace Teemaw.Calico;
+namespace Teemaw.Calico.ScriptMods;
 
 public class Fishing3ScriptMod(IModInterface mod): IScriptMod
 {

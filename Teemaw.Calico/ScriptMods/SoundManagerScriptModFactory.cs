@@ -5,7 +5,7 @@ using Teemaw.Calico.Util;
 using static GDWeave.Godot.TokenType;
 using static Teemaw.Calico.Util.WaiterDefinitions;
 
-namespace Teemaw.Calico;
+namespace Teemaw.Calico.ScriptMods;
 
 public static class SoundManagerScriptModFactory
 {

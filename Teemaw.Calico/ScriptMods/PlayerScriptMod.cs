@@ -2,9 +2,11 @@
 using GDWeave.Godot;
 using GDWeave.Godot.Variants;
 using GDWeave.Modding;
+using Teemaw.Calico.Util;
 using static GDWeave.Godot.TokenType;
+using ScriptTokenizer = Teemaw.Calico.Util.ScriptTokenizer;
 
-namespace Teemaw.Calico;
+namespace Teemaw.Calico.ScriptMods;
 
 public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
 {

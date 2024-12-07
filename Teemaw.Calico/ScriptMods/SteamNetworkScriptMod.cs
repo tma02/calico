@@ -2,8 +2,9 @@
 using GDWeave.Godot;
 using GDWeave.Modding;
 using static GDWeave.Godot.TokenType;
+using ScriptTokenizer = Teemaw.Calico.Util.ScriptTokenizer;
 
-namespace Teemaw.Calico;
+namespace Teemaw.Calico.ScriptMods;
 
 public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
 {

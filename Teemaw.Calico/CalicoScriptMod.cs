@@ -1,9 +1,10 @@
 ﻿using GDWeave;
 using GDWeave.Godot;
 using GDWeave.Modding;
+using Teemaw.Calico.Util;
 using static Teemaw.Calico.Util.PatchType;
 
-namespace Teemaw.Calico.Util;
+namespace Teemaw.Calico;
 
 /// <summary>
 /// An IScriptMod implementation that handles patching through the provided list of ScriptPatchDescriptors.
