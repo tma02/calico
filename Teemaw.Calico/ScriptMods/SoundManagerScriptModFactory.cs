@@ -10,8 +10,8 @@ public static class SoundManagerScriptModFactory
 {
     public static IScriptMod Create(IModInterface mod)
     {
-        return new CalicoScriptMod(mod, "SoundManagerScriptMod", "res://Scenes/Entities/Player/sound_manager.gdc", [
-            new ScriptPatchDescriptor("globals", CreateGlobalsChecks(),
+        return new TransformationRuleScriptMod(mod, "SoundManagerScriptMod", "res://Scenes/Entities/Player/sound_manager.gdc", [
+            new TransformationRule("globals", CreateGlobalsChecks(),
                 """
 
                 const CALICO_PERSIST = ["dive_scrape", "reel_slow", "reel_fast"]
@@ -36,8 +36,8 @@ public static class SoundManagerScriptModFactory
                 	return calico_players[id]
 
                 """),
-            new ScriptPatchDescriptor("get_node_or_null", CreateSnippetChecks("var node = get_node_or_null"),
-                new IdentifierToken("calico_get_player_or_null"), PatchOperation.ReplaceFinal),
+            new TransformationRule("get_node_or_null", CreateSnippetChecks("var node = get_node_or_null"),
+                new IdentifierToken("calico_get_player_or_null"), Operation.ReplaceLast),
         ]);
     }
 }

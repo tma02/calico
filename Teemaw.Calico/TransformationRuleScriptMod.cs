@@ -2,7 +2,7 @@
 using GDWeave.Godot;
 using GDWeave.Modding;
 using Teemaw.Calico.Util;
-using static Teemaw.Calico.Util.PatchOperation;
+using static Teemaw.Calico.Util.Operation;
 
 namespace Teemaw.Calico;
 
@@ -12,26 +12,26 @@ namespace Teemaw.Calico;
 /// <param name="mod">IModInterface of the current mod.</param>
 /// <param name="name">The name of this script mod. Used for logging.</param>
 /// <param name="scriptPath">The GD res:// path of the script which will be patched.</param>
-/// <param name="patches">A list of patches to perform. Multiple descriptors with overlapping checks is not supported.</param>
-public class CalicoScriptMod(IModInterface mod, string name, string scriptPath, ScriptPatchDescriptor[] patches)
+/// <param name="rules">A list of patches to perform. Multiple descriptors with overlapping checks is not supported.</param>
+public class TransformationRuleScriptMod(IModInterface mod, string name, string scriptPath, TransformationRule[] rules)
     : IScriptMod
 {
     public bool ShouldRun(string path) => path == scriptPath;
 
     public IEnumerable<Token> Modify(string path, IEnumerable<Token> tokens)
     {
-        var waiters = patches.Select(patch =>
-                (Patch: patch, Waiter: patch.CreateMultiTokenWaiter(), Buffer: new List<Token>()))
+        var transformers = rules.Select(rule =>
+                (Rule: rule, Waiter: rule.CreateMultiTokenWaiter(), Buffer: new List<Token>()))
             .ToList();
         mod.Logger.Information($"[calico.{name}] Patching {path}");
 
-        var patchResults = patches.ToDictionary(p => p.GetName(), _ => false);
+        var patchResults = rules.ToDictionary(r => r.GetName(), _ => false);
         var yieldAfter = true;
 
         foreach (var t in tokens)
         {
-            waiters.ForEach(w => w.Waiter.Check(t));
-            foreach (var w in waiters.Where(w => w.Waiter.Step == 0))
+            transformers.ForEach(w => w.Waiter.Check(t));
+            foreach (var w in transformers.Where(w => w.Waiter.Step == 0))
             {
                 // Flush any tokens in the buffer if we are out of the match
                 foreach (var bufferedToken in w.Buffer)
@@ -43,7 +43,7 @@ public class CalicoScriptMod(IModInterface mod, string name, string scriptPath, 
                 // We didn't buffer the current token so we can leave yieldAfter as what it is.
             }
 
-            foreach (var w in waiters.Where(w => w.Waiter.Step > 0))
+            foreach (var w in transformers.Where(w => w.Waiter.Step > 0))
             {
                 w.Buffer.Add(t);
                 yieldAfter = false;
@@ -55,10 +55,10 @@ public class CalicoScriptMod(IModInterface mod, string name, string scriptPath, 
 
                 w.Waiter.Reset();
 
-                switch (w.Patch.GetPatchType())
+                switch (w.Rule.GetPatchType())
                 {
                     case Prepend:
-                        foreach (var patchToken in w.Patch.GetTokens())
+                        foreach (var patchToken in w.Rule.GetTokens())
                         {
                             yield return patchToken;
                         }
@@ -70,7 +70,7 @@ public class CalicoScriptMod(IModInterface mod, string name, string scriptPath, 
 
                         w.Buffer.Clear();
                         break;
-                    case ReplaceFinal:
+                    case ReplaceLast:
                         w.Buffer.RemoveAt(w.Buffer.Count - 1);
 
                         goto case Append;
@@ -83,7 +83,7 @@ public class CalicoScriptMod(IModInterface mod, string name, string scriptPath, 
                         goto case ReplaceAll;
                     case ReplaceAll:
                         w.Buffer.Clear();
-                        foreach (var patchToken in w.Patch.GetTokens())
+                        foreach (var patchToken in w.Rule.GetTokens())
                         {
                             yield return patchToken;
                         }
@@ -100,8 +100,8 @@ public class CalicoScriptMod(IModInterface mod, string name, string scriptPath, 
                         break;
                 }
 
-                mod.Logger.Information($"[calico.{name}] Patch {w.Patch.GetName()} OK!");
-                patchResults[w.Patch.GetName()] = true;
+                mod.Logger.Information($"[calico.{name}] Patch {w.Rule.GetName()} OK!");
+                patchResults[w.Rule.GetName()] = true;
             }
 
             if (yieldAfter)

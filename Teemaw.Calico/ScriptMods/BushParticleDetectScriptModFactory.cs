@@ -10,9 +10,9 @@ public static class BushParticleDetectScriptModFactory
 {
     public static IScriptMod Create(IModInterface mod)
     {
-        return new CalicoScriptMod(mod, "BushParticleDetectScriptMod",
+        return new TransformationRuleScriptMod(mod, "BushParticleDetectScriptMod",
             "res://Scenes/Map/Props/bush_particle_detect.gdc", [
-                new ScriptPatchDescriptor("globals", CreateGlobalsChecks(),
+                new TransformationRule("globals", CreateGlobalsChecks(),
                     """
 
                     var calico_player
@@ -23,12 +23,12 @@ public static class BushParticleDetectScriptModFactory
                     	remove_child(calico_player)
 
                     """),
-                new ScriptPatchDescriptor("play", CreateSnippetChecks("$AudioStreamPlayer3D.play()"),
+                new TransformationRule("play", CreateSnippetChecks("$AudioStreamPlayer3D.play()"),
                     ScriptTokenizer.Tokenize(
                         """
                         add_child(calico_player)
                         calico_player.play()
-                        """, 2), PatchOperation.ReplaceAll),
+                        """, 2), Operation.ReplaceAll),
             ]);
     }
 }
