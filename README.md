@@ -31,7 +31,8 @@ The `Teemaw.Calico.json` configuration file has the following schema and default
 
 ```json
 {
-  "DynamicZonesEnabled": false,
+  "DynamicZonesEnabled": true,
+  "MapSoundOptimizationsEnabled": false,
   "MeshGpuInstancingEnabled": true,
   "MultiThreadNetworkingEnabled": true,
   "PlayerOptimizationsEnabled": true,
@@ -40,20 +41,29 @@ The `Teemaw.Calico.json` configuration file has the following schema and default
 }
 ```
 
-### `DynamicZonesEnabled` (Experimental)
+### `DynamicZonesEnabled`
 
 Normally, the game will load and hold all zones (shop, aquarium, islands, etc.) in the scene tree regardless of where
-your character currently is. This will dynamically attach and detach zones from the scene tree as you move between them.
+your character currently is. Enabling this will dynamically attach and detach zones from the scene tree as you move
+between them.
 
 Files modified:
 
 * `res://Scenes/Map/main_map.gdc`
 * `res://Scenes/Map/Tools/transition_zone.gdc`
 
+### `MapSoundOptimizationsEnabled` (Experimental)
+
+This enables optimizations relating to sound effects of the map.
+
+File modified:
+
+* `res://Scenes/Map/Props/bush_particle_detect.gdc`
+
 ### `MeshGpuInstancingEnabled`
 
-This reduces the number of GPU draw calls by combining draw calls from multiple copies of the same mesh into the same
-call. Game objects which currently benefit from this include trees, bushes, mushrooms, water, etc.
+Enabling this will reduce the number of GPU draw calls by combining calls for multiple copies of the same mesh into a
+single call. Game objects which currently benefit from this include trees, bushes, mushrooms, water, etc.
 
 File modified:
 
@@ -62,7 +72,7 @@ File modified:
 ### `MultiThreadNetworkingEnabled`
 
 This enables dedicated send and receive threads for sending and reading network packets. Packet compression and
-decompression are also offloaded from the main thread to these threads.
+decompression are also offloaded from the main thread.
 
 File modified:
 
@@ -70,19 +80,21 @@ File modified:
 
 ### `PlayerOptimizationsEnabled`
 
-This enables patching of player scripts to optimize cosmetic loading, animation updates, guitar processing, etc.
+This enables patching of player scripts to optimize cosmetic loading, animation updates, sound effects, etc.
 
 Files modified:
 
+* `res://Scenes/Entities/actor.gdc`
 * `res://Scenes/Entities/Player/guitar_string_sound.gdc`
 * `res://Scenes/Entities/Player/held_item.gdc`
 * `res://Scenes/Entities/Player/player.gdc`
+* `res://Scenes/Entities/Player/sound_manager.gdc`
 
 ### `ReducePhysicsUpdatesEnabled`
 
 > [!IMPORTANT]  
-> It's highly recommended to set `SmoothCameraEnabled` to `true` if this option is enabled. The game camera's movement
-> is normally tied to the physics update rate. If you enable reduced physics updates without smooth camera, it may feel
+> It's highly recommended to set `SmoothCameraEnabled` to `true` if this option is enabled. Normally, the game camera's
+> movement is tied to the physics update rate. If you enable reduced physics updates without smooth camera, it may feel
 > like the game is running slower during camera panning or player movement. `SmoothCameraEnabled` will decouple camera
 > updates from physics updates.
 
@@ -113,6 +125,31 @@ Files modified:
 * `res://Scenes/Entities/Player/player.gdc`
 * `res://Scenes/Entities/Player/player_headhud.gdc`
 * `res://Scenes/Entities/Player/tail_root.gdc`
+
+## Troubleshooting
+
+If Calico is causing your game to crash, it's likely that there is a conflict with another mod. Here are some general
+guidelines to help get your game running by disabling some of Calico's features.
+
+> [!TIP]  
+> If you are experiencing a conflict using Calico with some other mod, feel free to open an issue or PR. While we work
+> on a fix, try the following.
+
+### I have a guitar mod
+Try disabling `PlayerOptimizationsEnabled`.
+
+### I have a fishing mod
+Try disabling `ReducePhysicsUpdatesEnabled`.
+
+### I have a custom map
+Try disabling `DynamicZonesEnabled`, `MeshGpuInstancingEnabled`, `MapSoundOptimizationsEnabled`, or some combination of
+the above.
+
+### I have other camera mods
+Try disabling `SmoothCameraEnabled`, `ReducePhysicsUpdatesEnabled`, or both.
+
+### I have other networking related mods
+Try disabling `MultiThreadNetworkingEnabled`.
 
 ## Building
 
