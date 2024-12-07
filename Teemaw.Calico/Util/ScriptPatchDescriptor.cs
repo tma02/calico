@@ -11,6 +11,11 @@ public enum PatchType
     /// Do not patch.
     /// </summary>
     None,
+    
+    /// <summary>
+    /// Replace all tokens of the waiter.
+    /// </summary>
+    ReplaceAll,
 
     /// <summary>
     /// Replace the final token of the waiter.
