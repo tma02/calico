@@ -76,6 +76,9 @@ public record TransformationRule(
     public MultiTokenWaiter CreateMultiTokenWaiter() => new(Pattern);
 }
 
+/// <summary>
+/// Builder for TransformationRule.
+/// </summary>
 public class TransformationRuleBuilder
 {
     private string? _name;
@@ -83,42 +86,78 @@ public class TransformationRuleBuilder
     private IEnumerable<Token>? _tokens;
     private Operation _operation = Operation.Append;
 
+    /// <summary>
+    /// Sets the name for the TransformationRule. Used for logging.
+    /// </summary>
+    /// <param name="name"></param>
+    /// <returns></returns>
     public TransformationRuleBuilder Named(string name)
     {
         _name = name;
         return this;
     }
 
+    /// <summary>
+    /// Sets the token pattern which will be matched by the TransformationRule.
+    /// </summary>
+    /// <param name="pattern"></param>
+    /// <returns></returns>
     public TransformationRuleBuilder Matching(MultiTokenPattern pattern)
     {
         _pattern = pattern;
         return this;
     }
 
+    /// <summary>
+    /// Sets the token content which will be patched in for the TransformationRule.
+    /// </summary>
+    /// <param name="tokens"></param>
+    /// <returns></returns>
     public TransformationRuleBuilder With(IEnumerable<Token> tokens)
     {
         _tokens = tokens;
         return this;
     }
 
+    /// <summary>
+    /// Sets the token content which will be patched in for the TransformationRule.
+    /// </summary>
+    /// <param name="token"></param>
+    /// <returns></returns>
     public TransformationRuleBuilder With(Token token)
     {
         _tokens = [token];
         return this;
     }
 
+    /// <summary>
+    /// Sets the token content which will be patched in for the TransformationRule with a GDScript snippet.
+    /// </summary>
+    /// <param name="snippet"></param>
+    /// <param name="indent">The base indentation level for the tokenizer.</param>
+    /// <returns></returns>
     public TransformationRuleBuilder With(string snippet, uint indent = 0)
     {
         _tokens = ScriptTokenizer.Tokenize(snippet, indent);
         return this;
     }
 
+    /// <summary>
+    /// Sets the operation of the TransformationRule.
+    /// </summary>
+    /// <param name="operation"></param>
+    /// <returns></returns>
     public TransformationRuleBuilder Do(Operation operation)
     {
         _operation = operation;
         return this;
     }
     
+    /// <summary>
+    /// Builds the TransformationRule.
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException">Thrown if any required fields were not set.</exception>
     public TransformationRule Build()
     {
         if (string.IsNullOrEmpty(_name))
