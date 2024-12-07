@@ -2,7 +2,6 @@
 using GDWeave.Godot;
 using GDWeave.Modding;
 using Teemaw.Calico.LexicalTransformer;
-using Teemaw.Calico.Util;
 using static Teemaw.Calico.LexicalTransformer.Operation;
 using static Teemaw.Calico.LexicalTransformer.TransformationPatternFactory;
 
