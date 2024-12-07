@@ -26,6 +26,7 @@ public class Mod : IMod
             modInterface.RegisterScriptMod(GuitarStringSoundScriptModFactory.Create(modInterface));
             modInterface.RegisterScriptMod(new HeldItemScriptMod(modInterface));
             modInterface.RegisterScriptMod(SoundManagerScriptModFactory.Create(modInterface));
+            modInterface.RegisterScriptMod(ActorScriptModFactory.Create(modInterface));
         }
 
         if (config.ReducePhysicsUpdatesEnabled)
