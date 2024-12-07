@@ -84,7 +84,7 @@ public class CalicoScriptMod(IModInterface mod, string name, string scriptPath, 
                         break;
                 }
 
-                mod.Logger.Information($"[{name}] Patch {w.Patch.GetName()} OK!");
+                mod.Logger.Information($"[calico.{name}] Patch {w.Patch.GetName()} OK!");
                 patchResults[w.Patch.GetName()] = true;
             }
 
@@ -100,7 +100,7 @@ public class CalicoScriptMod(IModInterface mod, string name, string scriptPath, 
 
         foreach (var result in patchResults.Where(result => !result.Value))
         {
-            mod.Logger.Error($"[{name}] Patch {result.Key} FAILED!");
+            mod.Logger.Error($"[calico.{name}] Patch {result.Key} FAILED!");
         }
     }
 }
