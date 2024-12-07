@@ -35,7 +35,6 @@ public class CalicoScriptMod(IModInterface mod, string name, string scriptPath, 
                 // Flush any tokens in the buffer if we are out of the match
                 foreach (var bufferedToken in w.Buffer)
                 {
-                    mod.Logger.Information(bufferedToken.ToString());
                     yield return bufferedToken;
                 }
                 w.Buffer.Clear();
@@ -61,7 +60,6 @@ public class CalicoScriptMod(IModInterface mod, string name, string scriptPath, 
                     case Append:
                         foreach (var bufferedToken in w.Buffer)
                         {
-                            mod.Logger.Information(bufferedToken.ToString());
                             yield return bufferedToken;
                         }
 
@@ -71,7 +69,6 @@ public class CalicoScriptMod(IModInterface mod, string name, string scriptPath, 
                         w.Buffer.Clear();
                         foreach (var patchToken in w.Patch.GetTokens())
                         {
-                            mod.Logger.Information(patchToken.ToString());
                             yield return patchToken;
                         }
 
@@ -92,7 +89,6 @@ public class CalicoScriptMod(IModInterface mod, string name, string scriptPath, 
 
             if (yieldAfter)
             {
-                mod.Logger.Information(t.ToString());
                 yield return t;
             }
             else
