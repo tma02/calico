@@ -48,7 +48,7 @@ public class Mod : IMod
 
         if (config.SmoothCameraEnabled)
         {
-            modInterface.RegisterScriptMod(new PlayerHeadHudScriptMod(modInterface));
+            modInterface.RegisterScriptMod(PlayerHeadHudScriptModFactory.Create(modInterface));
             modInterface.RegisterScriptMod(TailRootScriptModFactory.Create(modInterface));
         }
 
