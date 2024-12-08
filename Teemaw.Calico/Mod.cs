@@ -36,7 +36,7 @@ public class Mod : IMod
 
         if (config.MeshGpuInstancingEnabled || config.DynamicZonesEnabled)
         {
-            modInterface.RegisterScriptMod(new MainMapScriptMod(modInterface, config));
+            modInterface.RegisterScriptMod(MainMapScriptModFactory.Create(modInterface, config));
         }
 
         if (config.ReducePhysicsUpdatesEnabled)
