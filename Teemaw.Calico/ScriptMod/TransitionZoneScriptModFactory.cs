@@ -16,9 +16,9 @@ public static class TransitionZoneScriptModFactory
             .Patching("res://Scenes/Map/Tools/transition_zone.gdc")
             .AddRule(new TransformationRuleBuilder()
                 .Named("get_tree")
-                .Matching(CreateGdSnippetPattern("yield(get_tree"))
+                .Matching(CreateGdSnippetPattern("yield (get_tree"))
                 .Do(ReplaceAll)
-                .With("yield(actor.get_tree")
+                .With("yield (actor.get_tree")
             )
             .Build();
     }

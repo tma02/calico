@@ -52,6 +52,8 @@ public static class ScriptTokenizer {
         {"@onready", TokenType.PrOnready},
         {"@tool", TokenType.PrTool},
         {"@export", TokenType.PrExport},
+        // CALICO:
+        {"yield", TokenType.PrYield},
 
         {"setget", TokenType.PrSetget},
         {"static", TokenType.PrStatic},
