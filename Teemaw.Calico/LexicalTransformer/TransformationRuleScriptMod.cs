@@ -52,13 +52,26 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
 
             foreach (var w in transformers.Where(w => w.Waiter.Step > 0))
             {
-                w.Buffer.Add(t);
-                buffersAtThisToken += 1;
-                yieldAfter = false;
+                if (w.Rule.Operation.RequiresBuffer())
+                {
+                    w.Buffer.Add(t);
+                    buffersAtThisToken += 1;
+                    yieldAfter = false;
+                }
 
                 if (!w.Waiter.Matched)
                 {
                     continue;
+                }
+
+                if (w.Rule.Operation.YieldTokenBeforeOperation())
+                {
+                    yield return t;
+                    yieldAfter = false;
+                }
+                else
+                {
+                    yieldAfter = w.Rule.Operation.YieldTokenAfterOperation();
                 }
 
                 w.Waiter.Reset();
@@ -79,16 +92,7 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
                         w.Buffer.Clear();
                         break;
                     case ReplaceLast:
-                        w.Buffer.RemoveAt(w.Buffer.Count - 1);
-
-                        goto case Append;
                     case Append:
-                        foreach (var bufferedToken in w.Buffer)
-                        {
-                            yield return bufferedToken;
-                        }
-
-                        goto case ReplaceAll;
                     case ReplaceAll:
                         w.Buffer.Clear();
                         foreach (var patchToken in w.Rule.Tokens)
@@ -99,19 +103,13 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
                         break;
                     case None:
                     default:
-                        foreach (var bufferedToken in w.Buffer)
-                        {
-                            yield return bufferedToken;
-                        }
-
-                        w.Buffer.Clear();
                         break;
                 }
 
                 mod.Logger.Information($"[calico.{name}] Patch {w.Rule.Name} OK!");
-                patchTimes[w.Rule.Name] = patchTimes[w.Rule.Name] with
+                patchOccurrences[w.Rule.Name] = patchOccurrences[w.Rule.Name] with
                 {
-                    Occurred = patchTimes[w.Rule.Name].Occurred + 1
+                    Occurred = patchOccurrences[w.Rule.Name].Occurred + 1
                 };
             }
 
@@ -137,7 +135,7 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
             }
         }
 
-        foreach (var result in patchTimes.Where(result => result.Value.Occurred != result.Value.Expected))
+        foreach (var result in patchOccurrences.Where(result => result.Value.Occurred != result.Value.Expected))
         {
             mod.Logger.Error(
                 $"[calico.{name}] Patch {result.Key} FAILED! Times expected={result.Value.Expected}, actual={result.Value.Occurred}");

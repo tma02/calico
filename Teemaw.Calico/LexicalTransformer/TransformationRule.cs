@@ -34,6 +34,25 @@ public enum Operation
     Prepend,
 }
 
+public static class OperationExtensions
+{
+    public static bool RequiresBuffer(this Operation operation)
+    {
+        return operation is Operation.ReplaceAll or Operation.Prepend;
+    }
+
+    public static bool YieldTokenBeforeOperation(this Operation operation)
+    {
+        return operation is Operation.Append or Operation.None;
+    }
+
+    public static bool YieldTokenAfterOperation(this Operation operation)
+    {
+        return !operation.RequiresBuffer() && !operation.YieldTokenBeforeOperation() &&
+               operation != Operation.ReplaceLast;
+    }
+}
+
 /// <summary>
 /// This holds the information required to perform a patch at a single locus.
 /// </summary>
