@@ -24,7 +24,7 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
             .ToList();
         mod.Logger.Information($"[calico.{name}] Patching {path}");
 
-        var patchResults = rules.ToDictionary(r => r.Name, _ => false);
+        var patchTimes = rules.ToDictionary(r => r.Name, r => (Occurred: 0, Expected: r.Times));
         var yieldAfter = true;
         var buffersAtThisToken = 0;
 
@@ -102,7 +102,10 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
                 }
 
                 mod.Logger.Information($"[calico.{name}] Patch {w.Rule.Name} OK!");
-                patchResults[w.Rule.Name] = true;
+                patchTimes[w.Rule.Name] = patchTimes[w.Rule.Name] with
+                {
+                    Occurred = patchTimes[w.Rule.Name].Occurred + 1
+                };
             }
 
             if (yieldAfter)
@@ -123,9 +126,9 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
             buffersAtThisToken = 0;
         }
 
-        foreach (var result in patchResults.Where(result => !result.Value))
+        foreach (var result in patchTimes.Where(result => result.Value.Occurred != result.Value.Expected))
         {
-            mod.Logger.Error($"[calico.{name}] Patch {result.Key} FAILED!");
+            mod.Logger.Error($"[calico.{name}] Patch {result.Key} FAILED! Times expected={result.Value.Expected}, actual={result.Value.Occurred}");
         }
     }
 }
@@ -158,7 +161,7 @@ public class TransformationRuleScriptModBuilder
         _name = name;
         return this;
     }
-    
+
     /// <summary>
     /// Sets the Godot resource path of the script to be patched.
     /// </summary>
@@ -203,7 +206,7 @@ public class TransformationRuleScriptModBuilder
         {
             throw new ArgumentNullException(nameof(_mod), "Mod cannot be null");
         }
-        
+
         if (string.IsNullOrEmpty(_name))
         {
             throw new ArgumentNullException(nameof(_name), "Name cannot be null or empty");
@@ -213,7 +216,7 @@ public class TransformationRuleScriptModBuilder
         {
             throw new ArgumentNullException(nameof(_scriptPath), "Script path cannot be null or empty");
         }
-        
+
         return new TransformationRuleScriptMod(_mod, _name, _scriptPath, _rules.ToArray());
     }
 }

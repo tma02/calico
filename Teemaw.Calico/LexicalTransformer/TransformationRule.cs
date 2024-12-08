@@ -41,11 +41,13 @@ public enum Operation
 /// <param name="Pattern">A list of checks to be used in a MultiTokenWaiter.</param>
 /// <param name="Tokens">A list of GDScript tokens which will be patched in.</param>
 /// <param name="Operation">The type of patch.</param>
+/// <param name="Times">The number of times this rule is expected to match.</param>
 public record TransformationRule(
     string Name,
     MultiTokenPattern Pattern,
     IEnumerable<Token> Tokens,
-    Operation Operation = Operation.Append)
+    Operation Operation = Operation.Append,
+    uint Times = 1)
 {
     /// <summary>
     /// This holds the information required to perform a patch at a single locus.
@@ -54,9 +56,10 @@ public record TransformationRule(
     /// <param name="pattern">A list of checks to be used in a MultiTokenWaiter.</param>
     /// <param name="snippet">A snippet of GDScript which will be patched in.</param>
     /// <param name="operation">The type of patch.</param>
+    /// <param name="times">The number of times this rule is expected to match.</param>
     public TransformationRule(string name, MultiTokenPattern pattern, string snippet,
-        Operation operation = Operation.Append) :
-        this(name, pattern, ScriptTokenizer.Tokenize(snippet), operation)
+       Operation operation = Operation.Append,  uint times = 1) :
+        this(name, pattern, ScriptTokenizer.Tokenize(snippet), operation, times)
     {
     }
 
@@ -67,23 +70,25 @@ public record TransformationRule(
     /// <param name="pattern">A list of checks to be used in a MultiTokenWaiter.</param>
     /// <param name="token">A GDScript Token which will be patched in.</param>
     /// <param name="operation">The type of patch.</param>
+    /// <param name="times">The number of times this rule is expected to match.</param>
     public TransformationRule(string name, MultiTokenPattern pattern, Token token,
-        Operation operation = Operation.Append) :
-        this(name, pattern, [token], operation)
+        Operation operation = Operation.Append, uint times = 1) :
+        this(name, pattern, [token], operation, times)
     {
     }
-    
+
     public MultiTokenWaiter CreateMultiTokenWaiter() => new(Pattern);
 }
 
 /// <summary>
-/// Builder for TransformationRule.
+/// Builder for TransformationRule. Times defaults to 1. Operation defaults to <see cref="Operation.Append"/>.
 /// </summary>
 public class TransformationRuleBuilder
 {
     private string? _name;
     private MultiTokenPattern? _pattern;
     private IEnumerable<Token>? _tokens;
+    private uint _times = 1;
     private Operation _operation = Operation.Append;
 
     /// <summary>
@@ -143,7 +148,7 @@ public class TransformationRuleBuilder
     }
 
     /// <summary>
-    /// Sets the operation of the TransformationRule.
+    /// Sets the <see cref="Operation"/> of the TransformationRule.
     /// </summary>
     /// <param name="operation"></param>
     /// <returns></returns>
@@ -152,7 +157,18 @@ public class TransformationRuleBuilder
         _operation = operation;
         return this;
     }
-    
+
+    /// <summary>
+    /// Sets the number of times the rule is expected to match.
+    /// </summary>
+    /// <param name="times"></param>
+    /// <returns></returns>
+    public TransformationRuleBuilder Times(uint times)
+    {
+        _times = times;
+        return this;
+    }
+
     /// <summary>
     /// Builds the TransformationRule.
     /// </summary>
@@ -164,10 +180,12 @@ public class TransformationRuleBuilder
         {
             throw new ArgumentNullException(nameof(_name), "Name cannot be null or empty");
         }
-        if (_pattern == null) 
+
+        if (_pattern == null)
         {
             throw new ArgumentNullException(nameof(_pattern), "Pattern cannot be null");
         }
+
         if (_tokens == null)
         {
             throw new ArgumentNullException(nameof(_tokens), "Tokens cannot be null");
