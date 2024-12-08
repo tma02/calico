@@ -1,3 +1,11 @@
+## 0.4.0
+
+* Added map sound optimizations.
+    * This detaches inactive audio player nodes from the scene tree.
+* Optimized actor signals with `PlayerOptimizationsEnabled`.
+* Optimized player sound effects and guitar audio with `PlayerOptimizationsEnabled`.
+    * This detaches inactive audio player nodes from the scene tree. 
+
 ## 0.3.4
 
 * Fixed changing accessories with `PlayerOptimizationsEnabled`.
