@@ -26,10 +26,12 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
 
         var patchTimes = rules.ToDictionary(r => r.Name, r => (Occurred: 0, Expected: r.Times));
         var yieldAfter = true;
-        var buffersAtThisToken = 0;
 
         foreach (var t in tokens)
         {
+            var buffersAtThisToken = 0;
+            var flushesAtThisToken = 0;
+
             transformers.ForEach(w => w.Waiter.Check(t));
             foreach (var w in transformers.Where(w => w.Waiter.Step == 0))
             {
@@ -37,6 +39,11 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
                 foreach (var bufferedToken in w.Buffer)
                 {
                     yield return bufferedToken;
+                }
+
+                if (w.Buffer.Count > 0)
+                {
+                    flushesAtThisToken += 1;
                 }
 
                 w.Buffer.Clear();
@@ -120,15 +127,20 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
             if (buffersAtThisToken > 1)
             {
                 mod.Logger.Warning(
-                    $"[calico.{name}] {t} Token buffered by multiple transformers. This may cause unexpected behavior!");
+                    $"[calico.{name}] {t} Token buffered by multiple transformers. This may cause unexpected behavior! Do you have overlapping transformer rules?");
             }
 
-            buffersAtThisToken = 0;
+            if (flushesAtThisToken > 1)
+            {
+                mod.Logger.Warning(
+                    $"[calico.{name}] Flushes performed by multiple transformers at this token. This may cause unexpected behavior! Do you have overlapping transformer rules?");
+            }
         }
 
         foreach (var result in patchTimes.Where(result => result.Value.Occurred != result.Value.Expected))
         {
-            mod.Logger.Error($"[calico.{name}] Patch {result.Key} FAILED! Times expected={result.Value.Expected}, actual={result.Value.Occurred}");
+            mod.Logger.Error(
+                $"[calico.{name}] Patch {result.Key} FAILED! Times expected={result.Value.Expected}, actual={result.Value.Occurred}");
         }
     }
 }
