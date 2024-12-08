@@ -19,12 +19,22 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
 
     public IEnumerable<Token> Modify(string path, IEnumerable<Token> tokens)
     {
-        var transformers = rules.Select(rule =>
+        var eligibleRules = rules.Where(rule =>
+        {
+            var eligible = rule.Predicate();
+            if (!eligible)
+            {
+                mod.Logger.Information($"[calico.{name}] Skipping patch {rule.Name}...");
+            }
+
+            return eligible;
+        }).ToList();
+        var transformers = eligibleRules.Select(rule =>
                 (Rule: rule, Waiter: rule.CreateMultiTokenWaiter(), Buffer: new List<Token>()))
             .ToList();
         mod.Logger.Information($"[calico.{name}] Patching {path}");
 
-        var patchTimes = rules.ToDictionary(r => r.Name, r => (Occurred: 0, Expected: r.Times));
+        var patchOccurrences = eligibleRules.ToDictionary(r => r.Name, r => (Occurred: 0, Expected: r.Times));
         var yieldAfter = true;
 
         foreach (var t in tokens)

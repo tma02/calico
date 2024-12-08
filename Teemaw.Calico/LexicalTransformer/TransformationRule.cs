@@ -61,12 +61,14 @@ public static class OperationExtensions
 /// <param name="Tokens">A list of GDScript tokens which will be patched in.</param>
 /// <param name="Operation">The type of patch.</param>
 /// <param name="Times">The number of times this rule is expected to match.</param>
+/// <param name="Predicate">A predicate which must return true for the rule to match.</param>
 public record TransformationRule(
     string Name,
     MultiTokenPattern Pattern,
     IEnumerable<Token> Tokens,
-    Operation Operation = Operation.Append,
-    uint Times = 1)
+    Operation Operation,
+    uint Times,
+    Func<bool> Predicate)
 {
     /// <summary>
     /// This holds the information required to perform a patch at a single locus.
@@ -76,9 +78,10 @@ public record TransformationRule(
     /// <param name="snippet">A snippet of GDScript which will be patched in.</param>
     /// <param name="operation">The type of patch.</param>
     /// <param name="times">The number of times this rule is expected to match.</param>
+    /// <param name="predicate">A predicate which must return true for the rule to match.</param>
     public TransformationRule(string name, MultiTokenPattern pattern, string snippet,
-       Operation operation = Operation.Append,  uint times = 1) :
-        this(name, pattern, ScriptTokenizer.Tokenize(snippet), operation, times)
+        Operation operation, uint times, Func<bool> predicate) :
+        this(name, pattern, ScriptTokenizer.Tokenize(snippet), operation, times, predicate)
     {
     }
 
@@ -90,9 +93,10 @@ public record TransformationRule(
     /// <param name="token">A GDScript Token which will be patched in.</param>
     /// <param name="operation">The type of patch.</param>
     /// <param name="times">The number of times this rule is expected to match.</param>
+    /// <param name="predicate">A predicate which must return true for the rule to match.</param>
     public TransformationRule(string name, MultiTokenPattern pattern, Token token,
-        Operation operation = Operation.Append, uint times = 1) :
-        this(name, pattern, [token], operation, times)
+        Operation operation, uint times, Func<bool> predicate) :
+        this(name, pattern, [token], operation, times, predicate)
     {
     }
 
@@ -109,6 +113,7 @@ public class TransformationRuleBuilder
     private IEnumerable<Token>? _tokens;
     private uint _times = 1;
     private Operation _operation = Operation.Append;
+    private Func<bool> _predicate = () => true;
 
     /// <summary>
     /// Sets the name for the TransformationRule. Used for logging.
@@ -189,6 +194,28 @@ public class TransformationRuleBuilder
     }
 
     /// <summary>
+    /// Sets the predicate function whose return value will decide if this rule will be checked.
+    /// </summary>
+    /// <param name="predicate"></param>
+    /// <returns></returns>
+    public TransformationRuleBuilder When(Func<bool> predicate)
+    {
+        _predicate = predicate;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets a value which will decide if this rule will be checked.
+    /// </summary>
+    /// <param name="eligible">If true, this rule will be checked.</param>
+    /// <returns></returns>
+    public TransformationRuleBuilder When(bool eligible)
+    {
+        _predicate = () => eligible;
+        return this;
+    }
+
+    /// <summary>
     /// Builds the TransformationRule.
     /// </summary>
     /// <returns></returns>
@@ -210,6 +237,6 @@ public class TransformationRuleBuilder
             throw new ArgumentNullException(nameof(_tokens), "Tokens cannot be null");
         }
 
-        return new TransformationRule(_name, _pattern, _tokens, _operation, _times);
+        return new TransformationRule(_name, _pattern, _tokens, _operation, _times, _predicate);
     }
 }
