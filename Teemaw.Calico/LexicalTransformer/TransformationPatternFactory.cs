@@ -61,10 +61,11 @@ public static class TransformationPatternFactory
     /// Creates a new pattern array which matches the provided GDScript snippet.
     /// </summary>
     /// <param name="snippet">A GDScript snippet to match.</param>
+    /// <param name="indent">The base indent of the snippet.</param>
     /// <returns></returns>
-    public static MultiTokenPattern CreateGdSnippetPattern(string snippet)
+    public static MultiTokenPattern CreateGdSnippetPattern(string snippet, uint indent = 0)
     {
-        var tokens = ScriptTokenizer.Tokenize(snippet);
+        var tokens = ScriptTokenizer.Tokenize(snippet, indent);
 
         return tokens.Select(snippetToken => (Func<Token, bool>)(t =>
         {
