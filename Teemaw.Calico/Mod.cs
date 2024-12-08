@@ -42,7 +42,7 @@ public class Mod : IMod
         if (config.ReducePhysicsUpdatesEnabled)
         {
             modInterface.RegisterScriptMod(GlobalsScriptModFactory.Create(modInterface));
-            modInterface.RegisterScriptMod(new PlayerFaceScriptMod(modInterface));
+            modInterface.RegisterScriptMod(PlayerFaceScriptModFactory.Create(modInterface));
             modInterface.RegisterScriptMod(new PlayerHudScriptMod(modInterface));
         }
 
