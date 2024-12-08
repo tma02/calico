@@ -54,7 +54,7 @@ public class Mod : IMod
 
         if (config.DynamicZonesEnabled)
         {
-            modInterface.RegisterScriptMod(new TransitionZoneScriptMod(modInterface));
+            modInterface.RegisterScriptMod(TransitionZoneScriptModFactory.Create(modInterface));
         }
 
         if (config.MapSoundOptimizationsEnabled)
