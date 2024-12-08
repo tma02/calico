@@ -31,7 +31,7 @@ public class Mod : IMod
 
         if (config.ReducePhysicsUpdatesEnabled)
         {
-            modInterface.RegisterScriptMod(new Fishing3ScriptMod(modInterface));
+            modInterface.RegisterScriptMod(Fishing3ScriptModFactory.Create(modInterface));
         }
 
         if (config.MeshGpuInstancingEnabled || config.DynamicZonesEnabled)
