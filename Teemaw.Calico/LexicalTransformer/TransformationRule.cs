@@ -191,6 +191,6 @@ public class TransformationRuleBuilder
             throw new ArgumentNullException(nameof(_tokens), "Tokens cannot be null");
         }
 
-        return new TransformationRule(_name, _pattern, _tokens, _operation);
+        return new TransformationRule(_name, _pattern, _tokens, _operation, _times);
     }
 }
