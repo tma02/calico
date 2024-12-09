@@ -54,6 +54,7 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
         $catch_cam_position.queue_free()
         $camera_freecam_anchor.queue_free()
         $water_detect.queue_free()
+        $sound_emit.queue_free()
         $raincloud_check.queue_free()
         $local_range.queue_free()
         $rot_help.queue_free()
