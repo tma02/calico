@@ -57,7 +57,7 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
                 }
 
                 w.Buffer.Clear();
-                // We didn't buffer the current token so we can leave yieldAfter as what it is.
+                // We haven't buffered the current token so we can leave yieldAfter as what it is.
             }
 
             foreach (var w in transformers.Where(w => w.Waiter.Step > 0))
@@ -200,6 +200,10 @@ public class TransformationRuleScriptModBuilder
     /// <returns></returns>
     public TransformationRuleScriptModBuilder AddRule(TransformationRule rule)
     {
+        if (_rules.Select(r => r.Name).Contains(rule.Name))
+        {
+            throw new InvalidOperationException($"Another rule with the name '{rule.Name}' already exists!");
+        }
         _rules.Add(rule);
         return this;
     }
@@ -211,8 +215,7 @@ public class TransformationRuleScriptModBuilder
     /// <returns></returns>
     public TransformationRuleScriptModBuilder AddRule(TransformationRuleBuilder rule)
     {
-        _rules.Add(rule.Build());
-        return this;
+        return AddRule(rule.Build());
     }
 
     /// <summary>
