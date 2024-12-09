@@ -1,4 +1,5 @@
-﻿using GDWeave;
+﻿using System.Reflection;
+using GDWeave;
 using Teemaw.Calico.ScriptMod;
 
 namespace Teemaw.Calico;
@@ -7,6 +8,8 @@ public class Mod : IMod
 {
     public Mod(IModInterface modInterface)
     {
+        modInterface.Logger.Information($"[calico.Mod] Version is {GetAssemblyVersion()}");
+        
         var config = modInterface.ReadConfig<Config>();
 
         modInterface.Logger.Information($"[calico.Mod] Running with config {config}");
@@ -66,5 +69,12 @@ public class Mod : IMod
     public void Dispose()
     {
         // We don't have anything to clean up
+    }
+    
+    private static string GetAssemblyVersion()
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        var attribute = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+        return attribute?.InformationalVersion != null ? attribute.InformationalVersion : "unknown";
     }
 }
