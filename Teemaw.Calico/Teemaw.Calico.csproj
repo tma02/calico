@@ -16,6 +16,24 @@
         <None Include="manifest.json" CopyToOutputDirectory="PreserveNewest"/>
     </ItemGroup>
 
+    <Target Name="SetVersionFromManifest" BeforeTargets="GetAssemblyVersion">
+        <Exec Command="powershell -Command &quot;(Get-Content 'manifest.json' | ConvertFrom-Json).Metadata.Version&quot;" ConsoleToMsBuild="true">
+            <Output TaskParameter="ConsoleOutput" PropertyName="_ManifestVersion" />
+        </Exec>
+        <PropertyGroup>
+            <Version>$(_ManifestVersion)</Version>
+        </PropertyGroup>
+    </Target>
+
+    <Target Name="SetSourceRevisionId" BeforeTargets="InitializeSourceControlInformation">
+        <Exec Command="git rev-parse HEAD" ConsoleToMsBuild="true" IgnoreExitCode="false" IgnoreStandardErrorWarningFormat="true">
+            <Output TaskParameter="ConsoleOutput" PropertyName="_LongHash" />
+        </Exec>
+        <PropertyGroup>
+            <SourceRevisionId>$(_LongHash.Substring(0, 7))</SourceRevisionId>
+        </PropertyGroup>
+    </Target>
+
     <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(GDWeavePath)' != ''">
         <ItemGroup>
             <_SourceFiles Include="$(OutDir)\**\*.*"/>
