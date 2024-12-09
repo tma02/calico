@@ -14,7 +14,8 @@ public enum Operation
     None,
 
     /// <summary>
-    /// Replace all tokens of the waiter.
+    /// Replace all tokens of the waiter. This is a buffered operation. Buffered rules do not support overlapping token
+    /// patterns with other buffered rules.
     /// </summary>
     ReplaceAll,
 
@@ -29,7 +30,8 @@ public enum Operation
     Append,
 
     /// <summary>
-    /// Prepends before the first token of the waiter.
+    /// Prepends before the first token of the waiter. This is a buffered operation. Buffered rules do not support
+    /// overlapping token patterns with other buffered rules.
     /// </summary>
     Prepend,
 }
