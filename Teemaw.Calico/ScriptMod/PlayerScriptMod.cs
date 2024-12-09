@@ -8,6 +8,13 @@ using ScriptTokenizer = Teemaw.Calico.Util.ScriptTokenizer;
 
 namespace Teemaw.Calico.ScriptMod;
 
+/// <summary>
+/// Handles script patching for player.gd.
+/// NOTE: This script mod does not use <see cref="LexicalTransformer.TransformationRule"/>! This pattern should not be
+/// copied for new script mods!
+/// </summary>
+/// <param name="mod"></param>
+/// <param name="config"></param>
 public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
 {
     private static readonly IEnumerable<Token> Globals = ScriptTokenizer.Tokenize(

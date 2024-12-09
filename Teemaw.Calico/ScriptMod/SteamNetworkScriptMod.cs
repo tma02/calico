@@ -6,6 +6,13 @@ using ScriptTokenizer = Teemaw.Calico.Util.ScriptTokenizer;
 
 namespace Teemaw.Calico.ScriptMod;
 
+/// <summary>
+/// Handles script patching for SteamNetwork.gd.
+/// NOTE: This script mod does not use <see cref="LexicalTransformer.TransformationRule"/>! This pattern should not be
+/// copied for new script mods!
+/// </summary>
+/// <param name="mod"></param>
+/// <param name="config"></param>
 public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
 {
     private readonly MultiTokenWaiter _extendsWaiter = new([
