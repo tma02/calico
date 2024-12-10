@@ -160,7 +160,7 @@ public class TransformationRuleBuilder
     /// </summary>
     /// <param name="times"></param>
     /// <returns></returns>
-    public TransformationRuleBuilder Times(uint times)
+    public TransformationRuleBuilder ExpectTimes(uint times)
     {
         _times = times;
         return this;
