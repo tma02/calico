@@ -72,35 +72,6 @@ public record TransformationRule(
     uint Times,
     Func<bool> Predicate)
 {
-    /// <summary>
-    /// This holds the information required to perform a patch at a single locus.
-    /// </summary>
-    /// <param name="name">The name of this descriptor. Used for logging.</param>
-    /// <param name="pattern">A list of checks to be used in a MultiTokenWaiter.</param>
-    /// <param name="snippet">A snippet of GDScript which will be patched in.</param>
-    /// <param name="operation">The type of patch.</param>
-    /// <param name="times">The number of times this rule is expected to match.</param>
-    /// <param name="predicate">A predicate which must return true for the rule to match.</param>
-    public TransformationRule(string name, MultiTokenPattern pattern, string snippet,
-        Operation operation, uint times, Func<bool> predicate) :
-        this(name, pattern, ScriptTokenizer.Tokenize(snippet), operation, times, predicate)
-    {
-    }
-
-    /// <summary>
-    /// This holds the information required to perform a patch at a single locus.
-    /// </summary>
-    /// <param name="name">The name of this descriptor. Used for logging.</param>
-    /// <param name="pattern">A list of checks to be used in a MultiTokenWaiter.</param>
-    /// <param name="token">A GDScript Token which will be patched in.</param>
-    /// <param name="operation">The type of patch.</param>
-    /// <param name="times">The number of times this rule is expected to match.</param>
-    /// <param name="predicate">A predicate which must return true for the rule to match.</param>
-    public TransformationRule(string name, MultiTokenPattern pattern, Token token,
-        Operation operation, uint times, Func<bool> predicate) :
-        this(name, pattern, [token], operation, times, predicate)
-    {
-    }
 
     public MultiTokenWaiter CreateMultiTokenWaiter() => new(Pattern);
 }
