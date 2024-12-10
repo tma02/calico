@@ -1,10 +1,9 @@
 {
-    "name": "Calico",
-    "version_number": "0.4.0",
-    "website_url": "https://github.com/tma02/calico",
-    "description": "Calico; anti-lag improvements & client optimizations.",
-    "dependencies":
-    [
-        "NotNet-GDWeave-2.0.14"
-    ]
+  "name": "Calico",
+  "version_number": "0.4.0",
+  "website_url": "https://github.com/tma02/calico",
+  "description": "Calico; anti-lag improvements & client optimizations.",
+  "dependencies": [
+    "NotNet-GDWeave-2.0.14"
+  ]
 }
