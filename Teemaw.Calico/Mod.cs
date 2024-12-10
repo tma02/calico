@@ -21,7 +21,7 @@ public class Mod : IMod
 
         if (config.PlayerOptimizationsEnabled || config.ReducePhysicsUpdatesEnabled || config.SmoothCameraEnabled)
         {
-            modInterface.RegisterScriptMod(new PlayerScriptMod(modInterface, config));
+            modInterface.RegisterScriptMod(PlayerScriptModFactory.Create(modInterface, config));
         }
 
         if (config.PlayerOptimizationsEnabled)
