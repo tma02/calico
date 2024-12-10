@@ -35,114 +35,112 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
         mod.Logger.Information($"[calico.{name}] Patching {path}");
 
         var patchOccurrences = eligibleRules.ToDictionary(r => r.Name, r => (Occurred: 0, Expected: r.Times));
-        var yieldAfter = true;
+        var bufferAfterChecks = true;
+        var stagingBuffer = new List<Token>();
+        stagingBuffer.AddRange(tokens);
+        var transformedBuffer = new List<Token>();
 
-        foreach (var t in tokens)
+        foreach (var transformer in transformers)
         {
-            var buffersAtThisToken = 0;
-            var flushesAtThisToken = 0;
 
-            transformers.ForEach(w => w.Waiter.Check(t));
-            foreach (var w in transformers.Where(w => w.Waiter.Step == 0))
+            var hasScopePattern = transformer.Rule.ScopePattern.Length > 0;
+            var inScope = !hasScopePattern;
+            uint? scopeIndent = null;
+            var scopeWaiter = transformer.Rule.CreateMultiTokenWaiterForScope();
+
+            foreach (var token in stagingBuffer)
             {
-                // Flush any tokens in the buffer if we are out of the match
-                foreach (var bufferedToken in w.Buffer)
+                if (inScope)
                 {
-                    yield return bufferedToken;
-                }
-
-                if (w.Buffer.Count > 0)
-                {
-                    flushesAtThisToken += 1;
-                }
-
-                w.Buffer.Clear();
-                // We haven't buffered the current token so we can leave yieldAfter as what it is.
-            }
-
-            foreach (var w in transformers.Where(w => w.Waiter.Step > 0))
-            {
-                if (w.Rule.Operation.RequiresBuffer())
-                {
-                    w.Buffer.Add(t);
-                    buffersAtThisToken += 1;
-                    yieldAfter = false;
-                }
-
-                if (!w.Waiter.Matched)
-                {
-                    continue;
-                }
-
-                if (w.Rule.Operation.YieldTokenBeforeOperation())
-                {
-                    yield return t;
-                    yieldAfter = false;
+                    // Try to find the scope's base indentation
+                    if (scopeIndent == null && token.Type == TokenType.Newline)
+                    {
+                        scopeIndent = token.AssociatedData ?? 0;
+                    }
+                    // Check if we should leave the scope
+                    else if (scopeIndent != null && token.Type == TokenType.Newline)
+                    {
+                        inScope = (token.AssociatedData ?? 0) >= scopeIndent;
+                    }
                 }
                 else
                 {
-                    yieldAfter = w.Rule.Operation.YieldTokenAfterOperation();
+                    // We should never reach this case if the scope pattern has Length = 0.
+                    if (scopeWaiter.Check(token))
+                    {
+                        scopeWaiter.Reset();
+                        // Latch inScope to true if we match the scope pattern.
+                        inScope = true;
+                    }
+                }
+                
+                transformer.Waiter.Check(token);
+                if (transformer.Waiter.Step == 0)
+                {
+                    transformedBuffer.AddRange(transformer.Buffer);
+                    transformer.Buffer.Clear();
+                }
+                else
+                {
+                    if (transformer.Rule.Operation.RequiresBuffer())
+                    {
+                        transformer.Buffer.Add(token);
+                        bufferAfterChecks = false;
+                    }
+
+                    if (transformer.Waiter.Matched)
+                    {
+                        transformer.Waiter.Reset();
+
+                        if (transformer.Rule.Operation.YieldTokenBeforeOperation())
+                        {
+                            transformedBuffer.Add(token);
+                            bufferAfterChecks = false;
+                        }
+                        else
+                        {
+                            bufferAfterChecks = transformer.Rule.Operation.YieldTokenAfterOperation();
+                        }
+
+                        switch (transformer.Rule.Operation)
+                        {
+                            case Prepend:
+                                transformedBuffer.AddRange(transformer.Rule.Tokens);
+                                transformedBuffer.AddRange(transformer.Buffer);
+                                transformer.Buffer.Clear();
+                                break;
+                            case ReplaceLast:
+                            case Append:
+                            case ReplaceAll:
+                                transformer.Buffer.Clear();
+                                transformedBuffer.AddRange(transformer.Rule.Tokens);
+                                break;
+                            case None:
+                            default:
+                                break;
+                        }
+
+                        mod.Logger.Information($"[calico.{name}] Patch {transformer.Rule.Name} OK!");
+                        patchOccurrences[transformer.Rule.Name] = patchOccurrences[transformer.Rule.Name] with
+                        {
+                            Occurred = patchOccurrences[transformer.Rule.Name].Occurred + 1
+                        };
+                    }
                 }
 
-                w.Waiter.Reset();
-
-                switch (w.Rule.Operation)
+                if (bufferAfterChecks)
                 {
-                    case Prepend:
-                        foreach (var patchToken in w.Rule.Tokens)
-                        {
-                            yield return patchToken;
-                        }
-
-                        foreach (var bufferedToken in w.Buffer)
-                        {
-                            yield return bufferedToken;
-                        }
-
-                        w.Buffer.Clear();
-                        break;
-                    case ReplaceLast:
-                    case Append:
-                    case ReplaceAll:
-                        w.Buffer.Clear();
-                        foreach (var patchToken in w.Rule.Tokens)
-                        {
-                            yield return patchToken;
-                        }
-
-                        break;
-                    case None:
-                    default:
-                        break;
+                    transformedBuffer.Add(token);
                 }
-
-                mod.Logger.Information($"[calico.{name}] Patch {w.Rule.Name} OK!");
-                patchOccurrences[w.Rule.Name] = patchOccurrences[w.Rule.Name] with
+                else
                 {
-                    Occurred = patchOccurrences[w.Rule.Name].Occurred + 1
-                };
+                    bufferAfterChecks = true;
+                }
             }
 
-            if (yieldAfter)
-            {
-                yield return t;
-            }
-            else
-            {
-                yieldAfter = true;
-            }
-
-            if (buffersAtThisToken > 1)
-            {
-                mod.Logger.Warning(
-                    $"[calico.{name}] {t} Token buffered by multiple transformers. This may cause unexpected behavior! Do you have overlapping transformer rules?");
-            }
-
-            if (flushesAtThisToken > 1)
-            {
-                mod.Logger.Warning(
-                    $"[calico.{name}] Flushes performed by multiple transformers at this token. This may cause unexpected behavior! Do you have overlapping transformer rules?");
-            }
+            stagingBuffer.Clear();
+            stagingBuffer.AddRange(transformedBuffer);
+            transformedBuffer.Clear();
         }
 
         foreach (var result in patchOccurrences.Where(result => result.Value.Occurred != result.Value.Expected))
@@ -150,5 +148,7 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
             mod.Logger.Error(
                 $"[calico.{name}] Patch {result.Key} FAILED! Times expected={result.Value.Expected}, actual={result.Value.Occurred}");
         }
+
+        return stagingBuffer;
     }
 }

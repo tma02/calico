@@ -60,6 +60,7 @@ public static class OperationExtensions
 /// </summary>
 /// <param name="Name">The name of this descriptor. Used for logging.</param>
 /// <param name="Pattern">A list of checks to be used in a MultiTokenWaiter.</param>
+/// <param name="ScopePattern">A list of checks to be used in a MultiTokenWaiter marking the .</param>
 /// <param name="Tokens">A list of GDScript tokens which will be patched in.</param>
 /// <param name="Operation">The type of patch.</param>
 /// <param name="Times">The number of times this rule is expected to match.</param>
@@ -67,6 +68,7 @@ public static class OperationExtensions
 public record TransformationRule(
     string Name,
     MultiTokenPattern Pattern,
+    MultiTokenPattern ScopePattern,
     IEnumerable<Token> Tokens,
     Operation Operation,
     uint Times,
@@ -74,6 +76,8 @@ public record TransformationRule(
 {
 
     public MultiTokenWaiter CreateMultiTokenWaiter() => new(Pattern);
+    
+    public MultiTokenWaiter CreateMultiTokenWaiterForScope() => new(ScopePattern);
 }
 
 /// <summary>
@@ -83,6 +87,7 @@ public class TransformationRuleBuilder
 {
     private string? _name;
     private MultiTokenPattern? _pattern;
+    private MultiTokenPattern _scopePattern = [];
     private IEnumerable<Token>? _tokens;
     private uint _times = 1;
     private Operation _operation = Operation.Append;
@@ -167,6 +172,16 @@ public class TransformationRuleBuilder
     }
 
     /// <summary>
+    /// Sets the scope of this rule.
+    /// </summary>
+    /// <param name="scopePattern"></param>
+    /// <returns></returns>
+    public TransformationRuleBuilder ScopedTo(MultiTokenPattern scopePattern)
+    {
+        return this;
+    }
+
+    /// <summary>
     /// Sets the predicate function whose return value will decide if this rule will be checked.
     /// </summary>
     /// <param name="predicate"></param>
@@ -210,6 +225,6 @@ public class TransformationRuleBuilder
             throw new ArgumentNullException(nameof(_tokens), "Tokens cannot be null");
         }
 
-        return new TransformationRule(_name, _pattern, _tokens, _operation, _times, _predicate);
+        return new TransformationRule(_name, _pattern, _scopePattern, _tokens, _operation, _times, _predicate);
     }
 }
