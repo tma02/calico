@@ -97,8 +97,9 @@ public class PlayerScriptMod(IModInterface mod, Config config) : IScriptMod
         """, 1);
 
     private static readonly IEnumerable<Token> GuardCreateCosmetics = ScriptTokenizer.Tokenize(
-        // Note the tab for indent tokenization
+        // The original script has a blank line here. We replicate this to improve compatibility with other mods.
         """
+
 
         if !calico_cosmetic_data_needs_update(data):
         	print("[calico] Skipping unnecessary cosmetic update")
