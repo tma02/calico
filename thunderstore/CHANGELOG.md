@@ -1,3 +1,10 @@
+## 0.4.2
+
+* Added searching for lobbies by unique ID.
+    * This is currently experimental and disabled by default.
+    * This adds the option to view and copy the lobby's unique ID from the Esc menu.
+    * If enabled, lobby IDs copied from the menu can be used as a lobby code.
+
 ## 0.4.1
 
 * Fixed loading screen timeout patching.

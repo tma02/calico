@@ -37,6 +37,7 @@ The `Teemaw.Calico.json` configuration file has the following schema and default
 ```json
 {
   "DynamicZonesEnabled": true,
+  "LobbyIdsEnabled": false,
   "LoadingWaitTimeoutEnabled": true,
   "MapSoundOptimizationsEnabled": true,
   "MeshGpuInstancingEnabled": true,
@@ -57,6 +58,18 @@ Files modified:
 
 * `res://Scenes/Map/main_map.gdc`
 * `res://Scenes/Map/Tools/transition_zone.gdc`
+
+### `LobbyIdsEnabled` (Experimental)
+
+Lobby codes can be "spoofed" by modded clients. Calico lobby IDs are unique to each lobby and cannot be spoofed. This
+option enables a new button in the Esc menu to view and copy this unique lobby ID. This will also enable searching for
+lobbies using this unique ID.
+
+Files modified:
+
+* `res://Scenes/HUD/Esc Menu/esc_menu.gdc`
+* `res://Scenes/Menus/Main Menu/main_menu.gdc`
+* `res://Scenes/Singletons/SteamNetwork.gdc`
 
 ### `LoadingWaitTimeoutEnabled`
 

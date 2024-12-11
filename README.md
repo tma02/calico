@@ -61,7 +61,7 @@ Files modified:
 * `res://Scenes/Map/main_map.gdc`
 * `res://Scenes/Map/Tools/transition_zone.gdc`
 
-### `LobbyIdsEnabled`
+### `LobbyIdsEnabled` (Experimental)
 
 Lobby codes can be "spoofed" by modded clients. Calico lobby IDs are unique to each lobby and cannot be spoofed. This
 option enables a new button in the Esc menu to view and copy this unique lobby ID. This will also enable searching for
