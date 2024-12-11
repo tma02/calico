@@ -76,6 +76,7 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
 
                 if (!inScope)
                 {
+                    transformedBuffer.Add(token);
                     continue;
                 }
                 
