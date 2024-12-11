@@ -50,7 +50,7 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
 
             foreach (var token in stagingBuffer)
             {
-                if (inScope)
+                if (inScope && hasScopePattern)
                 {
                     // Try to find the scope's base indentation
                     if (scopeIndent == null && token.Type == TokenType.Newline)
@@ -63,7 +63,7 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
                         inScope = (token.AssociatedData ?? 0) >= scopeIndent;
                     }
                 }
-                else
+                else if (hasScopePattern)
                 {
                     // We should never reach this case if the scope pattern has Length = 0.
                     if (scopeWaiter.Check(token))
@@ -72,6 +72,11 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
                         // Latch inScope to true if we match the scope pattern.
                         inScope = true;
                     }
+                }
+
+                if (!inScope)
+                {
+                    continue;
                 }
                 
                 transformer.Waiter.Check(token);

@@ -178,6 +178,7 @@ public class TransformationRuleBuilder
     /// <returns></returns>
     public TransformationRuleBuilder ScopedTo(MultiTokenPattern scopePattern)
     {
+        _scopePattern = scopePattern;
         return this;
     }
 
