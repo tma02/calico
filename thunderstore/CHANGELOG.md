@@ -1,3 +1,8 @@
+## 0.4.1
+
+* Fixed loading screen timeout patching.
+    * It actually works now.
+
 ## 0.4.0
 
 * Added loading screen timeout.
