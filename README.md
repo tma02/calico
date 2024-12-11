@@ -39,6 +39,7 @@ The `Teemaw.Calico.json` configuration file has the following schema and default
 ```json
 {
   "DynamicZonesEnabled": true,
+  "LoadingWaitTimeoutEnabled": true,
   "MapSoundOptimizationsEnabled": true,
   "MeshGpuInstancingEnabled": true,
   "MultiThreadNetworkingEnabled": true,
@@ -58,6 +59,18 @@ Files modified:
 
 * `res://Scenes/Map/main_map.gdc`
 * `res://Scenes/Map/Tools/transition_zone.gdc`
+
+### `LoadingWaitTimeoutEnabled`
+
+After you join a lobby, the game enters a loading screen while you connect to other players. If you're joining a lobby
+with only a few players, and you're unable to connect to even one of them, you'll be stuck in a loading screen forever.
+This option fixes this by introducing a small timeout for each player you haven't connected to yet. The maximum amount
+of time you'll have to wait is ~12 seconds. When this is enabled, it may be possible that there are other players in the
+lobby that you cannot see or chat with.
+
+File modified:
+
+* `res://Scenes/Menus/Loading Menu/loading_menu.gdc`
 
 ### `MapSoundOptimizationsEnabled`
 

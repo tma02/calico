@@ -64,6 +64,11 @@ public class Mod : IMod
         {
             modInterface.RegisterScriptMod(BushParticleDetectScriptModFactory.Create(modInterface));
         }
+
+        if (config.LoadingWaitTimeoutEnabled)
+        {
+            modInterface.RegisterScriptMod(LoadingMenuScriptModFactory.Create(modInterface));
+        }
     }
 
     public void Dispose()

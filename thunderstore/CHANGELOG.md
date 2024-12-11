@@ -1,5 +1,7 @@
 ## 0.4.0
 
+* Added loading screen timeout.
+    * This will get you past the loading screen when you're unable to connect to another player in the lobby. 
 * Added map sound optimizations.
     * This detaches inactive audio player nodes from the scene tree.
 * Optimized actor signals with `PlayerOptimizationsEnabled`.

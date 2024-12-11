@@ -5,6 +5,7 @@ namespace Teemaw.Calico;
 public class Config
 {
     [JsonInclude] public bool DynamicZonesEnabled = true;
+    [JsonInclude] public bool LoadingWaitTimeoutEnabled = true;
     [JsonInclude] public bool MapSoundOptimizationsEnabled = true;
     [JsonInclude] public bool MeshGpuInstancingEnabled = true;
     [JsonInclude] public bool MultiThreadNetworkingEnabled = true;
@@ -15,6 +16,7 @@ public class Config
     public override string ToString()
     {
         return $"DynamicZonesEnabled={DynamicZonesEnabled}, " + 
+               $"LoadingWaitTimeoutEnabled={LoadingWaitTimeoutEnabled}, " +
                $"MapSoundOptimizationsEnabled={MapSoundOptimizationsEnabled}, " +
                $"MeshGpuInstancingEnabled={MeshGpuInstancingEnabled}, " +
                $"MultiThreadNetworkingEnabled={MultiThreadNetworkingEnabled}, " +
