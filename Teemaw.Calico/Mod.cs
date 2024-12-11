@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using GDWeave;
 using Teemaw.Calico.ScriptMod;
+using Teemaw.Calico.ScriptMod.LobbyId;
 
 namespace Teemaw.Calico;
 
@@ -68,6 +69,13 @@ public class Mod : IMod
         if (config.LoadingWaitTimeoutEnabled)
         {
             modInterface.RegisterScriptMod(LoadingMenuScriptModFactory.Create(modInterface));
+        }
+
+        if (config.LobbyIdsEnabled)
+        {
+            modInterface.RegisterScriptMod(LobbyIdSteamNetworkScriptModFactory.Create(modInterface));
+            modInterface.RegisterScriptMod(LobbyIdMainMenuScriptModFactory.Create(modInterface));
+            modInterface.RegisterScriptMod(LobbyIdEscMenuScriptModFactory.Create(modInterface));
         }
     }
 

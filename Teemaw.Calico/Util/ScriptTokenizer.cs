@@ -305,7 +305,8 @@ public static class ScriptTokenizer {
                 continue;
             }
 
-            if (enumerator.Current == "-" || char.IsDigit(enumerator.Current[0])) {
+            //if (enumerator.Current == "-" || char.IsDigit(enumerator.Current[0])) {
+            if (char.IsDigit(enumerator.Current[0])) {
                 BuildNumber(enumerator, toFlush, out bool foundFull);
                 reparse = !foundFull;
                 endAndFlushId();
@@ -359,8 +360,9 @@ public static class ScriptTokenizer {
                         // CALICO: Hack to handle `self` being the last token of a line
                         finalTokens.Add(new Token(TokenType.Self));
                     }
-                    else switch (idName)
+                    else switch (idName.Trim())
                     {
+                        // TODO: CALICO: clean up this hack
                         case "print":
                             // CALICO: Without this, `print` is tokenized as an identifier.
                             finalTokens.Add(new Token(TokenType.BuiltInFunc, (uint?) BuiltinFunction.TextPrint));
@@ -380,6 +382,18 @@ public static class ScriptTokenizer {
                         case "lerp_angle":
                             // CALICO: Without this, `lerp_angle` is tokenized as an identifier.
                             finalTokens.Add(new Token(TokenType.BuiltInFunc, (uint?) BuiltinFunction.MathLerpAngle));
+                            break;
+                        case "int":
+                            // CALICO: https://docs.godotengine.org/en/3.5/tutorials/io/binary_serialization_api.html
+                            finalTokens.Add(new Token(TokenType.BuiltInType, 2));
+                            break;
+                        case "pow":
+                            // CALICO:
+                            finalTokens.Add(new Token(TokenType.BuiltInFunc, (uint?) BuiltinFunction.MathPow));
+                            break;
+                        case "abs":
+                            // CALICO:
+                            finalTokens.Add(new Token(TokenType.BuiltInFunc, (uint?) BuiltinFunction.MathAbs));
                             break;
                         default:
                             // CALICO: We change this to trim the idName, otherwise the whitespace messes with the token

@@ -6,6 +6,7 @@ public class Config
 {
     [JsonInclude] public bool DynamicZonesEnabled = true;
     [JsonInclude] public bool LoadingWaitTimeoutEnabled = true;
+    [JsonInclude] public bool LobbyIdsEnabled = false;
     [JsonInclude] public bool MapSoundOptimizationsEnabled = true;
     [JsonInclude] public bool MeshGpuInstancingEnabled = true;
     [JsonInclude] public bool MultiThreadNetworkingEnabled = true;
@@ -17,6 +18,7 @@ public class Config
     {
         return $"DynamicZonesEnabled={DynamicZonesEnabled}, " + 
                $"LoadingWaitTimeoutEnabled={LoadingWaitTimeoutEnabled}, " +
+               $"LobbyIdsEnabled={LobbyIdsEnabled}, " +
                $"MapSoundOptimizationsEnabled={MapSoundOptimizationsEnabled}, " +
                $"MeshGpuInstancingEnabled={MeshGpuInstancingEnabled}, " +
                $"MultiThreadNetworkingEnabled={MultiThreadNetworkingEnabled}, " +
