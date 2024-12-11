@@ -1,6 +1,9 @@
 ﻿using GDWeave;
+using GDWeave.Godot;
+using GDWeave.Godot.Variants;
 using GDWeave.Modding;
 using Teemaw.Calico.LexicalTransformer;
+using static GDWeave.Godot.TokenType;
 using static Teemaw.Calico.LexicalTransformer.Operation;
 using static Teemaw.Calico.LexicalTransformer.TransformationPatternFactory;
 
@@ -45,9 +48,20 @@ public class LoadingMenuScriptModFactory
             )
             .AddRule(new TransformationRuleBuilder()
                 .Named("join_guard")
-                .Matching(CreateGdSnippetPattern("if packets_recieved >= 6 or packets_recieved >= (Network.LOBBY_MEMBERS.size() - 1):"))
-                .Do(ReplaceAll)
-                .With("if packets_recieved >= 6 or packets_recieved >= (Network.LOBBY_MEMBERS.size() - calico_epsilon):")
+                // Using an array here since `- 1` is not tokenized correctly yet.
+                .Matching([
+                    t => t is IdentifierToken { Name: "Network" },
+                    t => t.Type is Period,
+                    t => t is IdentifierToken { Name: "LOBBY_MEMBERS" },
+                    t => t.Type is Period,
+                    t => t is IdentifierToken { Name: "size" },
+                    t => t.Type is ParenthesisOpen,
+                    t => t.Type is ParenthesisClose,
+                    t => t.Type is OpSub,
+                    t => t is ConstantToken constant && constant.Value.Equals(new IntVariant(1)),
+                ])
+                .Do(ReplaceLast)
+                .With(new IdentifierToken("calico_epsilon"))
             )
             .Build();
     }
