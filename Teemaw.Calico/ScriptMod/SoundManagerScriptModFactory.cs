@@ -4,6 +4,7 @@ using GDWeave.Modding;
 using Teemaw.Calico.LexicalTransformer;
 using static Teemaw.Calico.LexicalTransformer.Operation;
 using static Teemaw.Calico.LexicalTransformer.TransformationPatternFactory;
+using static Teemaw.Calico.Util.WeaveUtil;
 
 namespace Teemaw.Calico.ScriptMod;
 
@@ -20,30 +21,49 @@ public static class SoundManagerScriptModFactory
                 .Matching(CreateGlobalsPattern())
                 .Do(Append)
                 .With(
-                    """
+                    $"""
 
-                    const CALICO_PERSIST = ["dive_scrape", "reel_slow", "reel_fast"]
-                    var calico_players = {}
+                     const CALICO_PERSIST = [{
+                         // This is the first place we dynamically determine patch content based on state available to
+                         // GDWeave. I'm not yet certain that this is the best pattern to follow moving forward.
+                         new Func<string>(() => {
+                             List<string> persistedPlayerNodes = ["dive_scrape", "reel_slow", "reel_fast"];
+                             if (IsModLoaded(mod, "Sulayre.Lure"))
+                             {
+                                 // Lure expects bark_cat in the node tree as a template
+                                 persistedPlayerNodes.Add("bark_cat");
+                             }
 
-                    func _ready():
-                    	for child in get_children():
-                    		if (child is AudioStreamPlayer3D || child is AudioStreamPlayer) && !CALICO_PERSIST.has(child.name):
-                    			calico_players[child.name] = child
-                    			calico_players[child.name].connect("finished", self, "calico_remove_child", [child.name])
-                    			remove_child(child)
+                             var array = persistedPlayerNodes
+                                 .Append("bark_cat")
+                                 .Select(node => "\"" + node + "\"")
+                                 .ToArray();
 
-                    func calico_remove_child(id):
-                    	print("[calico] Cleaning up sfx ", id)
-                    	remove_child(calico_players[id])
+                             return string.Join(", ", array);
+                         })()
+                     }]
+                     var calico_players = {/* Hack: {} can't be escaped in a raw string */"{}"}
 
-                    func calico_get_player_or_null(id):
-                    	if !calico_players.has(id):
-                    		return get_node_or_null(id)
-                    	if calico_players[id].get_parent() == null:
-                    		add_child(calico_players[id])
-                    	return calico_players[id]
+                     func _ready():
+                     	print("[calico] caching player sfx")
+                     	for child in get_children():
+                     		if (child is AudioStreamPlayer3D || child is AudioStreamPlayer) && !CALICO_PERSIST.has(child.name):
+                     			calico_players[child.name] = child
+                     			calico_players[child.name].connect("finished", self, "calico_remove_child", [child.name])
+                     			remove_child(child)
 
-                    """))
+                     func calico_remove_child(id):
+                     	print("[calico] Cleaning up sfx ", id)
+                     	remove_child(calico_players[id])
+
+                     func calico_get_player_or_null(id):
+                     	if !calico_players.has(id):
+                     		return get_node_or_null(id)
+                     	if calico_players[id].get_parent() == null:
+                     		add_child(calico_players[id])
+                     	return calico_players[id]
+
+                     """))
             .AddRule(new TransformationRuleBuilder()
                 .Named("get_node_or_null")
                 .Matching(CreateGdSnippetPattern("var node = get_node_or_null"))
