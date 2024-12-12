@@ -68,7 +68,9 @@ This brings a few QoL features to lobbies:
     * A new button in the Esc menu lets you see and copy this ID.
     * Other players with Calico installed can join with this ID.
 * Join/leave messages only appear for users who are not blocked.
-    * Works with LobbyLifeguard!
+    * Works with LobbyLifeguard! However, if you are hosting, you may still see one join message for users who are
+      only on your LobbyLifeguard banlist and not on your vanilla blocklist. Join messages after this should be
+      hidden.
 * Sort by player count option at the main menu.
 * Fixes the lobby list to actually show ~1,000 lobbies.
 
