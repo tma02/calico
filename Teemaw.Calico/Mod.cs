@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using GDWeave;
 using Teemaw.Calico.ScriptMod;
-using Teemaw.Calico.ScriptMod.LobbyId;
+using Teemaw.Calico.ScriptMod.LobbyQol;
 
 namespace Teemaw.Calico;
 
@@ -71,11 +71,11 @@ public class Mod : IMod
             modInterface.RegisterScriptMod(LoadingMenuScriptModFactory.Create(modInterface));
         }
 
-        if (config.LobbyIdsEnabled)
+        if (config.LobbyQolEnabled)
         {
-            modInterface.RegisterScriptMod(LobbyIdSteamNetworkScriptModFactory.Create(modInterface));
-            modInterface.RegisterScriptMod(LobbyIdMainMenuScriptModFactory.Create(modInterface));
-            modInterface.RegisterScriptMod(LobbyIdEscMenuScriptModFactory.Create(modInterface));
+            modInterface.RegisterScriptMod(LobbyQolSteamNetworkScriptModFactory.Create(modInterface, config));
+            modInterface.RegisterScriptMod(LobbyQolMainMenuScriptModFactory.Create(modInterface));
+            modInterface.RegisterScriptMod(LobbyQolEscMenuScriptModFactory.Create(modInterface));
         }
     }
 
