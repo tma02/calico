@@ -1,3 +1,14 @@
+## 0.5.0
+
+* Fixed compatibility issues with Lure.
+    * This fixes a crash when joining a lobby with Lure and certain mods installed.
+* Added lobby QoL patches option.
+    * Lobby IDs are now included in this option.
+    * Adds an option at the main menu to sort lobbies by player count.
+    * Fixes the lobby list not showing 1000 lobbies.
+    * Hides join/leave messages for players who are blocked.
+* `LobbyIdsEnabled` has been removed. It is now part of `LobbyQolEnabled`.
+
 ## 0.4.2
 
 * Added searching for lobbies by unique ID.
