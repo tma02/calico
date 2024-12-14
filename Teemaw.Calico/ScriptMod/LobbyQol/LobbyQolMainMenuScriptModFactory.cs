@@ -48,6 +48,8 @@ public static class LobbyQolMainMenuScriptModFactory
                     calico_tt.body = "Sorts the lobby list by user count."
                     calico_most_players.add_child(calico_tt)
                     $"%hidenames".get_parent().add_child(calico_most_players)
+                    var calico_lobby_scroll_bar = $lobby_browser/Panel/Panel2/ScrollContainer/_v_scroll
+                    calico_lobby_scroll_bar.get_stylebox("grabber").content_margin_top = 20
 
                     """, 1
                 )
