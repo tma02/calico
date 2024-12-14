@@ -41,7 +41,9 @@ public static class LobbyQolMainMenuScriptModFactory
                     code.max_length = 14
                     calico_most_players = $"%hidenames".duplicate()
                     calico_most_players.text = "MOST USERS"
-                    var calico_tt = $"%hidenames".get_parent().get_node("Label").get_node("TooltipNode").duplicate()
+                    var calico_original_label = $"%hidenames".get_parent().get_node("Label")
+                    calico_original_label.text = "Filters"
+                    var calico_tt = calico_original_label.get_node("TooltipNode").duplicate()
                     calico_tt.header = "Calico: Most Users"
                     calico_tt.body = "Sorts the lobby list by user count."
                     calico_most_players.add_child(calico_tt)
