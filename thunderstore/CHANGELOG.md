@@ -1,3 +1,8 @@
+## 0.5.1
+
+* Made the lobby list scroll grabber larger.
+* Fixed the player count sort filter overflowing.
+
 ## 0.5.0
 
 * Fixed compatibility issues with Lure.
