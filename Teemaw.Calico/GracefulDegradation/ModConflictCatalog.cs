@@ -15,14 +15,13 @@ public static class ModConflictCatalog
     private static readonly Dictionary<CompatScope, string[]> CompatScopeFeatures = new()
     {
         { MULTITHREAD_NETWORKING, ["MultiThreadNetworkingEnabled"] },
-        { CAMERA_PHYSICS, ["SmoothCameraEnabled", "ReducePhysicsUpdatesEnabled"] }
+        { CAMERA_PHYSICS, ["SmoothCameraEnabled"] }
     };
 
     private static readonly Dictionary<string, CompatScope[]> FeatureCompatScopes = new()
     {
         { "MultiThreadNetworkingEnabled", [MULTITHREAD_NETWORKING] },
-        { "SmoothCameraEnabled", [CAMERA_PHYSICS] },
-        { "ReducePhysicsUpdatesEnabled", [CAMERA_PHYSICS] }
+        { "SmoothCameraEnabled", [CAMERA_PHYSICS] }
     };
 
     /// <summary>

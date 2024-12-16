@@ -18,9 +18,7 @@ public class Config(IModInterface mi, ConfigFileSchema configFile)
 
     public bool PlayerOptimizationsEnabled => configFile.PlayerOptimizationsEnabled;
 
-    public bool ReducePhysicsUpdatesEnabled => configFile.ReducePhysicsUpdatesEnabled
-                                               && (NoConflicts(mi, CAMERA_PHYSICS)
-                                                   || configFile.ZzCompatOverrideMayCauseCrash);
+    public bool ReducePhysicsUpdatesEnabled => configFile.ReducePhysicsUpdatesEnabled;
 
     public bool SmoothCameraEnabled => configFile.SmoothCameraEnabled
                                        && (NoConflicts(mi, CAMERA_PHYSICS)
