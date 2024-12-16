@@ -11,6 +11,12 @@ public static class ModConflictCatalog
         { CAMERA_UPDATE, ["hideri.SmoothCam"] }
     };
 
+    private static readonly Dictionary<CompatScope, string[]> CompatScopeFeatures = new()
+    {
+        { MULTITHREAD_NETWORKING, ["MultiThreadNetworkingEnabled"] },
+        { CAMERA_UPDATE, ["SmoothCameraEnabled"] }
+    };
+
     /// <summary>
     /// Returns a list of loaded mods that have a known conflict with the given scope.
     /// </summary>
@@ -34,5 +40,38 @@ public static class ModConflictCatalog
     public static bool NoConflicts(IModInterface mi, CompatScope scope)
     {
         return GetLoadedConflicts(mi, scope).Length == 0;
+    }
+
+    public static bool AnyConflicts(IModInterface mi)
+    {
+        foreach (var scope in KnownConflicts.Keys)
+        {
+            if (!NoConflicts(mi, scope))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static string GetConflictMessage(IModInterface mi)
+    {
+        var conflicts = new List<string>();
+        foreach (var scope in KnownConflicts.Keys)
+        {
+            if (!NoConflicts(mi, scope))
+            {
+                var possession = CompatScopeFeatures[scope].Length > 1 ? "have" : "has";
+                conflicts.Add($"[{string.Join(", ", CompatScopeFeatures[scope])}] {possession} " +
+                              $"been disabled due to:\n" +
+                              $"[{string.Join(", ", GetLoadedConflicts(mi, scope))}].");
+            }
+        }
+
+        return $"Due to known mod conflicts, Calico could not\npatch certain features which " +
+               $"you have enabled in the config.\n{string.Join("\n", conflicts)}\nTo hide this " +
+               $"message, either disable the conflicting mods,\nor disable the conflicting " +
+               $"features in Calico's config.";
     }
 }

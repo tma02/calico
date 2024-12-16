@@ -2,6 +2,7 @@
 using GDWeave;
 using Teemaw.Calico.ScriptMod;
 using Teemaw.Calico.ScriptMod.LobbyQol;
+using Teemaw.Calico.ScriptMod.Meta;
 
 namespace Teemaw.Calico;
 
@@ -16,6 +17,8 @@ public class CalicoMod : IMod
 
         mi.Logger.Information($"[calico.Mod] Running with config {config}");
 
+        mi.RegisterScriptMod(CalicoGlobalsScriptModFactory.Create(mi));
+        mi.RegisterScriptMod(CalicoSplashScriptModFactory.Create(mi));
         mi.RegisterScriptMod(new SteamNetworkScriptMod(mi, config));
         mi.RegisterScriptMod(PlayerHeadHudScriptModFactory.Create(mi, config));
         mi.RegisterScriptMod(TailRootScriptModFactory.Create(mi, config));
