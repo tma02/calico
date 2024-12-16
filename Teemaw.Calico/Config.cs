@@ -1,34 +1,25 @@
-﻿using System.Text.Json.Serialization;
+﻿using GDWeave;
+using static Teemaw.Calico.GracefulDegradation.CompatScope;
+using static Teemaw.Calico.GracefulDegradation.ModConflictCatalog;
 
 namespace Teemaw.Calico;
 
-public class Config
+public class Config(IModInterface mi, ConfigFileSchema configFile)
 {
-    [JsonInclude] public bool DynamicZonesEnabled = true;
-    [JsonInclude] public bool LoadingWaitTimeoutEnabled = true;
-    [JsonInclude] public bool LobbyQolEnabled = true;
-    [JsonInclude] public bool MapSoundOptimizationsEnabled = true;
-    [JsonInclude] public bool MeshGpuInstancingEnabled = true;
-    [JsonInclude] public bool MultiThreadNetworkingEnabled = true;
-    [JsonInclude] public bool PlayerOptimizationsEnabled = true;
-    [JsonInclude] public bool ReducePhysicsUpdatesEnabled = true;
-    [JsonInclude] public bool SmoothCameraEnabled = true;
+    public bool DynamicZonesEnabled => configFile.DynamicZonesEnabled;
+    public bool LoadingWaitTimeoutEnabled => configFile.LoadingWaitTimeoutEnabled;
+    public bool LobbyQolEnabled => configFile.LobbyQolEnabled;
+    public bool MapSoundOptimizationsEnabled => configFile.MapSoundOptimizationsEnabled;
+    public bool MeshGpuInstancingEnabled => configFile.MeshGpuInstancingEnabled;
 
-    public override string ToString()
-    {
-        return $"DynamicZonesEnabled={DynamicZonesEnabled}, " +
-               $"LoadingWaitTimeoutEnabled={LoadingWaitTimeoutEnabled}, " +
-               $"LobbyQolEnabled={LobbyQolEnabled}, " +
-               $"MapSoundOptimizationsEnabled={MapSoundOptimizationsEnabled}, " +
-               $"MeshGpuInstancingEnabled={MeshGpuInstancingEnabled}, " +
-               $"MultiThreadNetworkingEnabled={MultiThreadNetworkingEnabled}, " +
-               $"PlayerOptimizationsEnabled={PlayerOptimizationsEnabled}, " +
-               $"ReducePhysicsUpdatesEnabled={ReducePhysicsUpdatesEnabled}, " +
-               $"SmoothCameraEnabled={SmoothCameraEnabled}";
-    }
+    public bool MultiThreadNetworkingEnabled => configFile.MultiThreadNetworkingEnabled &&
+                                                NoConflicts(mi, MULTITHREAD_NETWORKING);
 
-    public bool AnyEnabled() =>
-        DynamicZonesEnabled || LoadingWaitTimeoutEnabled || LobbyQolEnabled || MapSoundOptimizationsEnabled
-        || MeshGpuInstancingEnabled || MultiThreadNetworkingEnabled || PlayerOptimizationsEnabled
-        || ReducePhysicsUpdatesEnabled || SmoothCameraEnabled;
+    public bool PlayerOptimizationsEnabled => configFile.PlayerOptimizationsEnabled;
+    public bool ReducePhysicsUpdatesEnabled => configFile.ReducePhysicsUpdatesEnabled;
+
+    public bool SmoothCameraEnabled => configFile.SmoothCameraEnabled &&
+                                       NoConflicts(mi, CAMERA_UPDATE);
+    
+    
 }
