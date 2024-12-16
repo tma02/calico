@@ -9,7 +9,7 @@ namespace Teemaw.Calico.ScriptMod.Meta;
 
 public static class CalicoSplashScriptModFactory
 {
-    public static IScriptMod Create(IModInterface mi, Config config, ConfigFileSchema configFile)
+    public static IScriptMod Create(IModInterface mi, ConfigFileSchema configFile)
     {
         return new TransformationRuleScriptModBuilder()
             .ForMod(mi)

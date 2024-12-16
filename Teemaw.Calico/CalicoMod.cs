@@ -19,7 +19,7 @@ public class CalicoMod : IMod
         mi.Logger.Information($"[calico.Mod] Running with config {config}");
 
         mi.RegisterScriptMod(CalicoGlobalsScriptModFactory.Create(mi));
-        mi.RegisterScriptMod(CalicoSplashScriptModFactory.Create(mi, config, configFile));
+        mi.RegisterScriptMod(CalicoSplashScriptModFactory.Create(mi, configFile));
         mi.RegisterScriptMod(new SteamNetworkScriptMod(mi, config));
         mi.RegisterScriptMod(PlayerHeadHudScriptModFactory.Create(mi, config));
         mi.RegisterScriptMod(TailRootScriptModFactory.Create(mi, config));
