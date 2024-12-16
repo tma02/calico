@@ -19,7 +19,18 @@ public class Config(IModInterface mi, ConfigFileSchema configFile)
     public bool ReducePhysicsUpdatesEnabled => configFile.ReducePhysicsUpdatesEnabled;
 
     public bool SmoothCameraEnabled => configFile.SmoothCameraEnabled &&
-                                       NoConflicts(mi, CAMERA_UPDATE);
+                                       NoConflicts(mi, CAMERA_PHYSICS);
     
-    
+    public override string ToString()
+    {
+        return $"DynamicZonesEnabled={DynamicZonesEnabled}, " +
+               $"LoadingWaitTimeoutEnabled={LoadingWaitTimeoutEnabled}, " +
+               $"LobbyQolEnabled={LobbyQolEnabled}, " +
+               $"MapSoundOptimizationsEnabled={MapSoundOptimizationsEnabled}, " +
+               $"MeshGpuInstancingEnabled={MeshGpuInstancingEnabled}, " +
+               $"MultiThreadNetworkingEnabled={MultiThreadNetworkingEnabled}, " +
+               $"PlayerOptimizationsEnabled={PlayerOptimizationsEnabled}, " +
+               $"ReducePhysicsUpdatesEnabled={ReducePhysicsUpdatesEnabled}, " +
+               $"SmoothCameraEnabled={SmoothCameraEnabled}";
+    }
 }
