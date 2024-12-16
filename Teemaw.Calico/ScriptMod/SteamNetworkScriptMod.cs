@@ -1,7 +1,9 @@
 ﻿using GDWeave;
 using GDWeave.Godot;
 using GDWeave.Modding;
+using Teemaw.Calico.GracefulDegradation;
 using static GDWeave.Godot.TokenType;
+using static Teemaw.Calico.GracefulDegradation.ModConflictCatalog;
 using ScriptTokenizer = Teemaw.Calico.Util.ScriptTokenizer;
 
 namespace Teemaw.Calico.ScriptMod;
@@ -13,7 +15,7 @@ namespace Teemaw.Calico.ScriptMod;
 /// </summary>
 /// <param name="mod"></param>
 /// <param name="config"></param>
-public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
+public class SteamNetworkScriptMod(IModInterface mod, Config config) : IScriptMod
 {
     private readonly MultiTokenWaiter _extendsWaiter = new([
         t => t.Type is PrExtends,
@@ -73,7 +75,7 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
         // ...
         t => t.Type is Newline
     ], allowPartialMatch: true);
-    
+
     private readonly MultiTokenWaiter _steamReadP2PPacketWaiter = new([
         t => t is { Type: OpAssign },
         t => t is IdentifierToken { Name: "Steam" },
@@ -101,7 +103,7 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
 
     private static readonly IEnumerable<Token> Globals = ScriptTokenizer.Tokenize(
         """
-        
+
         var CALICO_RECV_PACKET_QUEUE = []
         var RECV_NET_MUTEX
         var RECV_NET_THREAD
@@ -125,7 +127,7 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
         		_calico_recv_net_process(0)
         		RECV_NET_MUTEX.unlock()
         		OS.delay_msec(62 - Time.get_ticks_msec() % 62)
-        
+
         func _calico_send_net_thread():
         	while SEND_NET_THREAD_RUN:
         		SEND_NET_MUTEX.lock()
@@ -155,7 +157,7 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
     private static readonly IEnumerable<Token> OnProcess = ScriptTokenizer.Tokenize(
         // Note the tab character instead of spaces. This is required by the tokenizer.
         """
-        
+
         RECV_NET_MUTEX.lock()
         for packet in CALICO_RECV_PACKET_QUEUE:
         	_calico_process_P2P_packet_on_main(packet)
@@ -178,8 +180,9 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
 
         """, 2);
 
-    private static readonly IEnumerable<Token> NetworkThreadFunctionSignatureTokens = ScriptTokenizer.Tokenize(
-        "func _calico_recv_net_process(delta): ");
+    private static readonly IEnumerable<Token> NetworkThreadFunctionSignatureTokens =
+        ScriptTokenizer.Tokenize(
+            "func _calico_recv_net_process(delta): ");
 
     private static readonly IEnumerable<Token> PacketHandlerFunction = ScriptTokenizer.Tokenize(
         """
@@ -212,19 +215,30 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
 
     private static readonly IEnumerable<Token> LockMutex = ScriptTokenizer.Tokenize(
         """
-        
+
         SEND_NET_MUTEX.lock()
-        
+
         """, 1);
 
     private static readonly IEnumerable<Token> UnlockMutex = ScriptTokenizer.Tokenize(
         """
-        
+
         SEND_NET_MUTEX.unlock()
-        
+
         """, 1);
-    
-    public bool ShouldRun(string path) => path == "res://Scenes/Singletons/SteamNetwork.gdc";
+
+    public bool ShouldRun(string path)
+    {
+        if (GetLoadedConflicts(mod, CompatScope.MULTITHREAD_NETWORKING).Length != 0)
+        {
+            mod.Logger.Warning(
+                "[calico.SteamNetworkScriptMod] Conflicting mods detected, SKIPPING PATCHES!");
+            return false;
+        }
+
+        return path == "res://Scenes/Singletons/SteamNetwork.gdc"
+               && config.MultiThreadNetworkingEnabled;
+    }
 
     public IEnumerable<Token> Modify(string path, IEnumerable<Token> tokens)
     {
@@ -301,7 +315,7 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
             else if (_sendP2PPacketWaiter.Check(t))
             {
                 yield return t;
-                
+
                 // Fill body for enqueuing packets for send
                 foreach (var t1 in OnSend)
                     yield return t1;
@@ -314,7 +328,8 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
                 foreach (var t1 in LockMutex)
                     yield return t1;
                 patchFlags["packet_flush_lock"] = true;
-                mod.Logger.Information("[calico.SteamNetworkScript] _packet_flush mutex lock patch OK");
+                mod.Logger.Information(
+                    "[calico.SteamNetworkScript] _packet_flush mutex lock patch OK");
             }
             else if (_packetFlushEndWaiter.Check(t))
             {
@@ -324,19 +339,21 @@ public class SteamNetworkScriptMod(IModInterface mod) : IScriptMod
                 // Yield the last newline after!
                 yield return t;
                 patchFlags["packet_flush_unlock"] = true;
-                mod.Logger.Information("[calico.SteamNetworkScript] _packet_flush mutex unlock patch OK");
+                mod.Logger.Information(
+                    "[calico.SteamNetworkScript] _packet_flush mutex unlock patch OK");
             }
             else
             {
                 yield return t;
             }
         }
-        
+
         foreach (var patch in patchFlags)
         {
             if (!patch.Value)
             {
-                mod.Logger.Error($"[calico.SteamNetworkScript] FAIL: {patch.Key} patch not applied");
+                mod.Logger.Error(
+                    $"[calico.SteamNetworkScript] FAIL: {patch.Key} patch not applied");
             }
         }
     }

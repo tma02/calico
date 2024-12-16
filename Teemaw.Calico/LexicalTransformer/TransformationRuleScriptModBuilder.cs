@@ -7,6 +7,7 @@ public class TransformationRuleScriptModBuilder
     private IModInterface? _mod;
     private string? _name;
     private string? _scriptPath;
+    private Func<bool> _predicate = () => true;
     private List<TransformationRule> _rules = [];
 
     /// <summary>
@@ -17,6 +18,19 @@ public class TransformationRuleScriptModBuilder
     public TransformationRuleScriptModBuilder ForMod(IModInterface mod)
     {
         _mod = mod;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the predicate which must return true for this ScriptMod to run. Config options MUST be
+    /// evaluated at patch-time since the environment is not fully known at load-time. Currently,
+    /// this affects mod conflict detection, but there may be other affected features in the future.
+    /// </summary>
+    /// <param name="predicate"></param>
+    /// <returns></returns>
+    public TransformationRuleScriptModBuilder When(Func<bool> predicate)
+    {
+        _predicate = predicate;
         return this;
     }
 
@@ -51,7 +65,8 @@ public class TransformationRuleScriptModBuilder
     {
         if (_rules.Select(r => r.Name).Contains(rule.Name))
         {
-            throw new InvalidOperationException($"Another rule with the name '{rule.Name}' already exists!");
+            throw new InvalidOperationException(
+                $"Another rule with the name '{rule.Name}' already exists!");
         }
 
         _rules.Add(rule);
@@ -87,9 +102,11 @@ public class TransformationRuleScriptModBuilder
 
         if (string.IsNullOrEmpty(_scriptPath))
         {
-            throw new ArgumentNullException(nameof(_scriptPath), "Script path cannot be null or empty");
+            throw new ArgumentNullException(nameof(_scriptPath),
+                "Script path cannot be null or empty");
         }
 
-        return new TransformationRuleScriptMod(_mod, _name, _scriptPath, _rules.ToArray());
+        return new TransformationRuleScriptMod(_mod, _name, _scriptPath, _predicate,
+            _rules.ToArray());
     }
 }

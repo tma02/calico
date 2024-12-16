@@ -8,12 +8,13 @@ namespace Teemaw.Calico.ScriptMod;
 
 public static class TailRootScriptModFactory
 {
-    public static IScriptMod Create(IModInterface mod)
+    public static IScriptMod Create(IModInterface mod, Config config)
     {
         return new TransformationRuleScriptModBuilder()
             .ForMod(mod)
             .Named("TailRootScriptMod")
             .Patching("res://Scenes/Entities/Player/tail_root.gdc")
+            .When(() => config.SmoothCameraEnabled)
             .AddRule(new TransformationRuleBuilder()
                 .Named("globals")
                 .Matching(CreateGlobalsPattern())

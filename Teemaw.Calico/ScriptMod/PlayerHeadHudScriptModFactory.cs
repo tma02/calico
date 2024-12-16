@@ -8,12 +8,13 @@ namespace Teemaw.Calico.ScriptMod;
 
 public static class PlayerHeadHudScriptModFactory
 {
-    public static IScriptMod Create(IModInterface mod)
+    public static IScriptMod Create(IModInterface mod, Config config)
     {
         return new TransformationRuleScriptModBuilder()
             .ForMod(mod)
             .Named("PlayerHeadHudScriptMod")
             .Patching("res://Scenes/Entities/Player/player_headhud.gdc")
+            .When(() => config.SmoothCameraEnabled)
             .AddRule(new TransformationRuleBuilder()
                 .Named("globals")
                 .Matching(CreateGlobalsPattern())

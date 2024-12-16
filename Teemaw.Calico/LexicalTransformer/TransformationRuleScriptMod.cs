@@ -12,10 +12,23 @@ namespace Teemaw.Calico.LexicalTransformer;
 /// <param name="name">The name of this script mod. Used for logging.</param>
 /// <param name="scriptPath">The GD res:// path of the script which will be patched.</param>
 /// <param name="rules">A list of patches to perform. Multiple descriptors with overlapping checks is not supported.</param>
-public class TransformationRuleScriptMod(IModInterface mod, string name, string scriptPath, TransformationRule[] rules)
+public class TransformationRuleScriptMod(
+    IModInterface mod,
+    string name,
+    string scriptPath,
+    Func<bool> predicate,
+    TransformationRule[] rules)
     : IScriptMod
 {
-    public bool ShouldRun(string path) => path == scriptPath;
+    public bool ShouldRun(string path)
+    {
+        if (!predicate.Invoke())
+        {
+            mod.Logger.Warning($"[calico.{name}] Predicate failed, SKIPPING PATCHES!");
+            return false;
+        }
+        return path == scriptPath;
+    }
 
     public IEnumerable<Token> Modify(string path, IEnumerable<Token> tokens)
     {
@@ -34,7 +47,8 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
             .ToList();
         mod.Logger.Information($"[calico.{name}] Patching {path}");
 
-        var patchOccurrences = eligibleRules.ToDictionary(r => r.Name, r => (Occurred: 0, Expected: r.Times));
+        var patchOccurrences =
+            eligibleRules.ToDictionary(r => r.Name, r => (Occurred: 0, Expected: r.Times));
         var bufferAfterChecks = true;
         var stagingBuffer = new List<Token>();
         stagingBuffer.AddRange(tokens);
@@ -42,7 +56,6 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
 
         foreach (var transformer in transformers)
         {
-
             var hasScopePattern = transformer.Rule.ScopePattern.Length > 0;
             var inScope = !hasScopePattern;
             uint? scopeIndent = null;
@@ -79,7 +92,7 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
                     transformedBuffer.Add(token);
                     continue;
                 }
-                
+
                 transformer.Waiter.Check(token);
                 if (transformer.Waiter.Step == 0)
                 {
@@ -105,7 +118,8 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
                         }
                         else
                         {
-                            bufferAfterChecks = transformer.Rule.Operation.YieldTokenAfterOperation();
+                            bufferAfterChecks =
+                                transformer.Rule.Operation.YieldTokenAfterOperation();
                         }
 
                         switch (transformer.Rule.Operation)
@@ -126,11 +140,13 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
                                 break;
                         }
 
-                        mod.Logger.Information($"[calico.{name}] Patch {transformer.Rule.Name} OK!");
-                        patchOccurrences[transformer.Rule.Name] = patchOccurrences[transformer.Rule.Name] with
-                        {
-                            Occurred = patchOccurrences[transformer.Rule.Name].Occurred + 1
-                        };
+                        mod.Logger.Information(
+                            $"[calico.{name}] Patch {transformer.Rule.Name} OK!");
+                        patchOccurrences[transformer.Rule.Name] =
+                            patchOccurrences[transformer.Rule.Name] with
+                            {
+                                Occurred = patchOccurrences[transformer.Rule.Name].Occurred + 1
+                            };
                     }
                 }
 
@@ -149,7 +165,8 @@ public class TransformationRuleScriptMod(IModInterface mod, string name, string 
             transformedBuffer.Clear();
         }
 
-        foreach (var result in patchOccurrences.Where(result => result.Value.Occurred != result.Value.Expected))
+        foreach (var result in patchOccurrences.Where(result =>
+                     result.Value.Occurred != result.Value.Expected))
         {
             mod.Logger.Error(
                 $"[calico.{name}] Patch {result.Key} FAILED! Times expected={result.Value.Expected}, actual={result.Value.Occurred}");

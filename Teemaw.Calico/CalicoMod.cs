@@ -16,10 +16,9 @@ public class CalicoMod : IMod
 
         mi.Logger.Information($"[calico.Mod] Running with config {config}");
 
-        if (config.MultiThreadNetworkingEnabled)
-        {
-            mi.RegisterScriptMod(new SteamNetworkScriptMod(mi));
-        }
+        mi.RegisterScriptMod(new SteamNetworkScriptMod(mi, config));
+        mi.RegisterScriptMod(PlayerHeadHudScriptModFactory.Create(mi, config));
+        mi.RegisterScriptMod(TailRootScriptModFactory.Create(mi, config));
 
         if (config.PlayerOptimizationsEnabled || config.ReducePhysicsUpdatesEnabled || config.SmoothCameraEnabled)
         {
@@ -51,12 +50,6 @@ public class CalicoMod : IMod
             mi.RegisterScriptMod(PlayerHudScriptModFactory.Create(mi));
         }
 
-        if (config.SmoothCameraEnabled)
-        {
-            mi.RegisterScriptMod(PlayerHeadHudScriptModFactory.Create(mi));
-            mi.RegisterScriptMod(TailRootScriptModFactory.Create(mi));
-        }
-
         if (config.DynamicZonesEnabled)
         {
             mi.RegisterScriptMod(TransitionZoneScriptModFactory.Create(mi));
@@ -79,7 +72,7 @@ public class CalicoMod : IMod
             mi.RegisterScriptMod(LobbyQolEscMenuScriptModFactory.Create(mi));
         }
     }
-
+    
     public void Dispose()
     {
         // We don't have anything to clean up
