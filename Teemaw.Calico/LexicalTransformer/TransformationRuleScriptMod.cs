@@ -22,12 +22,14 @@ public class TransformationRuleScriptMod(
 {
     public bool ShouldRun(string path)
     {
+        if (path != scriptPath) return false;
         if (!predicate.Invoke())
         {
             mod.Logger.Warning($"[calico.{name}] Predicate failed, SKIPPING PATCHES!");
             return false;
         }
-        return path == scriptPath;
+
+        return true;
     }
 
     public IEnumerable<Token> Modify(string path, IEnumerable<Token> tokens)

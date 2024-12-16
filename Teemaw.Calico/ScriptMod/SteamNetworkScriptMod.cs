@@ -229,6 +229,7 @@ public class SteamNetworkScriptMod(IModInterface mod, Config config) : IScriptMo
 
     public bool ShouldRun(string path)
     {
+        if (path != "res://Scenes/Singletons/SteamNetwork.gdc") return false;
         if (GetLoadedConflicts(mod, CompatScope.MULTITHREAD_NETWORKING).Length != 0)
         {
             mod.Logger.Warning(
@@ -236,8 +237,7 @@ public class SteamNetworkScriptMod(IModInterface mod, Config config) : IScriptMo
             return false;
         }
 
-        return path == "res://Scenes/Singletons/SteamNetwork.gdc"
-               && config.MultiThreadNetworkingEnabled;
+        return config.MultiThreadNetworkingEnabled;
     }
 
     public IEnumerable<Token> Modify(string path, IEnumerable<Token> tokens)
