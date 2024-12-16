@@ -15,13 +15,14 @@ public static class ModConflictCatalog
     private static readonly Dictionary<CompatScope, string[]> CompatScopeFeatures = new()
     {
         { MULTITHREAD_NETWORKING, ["MultiThreadNetworkingEnabled"] },
-        { CAMERA_PHYSICS, ["SmoothCameraEnabled"] }
+        { CAMERA_PHYSICS, ["SmoothCameraEnabled", "ReducePhysicsUpdatesEnabled"] }
     };
 
     private static readonly Dictionary<string, CompatScope[]> FeatureCompatScopes = new()
     {
         { "MultiThreadNetworkingEnabled", [MULTITHREAD_NETWORKING] },
-        { "SmoothCameraEnabled", [CAMERA_PHYSICS] }
+        { "SmoothCameraEnabled", [CAMERA_PHYSICS] },
+        { "ReducePhysicsUpdatesEnabled", [CAMERA_PHYSICS] }
     };
 
     /// <summary>
@@ -67,8 +68,8 @@ public static class ModConflictCatalog
                 .Distinct()
                 .Where(scope => !NoConflicts(mi, scope))
             let possession = CompatScopeFeatures[scope].Length > 1 ? "have" : "has"
-            select $"[{string.Join(", ", CompatScopeFeatures[scope])}] {possession} " +
-                   $"been disabled due to:\n" +
+            select $"[{string.Join(", ", CompatScopeFeatures[scope])}]\n{possession} " +
+                   $"been disabled due to: " +
                    $"[{string.Join(", ", GetLoadedConflicts(mi, scope))}].").ToList();
 
         return $"Due to known mod conflicts, Calico could not\npatch certain features which " +
