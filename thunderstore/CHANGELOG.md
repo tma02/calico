@@ -1,3 +1,9 @@
+## 0.5.2
+
+* Disables patches if known incompatible mods are loaded.
+    * Added a popup to show which features/mods are incompatible.
+    * Added a config option to override this check.
+
 ## 0.5.1
 
 * Made the lobby list scroll grabber larger.
