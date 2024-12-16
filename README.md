@@ -21,16 +21,16 @@ Calico aims to improve the performance of WEBFISHING in multiplayer scenarios.
 
 ## Install
 
+### Thunderstore (Recommended)
+
+Visit the [Thunderstore page for Calico](https://thunderstore.io/c/webfishing/p/Teemaw/Calico/).
+
 ### Manual
 
 1. Download the latest [release](https://github.com/tma02/calico/releases/latest) zip
 2. Unzip into your WEBFISHING directory such that the `Teemaw.Calico` folder ends up in `WEBFISHING\GDWeave\mods\`
 3. Optionally edit the configuration file in `WEBFISHING\GDWeave\configs\Teemaw.Calico.json`
 4. You're done!
-
-### Thunderstore
-
-Visit the [Thunderstore page for Calico](https://thunderstore.io/c/webfishing/p/Teemaw/Calico/).
 
 ## Configuration
 
@@ -46,7 +46,8 @@ The `Teemaw.Calico.json` configuration file has the following schema and default
   "MultiThreadNetworkingEnabled": true,
   "PlayerOptimizationsEnabled": true,
   "ReducePhysicsUpdatesEnabled": true,
-  "SmoothCameraEnabled": true
+  "SmoothCameraEnabled": true,
+  "ZzCompatOverrideMayCauseCrash": false
 }
 ```
 
@@ -166,13 +167,28 @@ Files modified:
 * `res://Scenes/Entities/Player/player_headhud.gdc`
 * `res://Scenes/Entities/Player/tail_root.gdc`
 
+### `ZzCompatOverrideMayCauseCrash`
+
+By default, Calico will check your loaded mods list against a list of known incompatible mods. This allows Calico to
+disable certain patches that would have caused a crash. However, Calico cannot know if a previously conflicting mod has
+been updated with a fix.
+
+If a previously conflicting mod has been fixed, setting this option to `true` will override the compatibility checks.
+Calico will then faithfully respect the patches enabled in your config.
+
+Files modified when set to `false`:
+
+* `res://Scenes/Menus/Splash/splash.gdc`
+
+(There are no modified files when set to `true`.)
+
 ## Troubleshooting
 
 If Calico is causing your game to crash, it's likely that there is a conflict with another mod. Here are some general
 guidelines to help get your game running by disabling some of Calico's features.
 
 > [!TIP]  
-> If you are experiencing a conflict using Calico with some other mod, feel free to open an 
+> If you are experiencing a conflict using Calico with some other mod, feel free to open an
 > [issue](https://github.com/tma02/calico/issues/new/choose) or PR. While we work on a fix, try the following.
 
 ### I have a guitar mod
