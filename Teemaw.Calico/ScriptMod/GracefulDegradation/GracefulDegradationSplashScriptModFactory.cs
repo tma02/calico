@@ -5,16 +5,18 @@ using static Teemaw.Calico.GracefulDegradation.ModConflictCatalog;
 using static Teemaw.Calico.LexicalTransformer.Operation;
 using static Teemaw.Calico.LexicalTransformer.TransformationPatternFactory;
 
-namespace Teemaw.Calico.ScriptMod.Meta;
+namespace Teemaw.Calico.ScriptMod.GracefulDegradation;
 
-public static class CalicoSplashScriptModFactory
+public static class GracefulDegradationSplashScriptModFactory
 {
-    public static IScriptMod Create(IModInterface mi, ConfigFileSchema configFile)
+    public static IScriptMod Create(IModInterface mi, Config config, ConfigFileSchema configFile)
     {
         return new TransformationRuleScriptModBuilder()
             .ForMod(mi)
-            .Named("CalicoSplashScriptMod")
+            .Named("GracefulDegradationSplashScriptMod")
             .Patching("res://Scenes/Menus/Splash/splash.gdc")
+            // This override should disable instead of enable
+            .When(() => !config.ZzCompatOverrideMayCauseCrash)
             .AddRule(new TransformationRuleBuilder()
                 .Named("compat_message")
                 .Matching(

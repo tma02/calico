@@ -230,7 +230,8 @@ public class SteamNetworkScriptMod(IModInterface mod, Config config) : IScriptMo
     public bool ShouldRun(string path)
     {
         if (path != "res://Scenes/Singletons/SteamNetwork.gdc") return false;
-        if (GetLoadedConflicts(mod, CompatScope.MULTITHREAD_NETWORKING).Length != 0)
+        if (GetLoadedConflicts(mod, CompatScope.MULTITHREAD_NETWORKING).Length != 0
+            && !config.ZzCompatOverrideMayCauseCrash)
         {
             mod.Logger.Warning(
                 "[calico.SteamNetworkScriptMod] Conflicting mods detected, SKIPPING PATCHES!");

@@ -12,16 +12,22 @@ public class Config(IModInterface mi, ConfigFileSchema configFile)
     public bool MapSoundOptimizationsEnabled => configFile.MapSoundOptimizationsEnabled;
     public bool MeshGpuInstancingEnabled => configFile.MeshGpuInstancingEnabled;
 
-    public bool MultiThreadNetworkingEnabled => configFile.MultiThreadNetworkingEnabled &&
-                                                NoConflicts(mi, MULTITHREAD_NETWORKING);
+    public bool MultiThreadNetworkingEnabled => configFile.MultiThreadNetworkingEnabled
+                                                && (NoConflicts(mi, MULTITHREAD_NETWORKING)
+                                                    || configFile.ZzCompatOverrideMayCauseCrash);
 
     public bool PlayerOptimizationsEnabled => configFile.PlayerOptimizationsEnabled;
-    public bool ReducePhysicsUpdatesEnabled => configFile.ReducePhysicsUpdatesEnabled &&
-                                               NoConflicts(mi, CAMERA_PHYSICS);
 
-    public bool SmoothCameraEnabled => configFile.SmoothCameraEnabled &&
-                                       NoConflicts(mi, CAMERA_PHYSICS);
-    
+    public bool ReducePhysicsUpdatesEnabled => configFile.ReducePhysicsUpdatesEnabled
+                                               && (NoConflicts(mi, CAMERA_PHYSICS)
+                                                   || configFile.ZzCompatOverrideMayCauseCrash);
+
+    public bool SmoothCameraEnabled => configFile.SmoothCameraEnabled
+                                       && (NoConflicts(mi, CAMERA_PHYSICS)
+                                           || configFile.ZzCompatOverrideMayCauseCrash);
+
+    public bool ZzCompatOverrideMayCauseCrash => configFile.ZzCompatOverrideMayCauseCrash;
+
     public override string ToString()
     {
         return $"DynamicZonesEnabled={DynamicZonesEnabled}, " +
@@ -32,6 +38,7 @@ public class Config(IModInterface mi, ConfigFileSchema configFile)
                $"MultiThreadNetworkingEnabled={MultiThreadNetworkingEnabled}, " +
                $"PlayerOptimizationsEnabled={PlayerOptimizationsEnabled}, " +
                $"ReducePhysicsUpdatesEnabled={ReducePhysicsUpdatesEnabled}, " +
-               $"SmoothCameraEnabled={SmoothCameraEnabled}";
+               $"SmoothCameraEnabled={SmoothCameraEnabled}, " +
+               $"ZzCompatOverrideMayCauseCrash={ZzCompatOverrideMayCauseCrash}";
     }
 }

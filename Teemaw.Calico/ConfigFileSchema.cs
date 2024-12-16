@@ -13,6 +13,7 @@ public class ConfigFileSchema
     [JsonInclude] public bool PlayerOptimizationsEnabled = true;
     [JsonInclude] public bool ReducePhysicsUpdatesEnabled = true;
     [JsonInclude] public bool SmoothCameraEnabled = true;
+    [JsonInclude] public bool ZzCompatOverrideMayCauseCrash = false;
 
     public override string ToString()
     {
@@ -24,7 +25,8 @@ public class ConfigFileSchema
                $"MultiThreadNetworkingEnabled={MultiThreadNetworkingEnabled}, " +
                $"PlayerOptimizationsEnabled={PlayerOptimizationsEnabled}, " +
                $"ReducePhysicsUpdatesEnabled={ReducePhysicsUpdatesEnabled}, " +
-               $"SmoothCameraEnabled={SmoothCameraEnabled}";
+               $"SmoothCameraEnabled={SmoothCameraEnabled}, " +
+               $"ZzCompatOverrideMayCauseCrash={ZzCompatOverrideMayCauseCrash}";
     }
 
     public bool AnyEnabled() =>

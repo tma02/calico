@@ -1,8 +1,8 @@
 ﻿using System.Reflection;
 using GDWeave;
 using Teemaw.Calico.ScriptMod;
+using Teemaw.Calico.ScriptMod.GracefulDegradation;
 using Teemaw.Calico.ScriptMod.LobbyQol;
-using Teemaw.Calico.ScriptMod.Meta;
 
 namespace Teemaw.Calico;
 
@@ -18,8 +18,13 @@ public class CalicoMod : IMod
         mi.Logger.Information($"[calico.Mod] Loaded config was   {configFile}");
         mi.Logger.Information($"[calico.Mod] Running with config {config}");
 
-        mi.RegisterScriptMod(CalicoGlobalsScriptModFactory.Create(mi));
-        mi.RegisterScriptMod(CalicoSplashScriptModFactory.Create(mi, configFile));
+        if (config.ZzCompatOverrideMayCauseCrash)
+        {
+            mi.Logger.Warning("[calico.Mod] WARNING! WARNING! WARNING!");
+            mi.Logger.Warning("[calico.Mod] ZzCompatOverrideMayCauseCrash=True, MAY CAUSE CRASH!");
+        }
+
+        mi.RegisterScriptMod(GracefulDegradationSplashScriptModFactory.Create(mi, config, configFile));
         mi.RegisterScriptMod(new SteamNetworkScriptMod(mi, config));
         mi.RegisterScriptMod(PlayerHeadHudScriptModFactory.Create(mi, config));
         mi.RegisterScriptMod(TailRootScriptModFactory.Create(mi, config));
