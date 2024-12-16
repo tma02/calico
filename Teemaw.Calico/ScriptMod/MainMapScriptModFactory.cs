@@ -21,7 +21,7 @@ public static class MainMapScriptModFactory
                 .Do(Append)
                 .With(
 	                // TODO: Clean this up somehow -- this was way simpler when it was supposed to be just three tree
-	                //  nodes.
+	                //  nodes. MMIs should only be added to graph for the vanilla map.
                     """
 
                     var calico_water_ld_mat: Material
