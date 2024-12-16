@@ -20,7 +20,7 @@ public static class ModConflictCatalog
     public static string[] GetLoadedConflicts(IModInterface mi, CompatScope scope)
     {
         var knownConflicts = KnownConflicts[scope];
-        return knownConflicts.Union(mi.LoadedMods).ToArray();
+        return knownConflicts.Intersect(mi.LoadedMods).ToArray();
     }
 
     /// <summary>
