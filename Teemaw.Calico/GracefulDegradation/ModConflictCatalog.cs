@@ -1,4 +1,5 @@
-﻿using GDWeave;
+﻿using System.Reflection;
+using GDWeave;
 using static Teemaw.Calico.GracefulDegradation.CompatScope;
 
 namespace Teemaw.Calico.GracefulDegradation;
@@ -8,13 +9,19 @@ public static class ModConflictCatalog
     private static readonly Dictionary<CompatScope, string[]> KnownConflicts = new()
     {
         { MULTITHREAD_NETWORKING, ["Meepso.NLag"] },
-        { CAMERA_UPDATE, ["hideri.SmoothCam"] }
+        { CAMERA_PHYSICS, ["hideri.SmoothCam"] }
     };
 
     private static readonly Dictionary<CompatScope, string[]> CompatScopeFeatures = new()
     {
         { MULTITHREAD_NETWORKING, ["MultiThreadNetworkingEnabled"] },
-        { CAMERA_UPDATE, ["SmoothCameraEnabled"] }
+        { CAMERA_PHYSICS, ["SmoothCameraEnabled"] }
+    };
+
+    private static readonly Dictionary<string, CompatScope[]> FeatureCompatScopes = new()
+    {
+        { "MultiThreadNetworkingEnabled", [MULTITHREAD_NETWORKING] },
+        { "SmoothCameraEnabled", [CAMERA_PHYSICS] }
     };
 
     /// <summary>
@@ -42,32 +49,27 @@ public static class ModConflictCatalog
         return GetLoadedConflicts(mi, scope).Length == 0;
     }
 
-    public static bool AnyConflicts(IModInterface mi)
+    public static bool AnyConflicts(IModInterface mi, ConfigFileSchema configFile)
     {
-        foreach (var scope in KnownConflicts.Keys)
-        {
-            if (!NoConflicts(mi, scope))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return FeatureCompatScopes.Where(kv =>
+                configFile.GetType().GetField(kv.Key)?.GetValue(configFile) is true)
+            .SelectMany(kv => kv.Value)
+            .Distinct()
+            .Any(scope => !NoConflicts(mi, scope));
     }
 
-    public static string GetConflictMessage(IModInterface mi)
+    public static string GetConflictMessage(IModInterface mi, ConfigFileSchema configFile)
     {
-        var conflicts = new List<string>();
-        foreach (var scope in KnownConflicts.Keys)
-        {
-            if (!NoConflicts(mi, scope))
-            {
-                var possession = CompatScopeFeatures[scope].Length > 1 ? "have" : "has";
-                conflicts.Add($"[{string.Join(", ", CompatScopeFeatures[scope])}] {possession} " +
-                              $"been disabled due to:\n" +
-                              $"[{string.Join(", ", GetLoadedConflicts(mi, scope))}].");
-            }
-        }
+        var conflicts = (from scope in FeatureCompatScopes
+                .Where(kv =>
+                    configFile.GetType().GetField(kv.Key)?.GetValue(configFile) is true)
+                .SelectMany(kv => kv.Value)
+                .Distinct()
+                .Where(scope => !NoConflicts(mi, scope))
+            let possession = CompatScopeFeatures[scope].Length > 1 ? "have" : "has"
+            select $"[{string.Join(", ", CompatScopeFeatures[scope])}] {possession} " +
+                   $"been disabled due to:\n" +
+                   $"[{string.Join(", ", GetLoadedConflicts(mi, scope))}].").ToList();
 
         return $"Due to known mod conflicts, Calico could not\npatch certain features which " +
                $"you have enabled in the config.\n{string.Join("\n", conflicts)}\nTo hide this " +

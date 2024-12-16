@@ -9,5 +9,5 @@ public enum CompatScope
     /// <summary>
     /// Conflicts with the player camera update process.
     /// </summary>
-    CAMERA_UPDATE,
+    CAMERA_PHYSICS,
 }

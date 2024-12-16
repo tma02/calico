@@ -25,7 +25,7 @@ public class TransformationRuleScriptMod(
         if (path != scriptPath) return false;
         if (!predicate.Invoke())
         {
-            mod.Logger.Warning($"[calico.{name}] Predicate failed, SKIPPING PATCHES!");
+            mod.Logger.Information($"[calico.{name}] Predicate failed, not patching.");
             return false;
         }
 

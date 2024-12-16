@@ -15,10 +15,11 @@ public class CalicoMod : IMod
         var configFile = mi.ReadConfig<ConfigFileSchema>();
         var config = new Config(mi, configFile);
 
+        mi.Logger.Information($"[calico.Mod] Loaded config was   {configFile}");
         mi.Logger.Information($"[calico.Mod] Running with config {config}");
 
         mi.RegisterScriptMod(CalicoGlobalsScriptModFactory.Create(mi));
-        mi.RegisterScriptMod(CalicoSplashScriptModFactory.Create(mi));
+        mi.RegisterScriptMod(CalicoSplashScriptModFactory.Create(mi, config, configFile));
         mi.RegisterScriptMod(new SteamNetworkScriptMod(mi, config));
         mi.RegisterScriptMod(PlayerHeadHudScriptModFactory.Create(mi, config));
         mi.RegisterScriptMod(TailRootScriptModFactory.Create(mi, config));

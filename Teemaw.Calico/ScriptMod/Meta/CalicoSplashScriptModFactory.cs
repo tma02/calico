@@ -9,7 +9,7 @@ namespace Teemaw.Calico.ScriptMod.Meta;
 
 public static class CalicoSplashScriptModFactory
 {
-    public static IScriptMod Create(IModInterface mi)
+    public static IScriptMod Create(IModInterface mi, Config config, ConfigFileSchema configFile)
     {
         return new TransformationRuleScriptModBuilder()
             .ForMod(mi)
@@ -21,12 +21,12 @@ public static class CalicoSplashScriptModFactory
                     CreateFunctionDefinitionPattern("_on_AnimationPlayer_animation_finished",
                         ["anim_name"])
                 )
-                .When(() => AnyConflicts(mi))
+                .When(() => AnyConflicts(mi, configFile))
                 .Do(Append)
                 .With(
                     $"""
 
-                     PopupMessage._show_popup("{GetConflictMessage(mi)}", 0.1)
+                     PopupMessage._show_popup("{GetConflictMessage(mi, configFile)}", 0.1)
 
                      """, 1
                 )
