@@ -104,6 +104,8 @@ public static class MainMapScriptModFactory
                     	var mmi = MultiMeshInstance.new()
                     	var mm = MultiMesh.new()
                     	mmi.multimesh = mm
+                    	if parent.get_child_count() == 0:
+                    		return mmi
                     	mm.mesh = parent.get_child(0).mesh.duplicate()
                     	for surface_idx in range(parent.get_child(0).get_surface_material_count()):
                     		var material = parent.get_child(0).get_surface_material(surface_idx)
@@ -149,6 +151,8 @@ public static class MainMapScriptModFactory
                     	var mm = MultiMesh.new()
                     	mmi.multimesh = mm
                     	var children = calico_get_all_children_with_filename(parent, filename)
+                    	if children.size() == 0:
+                    		return mmi
                     	var mesh_instance = children[0].get_node(mesh_node_name)
                     	mm.mesh = mesh_instance.mesh.duplicate()
                     	for surface_idx in range(mesh_instance.mesh.get_surface_count()):
