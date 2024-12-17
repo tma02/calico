@@ -3,6 +3,8 @@
 * Disables patches if known incompatible mods are loaded.
     * Added a popup to show which features/mods are incompatible.
     * Added a config option to override this check.
+* Fixed crashing when loading into most custom maps with `MeshGpuInstancingEnabled`.
+    * Meshes will not be instanced, but the game will no longer crash.
 
 ## 0.5.1
 
