@@ -11,7 +11,7 @@ public class ConfigFileSchema
     [JsonInclude] public bool MeshGpuInstancingEnabled = true;
     [JsonInclude] public bool MultiThreadNetworkingEnabled = true;
     [JsonInclude] public bool PlayerOptimizationsEnabled = true;
-    [JsonInclude] public bool ReducePhysicsUpdatesEnabled = true;
+    [JsonInclude] public bool ReducePhysicsUpdatesEnabled = false;
     [JsonInclude] public bool SmoothCameraEnabled = true;
     [JsonInclude] public bool ZzCompatOverrideMayCauseCrash = false;
 
