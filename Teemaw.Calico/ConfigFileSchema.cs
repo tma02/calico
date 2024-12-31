@@ -5,7 +5,6 @@ namespace Teemaw.Calico;
 public class ConfigFileSchema
 {
     [JsonInclude] public bool DynamicZonesEnabled = true;
-    [JsonInclude] public bool LoadingWaitTimeoutEnabled = true;
     [JsonInclude] public bool LobbyQolEnabled = true;
     [JsonInclude] public bool MapSoundOptimizationsEnabled = true;
     [JsonInclude] public bool MeshGpuInstancingEnabled = true;
@@ -18,7 +17,6 @@ public class ConfigFileSchema
     public override string ToString()
     {
         return $"DynamicZonesEnabled={DynamicZonesEnabled}, " +
-               $"LoadingWaitTimeoutEnabled={LoadingWaitTimeoutEnabled}, " +
                $"LobbyQolEnabled={LobbyQolEnabled}, " +
                $"MapSoundOptimizationsEnabled={MapSoundOptimizationsEnabled}, " +
                $"MeshGpuInstancingEnabled={MeshGpuInstancingEnabled}, " +
@@ -30,7 +28,7 @@ public class ConfigFileSchema
     }
 
     public bool AnyEnabled() =>
-        DynamicZonesEnabled || LoadingWaitTimeoutEnabled || LobbyQolEnabled || MapSoundOptimizationsEnabled
+        DynamicZonesEnabled || LobbyQolEnabled || MapSoundOptimizationsEnabled
         || MeshGpuInstancingEnabled || MultiThreadNetworkingEnabled || PlayerOptimizationsEnabled
         || ReducePhysicsUpdatesEnabled || SmoothCameraEnabled;
 }

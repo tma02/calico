@@ -69,11 +69,6 @@ public class CalicoMod : IMod
             mi.RegisterScriptMod(BushParticleDetectScriptModFactory.Create(mi));
         }
 
-        if (config.LoadingWaitTimeoutEnabled)
-        {
-            mi.RegisterScriptMod(LoadingMenuScriptModFactory.Create(mi));
-        }
-
         if (config.LobbyQolEnabled)
         {
             mi.RegisterScriptMod(LobbyQolSteamNetworkScriptModFactory.Create(mi, config));

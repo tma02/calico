@@ -7,7 +7,6 @@ namespace Teemaw.Calico;
 public class Config(IModInterface mi, ConfigFileSchema configFile)
 {
     public bool DynamicZonesEnabled => configFile.DynamicZonesEnabled;
-    public bool LoadingWaitTimeoutEnabled => configFile.LoadingWaitTimeoutEnabled;
     public bool LobbyQolEnabled => configFile.LobbyQolEnabled;
     public bool MapSoundOptimizationsEnabled => configFile.MapSoundOptimizationsEnabled;
     public bool MeshGpuInstancingEnabled => configFile.MeshGpuInstancingEnabled;
@@ -29,7 +28,6 @@ public class Config(IModInterface mi, ConfigFileSchema configFile)
     public override string ToString()
     {
         return $"DynamicZonesEnabled={DynamicZonesEnabled}, " +
-               $"LoadingWaitTimeoutEnabled={LoadingWaitTimeoutEnabled}, " +
                $"LobbyQolEnabled={LobbyQolEnabled}, " +
                $"MapSoundOptimizationsEnabled={MapSoundOptimizationsEnabled}, " +
                $"MeshGpuInstancingEnabled={MeshGpuInstancingEnabled}, " +
