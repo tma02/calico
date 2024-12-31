@@ -1,4 +1,5 @@
 ﻿using GDWeave;
+using GDWeave.Godot;
 using GDWeave.Modding;
 using Teemaw.Calico.LexicalTransformer;
 using static Teemaw.Calico.LexicalTransformer.Operation;
@@ -112,21 +113,21 @@ public static class LobbyQolSteamNetworkScriptModFactory
                 )
             )
             .AddRule(new TransformationRuleBuilder()
-	            .Named("search_for_lobby_skip_code")
-	            .ScopedTo(CreateFunctionDefinitionPattern("_search_for_lobby", ["code"]))
-	            .Matching(CreateGdSnippetPattern("if lobbies.size() > 0:"))
-	            .Do(ReplaceAll)
-	            .With("if lobbies.size() > 0 && !use_calicode:")
+                .Named("search_for_lobby_skip_code")
+                .ScopedTo(CreateFunctionDefinitionPattern("_search_for_lobby", ["code"]))
+                .Matching(CreateGdSnippetPattern("if sanitized_list.size() > 0:"))
+                .Do(ReplaceAll)
+                .With("if sanitized_list.size() > 0 && !use_calicode:")
             )
             .AddRule(new TransformationRuleBuilder()
                 .Named("search_for_lobby_calicode")
                 .ScopedTo(CreateFunctionDefinitionPattern("_search_for_lobby", ["code"]))
-                .Matching(CreateGdSnippetPattern("if lobby_found != - 1:"))
+                .Matching(CreateGdSnippetPattern("if lobby_found == - 1:"))
                 .Do(ReplaceAll)
                 .With(
                     """
 
-                    if lobbies.size() == 0:
+                    if sanitized_list.size() == 0:
                     	print("[calico] game could not find lobby, trying Calicode")
                     	var LOBBY_PLAYERS = Steam.getNumLobbyMembers(calicode)
                     	var LOBBY_MAX_PLAYERS = Steam.getLobbyData(calicode, "cap")
@@ -141,75 +142,32 @@ public static class LobbyQolSteamNetworkScriptModFactory
                     	if str(LOBBY_VERSION) != str(Globals.GAME_VERSION): lobby_found = - 3
                     	if LOBBY_PLAYERS == 0: lobby_found = -1
 
-                    if lobby_found > - 1:
+                    if lobby_found == - 1:
 
                     """, 1
                 )
             )
             .AddRule(new TransformationRuleBuilder()
-                .Named("send_p2p_packet_ignore_banned")
-                .ScopedTo(CreateGdSnippetPattern(
-                    config.MultiThreadNetworkingEnabled
-                        ? "func _calico_send_P2P_packet_on_thread(packet):"
-                        : "func _send_P2P_Packet(packet_data, target = \"all\", type = 0, channel = 0):"))
-                .Matching(CreateGdSnippetPattern(
-                    """
-                    for MEMBER in LOBBY_MEMBERS:
-                    	Steam.sendP2PPacket(MEMBER["steam_id"], PACKET_DATA, SEND_TYPE, CHANNEL)
-                    """, 2
-                ))
-                .Do(ReplaceAll)
-                .With(
-                    """
-                    for MEMBER in LOBBY_MEMBERS:
-                    	if !FORCE_DISCONNECT_PLAYERS.has(MEMBER["steam_id"]):
-                    		Steam.sendP2PPacket(MEMBER["steam_id"], PACKET_DATA, SEND_TYPE, CHANNEL)
-                    """, 2
-                )
-            )
-            .AddRule(new TransformationRuleBuilder()
-                .Named("lobby_chat_update_join")
-                .ScopedTo(CreateFunctionDefinitionPattern("_on_Lobby_Chat_Update",
-                    ["lobby_id", "changed_id", "making_change_id", "chat_state"]))
-                .Matching(CreateGdSnippetPattern(
-                    """
-                    _delayed_chat_update_message(making_change_id, "%u joined the game.", 1.5)
-                    emit_signal("_user_connected", making_change_id)
-                    """, 2
-                ))
-                .Do(ReplaceAll)
-                .With(
-                    """
-
-                    if !FORCE_DISCONNECT_PLAYERS.has(int(making_change_id)):
-                    	_delayed_chat_update_message(making_change_id, "%u joined the game.", 1.5)
-                    	emit_signal("_user_connected", making_change_id)
-
-                    """, 2
-                )
-            )
-            .AddRule(new TransformationRuleBuilder()
-                .Named("lobby_chat_update_leave")
-                .ScopedTo(CreateFunctionDefinitionPattern("_on_Lobby_Chat_Update",
-                    ["lobby_id", "changed_id", "making_change_id", "chat_state"]))
-                .Matching(CreateGdSnippetPattern(
-                    """
-                    _recieve_safe_message(making_change_id, "ffeed5", "%u left the game.", false)
-                    emit_signal("_user_disconnected", making_change_id)
-
-                    Steam.closeP2PSessionWithUser(making_change_id)
-                    """, 2
-                ))
-                .Do(ReplaceAll)
-                .With(
-                    """
-
-                    if Steam.closeP2PSessionWithUser(making_change_id):
-                    	_recieve_safe_message(making_change_id, "ffeed5", "%u left the game.", false)
-                    	emit_signal("_user_disconnected", making_change_id)
-
-                    """, 2
-                )
+	            .Named("actually_read_all_packets")
+	            .ScopedTo(CreateGdSnippetPattern("func _read_all_P2P_packets(channel = 0):"))
+	            .Matching(CreateGdSnippetPattern(
+		            """
+		            var messages = Steam.receiveMessagesOnChannel(channel, 8)
+		            for message in messages:
+		            	_read_P2P_Packet(message)
+		            """, 1
+	            ))
+	            .Do(ReplaceAll)
+	            .With(
+		            """
+		            while true:
+		            	var messages = Steam.receiveMessagesOnChannel(channel, 8)
+		            	if messages.size() == 0:
+		            		break
+		            	for message in messages:
+		            		_read_P2P_Packet(message)
+		            """, 1
+	            )
             )
             .Build();
     }
