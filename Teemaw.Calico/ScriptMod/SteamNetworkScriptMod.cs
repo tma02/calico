@@ -67,7 +67,7 @@ public class SteamNetworkScriptMod(IModInterface mod, Config config) : IScriptMo
         t => t is IdentifierToken { Name: "_read_P2P_Packet" },
         t => t.Type is ParenthesisOpen,
         // ...
-        t => t is IdentifierToken { Name: "readP2PPacket" },
+        t => t is IdentifierToken { Name: "decompress_dynamic" },
         // ...
         t => t is IdentifierToken { Name: "FLUSH_PACKET_INFORMATION" },
         // ...
@@ -77,15 +77,13 @@ public class SteamNetworkScriptMod(IModInterface mod, Config config) : IScriptMo
     ], allowPartialMatch: true);
 
     private readonly MultiTokenWaiter _steamReadP2PPacketWaiter = new([
+        t => t is { Type: PrVar },
+        t => t is IdentifierToken { Name: "PACKET" },
+        t => t is { Type: Colon },
+        // 18 is Dictionary: https://docs.godotengine.org/en/stable/tutorials/io/binary_serialization_api.html
+        t => t.Type is BuiltInType && t.AssociatedData == 18u,
         t => t is { Type: OpAssign },
-        t => t is IdentifierToken { Name: "Steam" },
-        t => t.Type is Period,
-        t => t is IdentifierToken { Name: "readP2PPacket" },
-        t => t.Type is ParenthesisOpen,
-        t => t is IdentifierToken { Name: "PACKET_SIZE" },
-        t => t.Type is Comma,
-        t => t is IdentifierToken { Name: "channel" },
-        t => t.Type is ParenthesisClose,
+        t => t is IdentifierToken { Name: "message_data" },
         t => t.Type is Newline
     ]);
 
