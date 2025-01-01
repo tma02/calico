@@ -1,3 +1,12 @@
+## 0.6.0
+
+* Updated to support WEBFISHING v1.11
+    * Previous WEBFISHING versions are no longer supported.
+* Added a fix for player/fishing-line/entity desync to `LobbyQolEnabled`.
+* Added a fix for blank player usernames to `LobbyQolEnabled`.
+* Removed the "Most players" filter option from `LobbyQolEnabled`.
+    * This is now included in the vanilla game.
+
 ## 0.5.2
 
 * Disables patches if known incompatible mods are loaded.
