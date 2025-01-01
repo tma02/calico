@@ -26,6 +26,19 @@ public static class LobbyQolMainMenuScriptModFactory
                     """, 1
                 )
             )
+            .AddRule(new TransformationRuleBuilder()
+                .Named("lobby_player_count")
+                .ScopedTo(CreateFunctionDefinitionPattern("_lobby_list_returned", ["lobbies"]))
+                .Matching(CreateGdSnippetPattern("var lobby_num_members = Steam.getLobbyData(lobby, \"count\")"))
+                .Do(Append)
+                .With(
+                    """
+                    
+                    lobby_num_members = min(lobby_num_members, Steam.getNumLobbyMembers(lobby))
+
+                    """, 2
+                )
+            )
             .Build();
     }
 }
