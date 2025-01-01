@@ -64,10 +64,26 @@ public static class LobbyQolSteamNetworkScriptModFactory
                     		result = result * 36 + value
                     	
                     	return result
+                    
+                    func calico_persona_state_change():
+                    	_get_lobby_members(false)
+                    	print(LOBBY_MEMBERS)
 
                     """
                 )
             )
+	        .AddRule(new TransformationRuleBuilder()
+		        .Named("ready")
+		        .Matching(CreateFunctionDefinitionPattern("_ready"))
+		        .Do(Append)
+		        .With(
+			        """
+			        
+			        Steam.connect("persona_state_change", self, "calico_persona_state_change")
+
+			        """, 1
+		        )
+	        )
             .AddRule(new TransformationRuleBuilder()
                 .Named("code_lobby_created")
                 .Matching(CreateGdSnippetPattern("LOBBY_CODE = code"))

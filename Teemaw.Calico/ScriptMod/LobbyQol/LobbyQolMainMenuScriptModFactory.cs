@@ -1,8 +1,6 @@
 ﻿using GDWeave;
-using GDWeave.Godot;
 using GDWeave.Modding;
 using Teemaw.Calico.LexicalTransformer;
-using static GDWeave.Godot.TokenType;
 using static Teemaw.Calico.LexicalTransformer.Operation;
 using static Teemaw.Calico.LexicalTransformer.TransformationPatternFactory;
 

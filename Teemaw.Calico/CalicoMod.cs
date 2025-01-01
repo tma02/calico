@@ -74,6 +74,7 @@ public class CalicoMod : IMod
             mi.RegisterScriptMod(LobbyQolSteamNetworkScriptModFactory.Create(mi, config));
             mi.RegisterScriptMod(LobbyQolMainMenuScriptModFactory.Create(mi));
             mi.RegisterScriptMod(LobbyQolEscMenuScriptModFactory.Create(mi));
+            mi.RegisterScriptMod(LobbyQolPlayerScriptModFactory.Create(mi));
         }
     }
     
