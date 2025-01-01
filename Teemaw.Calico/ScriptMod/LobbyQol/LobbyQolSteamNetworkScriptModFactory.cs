@@ -65,9 +65,8 @@ public static class LobbyQolSteamNetworkScriptModFactory
                     	
                     	return result
                     
-                    func calico_persona_state_change():
+                    func calico_persona_state_change(steam_id, flags):
                     	_get_lobby_members(false)
-                    	print(LOBBY_MEMBERS)
 
                     """
                 )

@@ -22,7 +22,7 @@ public static class LobbyQolPlayerScriptModFactory
                     """
 
                     func calico_update_username():
-                    	var username = str(Network._get_username_from_id(owner_id))
+                    	var username = Steam.getFriendPersonaName(owner_id)
                     	title.label = username
 
                     """
