@@ -18,6 +18,8 @@ Calico aims to improve the performance of WEBFISHING in multiplayer scenarios.
 * Skipping cosmetics loading for players that have not changed
 * Optimize player animation updates
 * Other player processing optimizations (caught item, held item, sound effects)
+* Lobby IDs which cannot be spoofed for joining lobbies
+* Other bug fixes
 
 ## Install
 
@@ -40,12 +42,11 @@ The `Teemaw.Calico.json` configuration file has the following schema and default
 {
   "DynamicZonesEnabled": true,
   "LobbyQolEnabled": true,
-  "LoadingWaitTimeoutEnabled": true,
   "MapSoundOptimizationsEnabled": true,
   "MeshGpuInstancingEnabled": true,
   "MultiThreadNetworkingEnabled": true,
   "PlayerOptimizationsEnabled": true,
-  "ReducePhysicsUpdatesEnabled": true,
+  "ReducePhysicsUpdatesEnabled": false,
   "SmoothCameraEnabled": true,
   "ZzCompatOverrideMayCauseCrash": false
 }
@@ -68,30 +69,15 @@ This brings a few QoL features to lobbies:
 * Lobby IDs - unique to each lobby and cannot be spoofed.
     * A new button in the Esc menu lets you see and copy this ID.
     * Other players with Calico installed can join with this ID.
-* Join/leave messages only appear for users who are not blocked.
-    * Works with LobbyLifeguard! However, if you are hosting, you may still see one join message for users who are
-      only on your LobbyLifeguard banlist and not on your vanilla blocklist. Join messages after this should be
-      hidden.
-* Sort by player count option at the main menu.
-* Fixes the lobby list to actually show ~1,000 lobbies.
+* Fixes a bug in vanilla where player/entity movement in larger lobbies gets desynced.
+* Fixes a bug in vanilla where player names are blank in some places.
 
 Files modified:
 
+* `res://Scenes/Entities/Player/player.gdc`
 * `res://Scenes/HUD/Esc Menu/esc_menu.gdc`
 * `res://Scenes/Menus/Main Menu/main_menu.gdc`
 * `res://Scenes/Singletons/SteamNetwork.gdc`
-
-### `LoadingWaitTimeoutEnabled`
-
-After you join a lobby, the game enters a loading screen while you connect to other players. If you're joining a lobby
-with only a few players, and you're unable to connect to even one of them, you'll be stuck in a loading screen forever.
-This option fixes this by introducing a small timeout for each player you haven't connected to yet. The maximum amount
-of time you'll have to wait is ~12 seconds. When this is enabled, it may be possible that there are other players in the
-lobby that you cannot see or chat with.
-
-File modified:
-
-* `res://Scenes/Menus/Loading Menu/loading_menu.gdc`
 
 ### `MapSoundOptimizationsEnabled`
 
@@ -131,7 +117,7 @@ Files modified:
 * `res://Scenes/Entities/Player/player.gdc`
 * `res://Scenes/Entities/Player/sound_manager.gdc`
 
-### `ReducePhysicsUpdatesEnabled`
+### `ReducePhysicsUpdatesEnabled` (Disabled by default)
 
 > [!IMPORTANT]  
 > It's highly recommended to set `SmoothCameraEnabled` to `true` if this option is enabled. Normally, the game camera's
