@@ -34,7 +34,7 @@ public static class LobbyQolMainMenuScriptModFactory
                 .With(
                     """
                     
-                    lobby_num_members = min(lobby_num_members, Steam.getNumLobbyMembers(lobby))
+                    lobby_num_members = min(int(lobby_num_members), Steam.getNumLobbyMembers(lobby))
 
                     """, 2
                 )

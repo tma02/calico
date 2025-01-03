@@ -64,25 +64,84 @@ public static class LobbyQolSteamNetworkScriptModFactory
                     		result = result * 36 + value
                     	
                     	return result
-                    
+
                     func calico_persona_state_change(steam_id, flags):
                     	_get_lobby_members(false)
+                    	
+                    var calico_mods = []
+                    signal calico_mod_updatemods
+
+                    func calico_get_safe_username_from_id(user_id):
+                    	var username = _get_username_from_id(user_id)
+                    	username = username.replace("[", "")
+                    	username = username.replace("]", "")
+                    	return username
+                    
+                    func calico_host_share_mods():
+                    	for user_id in calico_mods:
+                    		_send_P2P_Packet({"type": "^^calico_mod_addmod", "user_id": user_id}, "all", 2, CHANNELS.GAME_STATE)
+                    
+                    func calico_host_share_bans():
+                    	for mod_id in calico_mods:
+                    		for banned_id in WEB_LOBBY_REJECTS:
+                    			_send_P2P_Packet({"type": "^^calico_mod_addmod", "user_id": banned_id}, str(mod_id), 2, CHANNELS.GAME_STATE)
+
+                    func calico_add_mod(user_id):
+                    	if calico_mods.has(user_id): return
+                    	calico_mods.append(user_id)
+                    	emit_signal("calico_mod_updatemods")
+
+                    func calico_host_add_mod(user_id):
+                    	calico_add_mod(user_id)
+                    	_send_P2P_Packet({"type": "^^calico_mod_addmod", "user_id": user_id}, "all", 2, CHANNELS.GAME_STATE)
+
+                    func calico_remove_mod(user_id):
+                    	if !calico_mods.has(user_id): return
+                    	calico_mods.erase(user_id)
+                    	emit_signal("calico_mod_updatemods")
+
+                    func calico_host_remove_mod(user_id):
+                    	calico_remove_mod(user_id)
+                    	_send_P2P_Packet({"type": "^^calico_mod_removemod", "user_id": user_id}, "all", 2, CHANNELS.GAME_STATE)
+
+                    func calico_is_mod(user_id):
+                    	return user_id == KNOWN_GAME_MASTER || calico_mods.has(user_id)
+
+                    func calico_remote_kick(user_id):
+                    	if calico_is_mod(STEAM_ID):
+                    		_send_P2P_Packet({"type": "^^calico_mod_kick", "user_id": user_id}, "all", 2, CHANNELS.GAME_STATE)
+
+                    func calico_remote_ban(user_id):
+                    	if calico_is_mod(STEAM_ID):
+                    		_send_P2P_Packet({"type": "^^calico_mod_ban", "user_id": user_id}, "all", 2, CHANNELS.GAME_STATE)
+
+                    func calico_remote_unban(user_id):
+                    	if calico_is_mod(STEAM_ID):
+                    		_send_P2P_Packet({"type": "^^calico_mod_unban", "user_id": user_id}, "all", 2, CHANNELS.GAME_STATE)
+
+                    func calico_share_ban(user_id):
+                    	if calico_is_mod(STEAM_ID):
+                    		_send_P2P_Packet({"type": "^^calico_mod_ban", "user_id": user_id}, "all", 2, CHANNELS.GAME_STATE)
+
+                    func calico_share_unban(user_id):
+                    	if calico_is_mod(STEAM_ID):
+                    		_send_P2P_Packet({"type": "^^calico_mod_unban", "user_id": user_id}, "all", 2, CHANNELS.GAME_STATE)
 
                     """
                 )
             )
-	        .AddRule(new TransformationRuleBuilder()
-		        .Named("ready")
-		        .Matching(CreateFunctionDefinitionPattern("_ready"))
-		        .Do(Append)
-		        .With(
-			        """
-			        
-			        Steam.connect("persona_state_change", self, "calico_persona_state_change")
+            .AddRule(new TransformationRuleBuilder()
+                .Named("ready")
+                .Matching(CreateFunctionDefinitionPattern("_ready"))
+                .Do(Append)
+                .With(
+                    """
 
-			        """, 1
-		        )
-	        )
+                    Steam.connect("persona_state_change", self, "calico_persona_state_change")
+
+                    """, 1
+                )
+            )
             .AddRule(new TransformationRuleBuilder()
                 .Named("code_lobby_created")
                 .Matching(CreateGdSnippetPattern("LOBBY_CODE = code"))
@@ -163,26 +222,63 @@ public static class LobbyQolSteamNetworkScriptModFactory
                 )
             )
             .AddRule(new TransformationRuleBuilder()
-	            .Named("actually_read_all_packets")
-	            .ScopedTo(CreateGdSnippetPattern("func _read_all_P2P_packets(channel = 0):"))
-	            .Matching(CreateGdSnippetPattern(
-		            """
-		            var messages = Steam.receiveMessagesOnChannel(channel, 8)
-		            for message in messages:
-		            	_read_P2P_Packet(message)
-		            """, 1
-	            ))
-	            .Do(ReplaceAll)
-	            .With(
-		            """
-		            while true:
-		            	var messages = Steam.receiveMessagesOnChannel(channel, 8)
-		            	if messages.size() == 0:
-		            		break
-		            	for message in messages:
-		            		_read_P2P_Packet(message)
-		            """, 1
-	            )
+                .Named("moderator_packets")
+                .ScopedTo(config.MultiThreadNetworkingEnabled
+                    ? CreateGdSnippetPattern("func _calico_process_P2P_packet_on_main(packet):")
+                    : CreateGdSnippetPattern("func _read_P2P_Packet(message_data = {}):"))
+                .Matching(CreateGdSnippetPattern("match type:"))
+                .Do(Append)
+                .With(
+                    """
+
+                    "^^calico_mod_kick":
+                    	if calico_is_mod(PACKET_SENDER):
+                    		_update_chat(calico_get_safe_username_from_id(PACKET_SENDER) + " is kicking " + calico_get_safe_username_from_id(DATA["user_id"]))
+                    	if !GAME_MASTER: return
+                    	if calico_is_mod(PACKET_SENDER):
+                    		_kick_player(DATA["user_id"])
+                    "^^calico_mod_ban":
+                    	if calico_is_mod(PACKET_SENDER):
+                    		_update_chat(calico_get_safe_username_from_id(PACKET_SENDER) + " is banning " + calico_get_safe_username_from_id(DATA["user_id"]))
+                    	if !GAME_MASTER: return
+                    	if calico_is_mod(PACKET_SENDER):
+                    		_ban_player(DATA["user_id"])
+                    "^^calico_mod_unban":
+                    	if calico_is_mod(PACKET_SENDER):
+                    		_update_chat(calico_get_safe_username_from_id(PACKET_SENDER) + " is unbanning " + calico_get_safe_username_from_id(DATA["user_id"]))
+                    	if !GAME_MASTER: return
+                    	if calico_is_mod(PACKET_SENDER):
+                    		_unban_player(DATA["user_id"])
+
+                    "^^calico_mod_addmod":
+                    	if !from_host: return
+                    	calico_add_mod(DATA["user_id"])
+                    "^^calico_mod_removemod":
+                    	if !from_host: return
+                    	calico_remove_mod(DATA["user_id"])
+                    "^^calico_mod_ban":
+                    	if !from_host: return
+                    	WEB_LOBBY_REJECTS.append(DATA["user_id"])
+                    "^^calico_mod_unban":
+                    	if !from_host: return
+                    	WEB_LOBBY_REJECTS.erase(DATA["user_id"])
+                    """, 3
+                )
+            )
+            .AddRule(new TransformationRuleBuilder()
+                .Named("moderation_share")
+                .ScopedTo(CreateGdSnippetPattern(
+                    "func _on_Lobby_Chat_Update(lobby_id, changed_id, making_change_id, chat_state):"))
+                .Matching(CreateGdSnippetPattern("emit_signal(\"_user_connected\", making_change_id)"))
+                .Do(Append)
+                .With(
+                    """
+                    
+                    if GAME_MASTER:
+                    	calico_host_share_mods()
+                    	calico_host_share_bans()
+                    
+                    """, 2)
             )
             .Build();
     }

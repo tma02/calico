@@ -375,6 +375,10 @@ public static class ScriptTokenizer {
                             // CALICO: Without this, `break` is tokenized as an identifier.
                             finalTokens.Add(new Token(TokenType.CfBreak));
                             break;
+                        case "match":
+                            // CALICO: Without this, `match` is tokenized as an identifier.
+                            finalTokens.Add(new Token(TokenType.CfMatch));
+                            break;
                         case "Color":
                             // CALICO: Without this, `Color` is tokenized as an identifier.
                             finalTokens.Add(new Token(TokenType.BuiltInType, 14));

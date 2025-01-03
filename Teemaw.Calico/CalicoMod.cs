@@ -11,7 +11,7 @@ public class CalicoMod : IMod
     public CalicoMod(IModInterface mi)
     {
         mi.Logger.Information($"[calico.Mod] Version is {GetAssemblyVersion()}");
-        
+
         var configFile = mi.ReadConfig<ConfigFileSchema>();
         var config = new Config(mi, configFile);
 
@@ -75,14 +75,16 @@ public class CalicoMod : IMod
             mi.RegisterScriptMod(LobbyQolMainMenuScriptModFactory.Create(mi));
             mi.RegisterScriptMod(LobbyQolEscMenuScriptModFactory.Create(mi));
             mi.RegisterScriptMod(LobbyQolPlayerScriptModFactory.Create(mi));
+            mi.RegisterScriptMod(LobbyQolPlayerlistScriptModFactory.Create(mi));
+            mi.RegisterScriptMod(LobbyQolPlayerEntryScriptModFactory.Create(mi));
         }
     }
-    
+
     public void Dispose()
     {
         // We don't have anything to clean up
     }
-    
+
     public static string GetAssemblyVersion()
     {
         var assembly = Assembly.GetExecutingAssembly();
