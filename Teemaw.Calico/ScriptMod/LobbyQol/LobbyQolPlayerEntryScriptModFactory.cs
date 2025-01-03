@@ -28,13 +28,18 @@ public static class LobbyQolPlayerEntryScriptModFactory
                     	calico_update_mod_button()
 
                     func calico_update_mod_label():
-                    	if Network.calico_is_mod(held_data["steam_id"]) && held_data["steam_id"] != Network.KNOWN_GAME_MASTER: player_name.text = "[mod] " + str(held_data["steam_name"])
+                    	if held_data["steam_id"] == Network.KNOWN_GAME_MASTER:
+                    		player_name.text = "[host] " + str(held_data["steam_name"])
+                    	else if Network.calico_is_mod(held_data["steam_id"]):
+                    		player_name.text = "[mod] " + str(held_data["steam_name"])
+                    	else:
+                    		player_name.text = str(held_data["steam_name"])
                     
                     func calico_update_mod_button():
                     	if Network.calico_is_mod(held_data["steam_id"]):
                     		calico_mod_button.text = "-M"
                     		calico_mod_button.get_node("TooltipNode4").header = "Remove Moderator"
-                    		calico_mod_button.get_node("TooltipNode4").body = "Revokes this player's Calico moderation permissions."
+                    		calico_mod_button.get_node("TooltipNode4").body = "Revokes this player's Calico moderation permissions. (The [mod] tag is only visible to other Calico users.)"
                     	else:
                     		calico_mod_button.text = "+M"
                     		calico_mod_button.get_node("TooltipNode4").header = "Give Moderator"
@@ -93,11 +98,11 @@ public static class LobbyQolPlayerEntryScriptModFactory
                     var calico_is_mod = Network.calico_is_mod(data["steam_id"])
                     $Panel / HBoxContainer / member / kick.disabled = !(Network.GAME_MASTER || calico_is_mod) || data["steam_id"] == Network.STEAM_ID
                     $Panel / HBoxContainer / member / ban.disabled = !(Network.GAME_MASTER || calico_is_mod) || data["steam_id"] == Network.STEAM_ID
-                    calico_mod_button.disabled = !Network.GAME_MASTER || data["steam_id"] == Network.STEAM_ID
                     if type == 0 && Network.calico_is_mod(data["steam_id"]) && data["steam_id"] != Network.KNOWN_GAME_MASTER: player_name.text = "[mod] " + str(data["steam_name"])
                     calico_mod_button = $"%member".get_node("ban").duplicate()
                     calico_mod_button.icon = null
                     calico_mod_button.disconnect("pressed", self, "_on_ban_pressed")
+                    calico_mod_button.disabled = !Network.GAME_MASTER || data["steam_id"] == Network.STEAM_ID
                     calico_update_mod_button()
                     $"%member".add_child(calico_mod_button)
                     calico_mod_button.connect("pressed", self, "calico_on_mod_pressed")
