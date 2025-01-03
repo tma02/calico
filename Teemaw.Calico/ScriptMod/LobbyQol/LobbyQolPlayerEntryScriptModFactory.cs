@@ -28,7 +28,7 @@ public static class LobbyQolPlayerEntryScriptModFactory
                     	calico_update_mod_button()
 
                     func calico_update_mod_label():
-                    	if type == 0 && Network.calico_is_mod(held_data["steam_id"]) && held_data["steam_id"] != Network.KNOWN_GAME_MASTER: player_name.text = "[mod] " + str(held_data["steam_name"])
+                    	if Network.calico_is_mod(held_data["steam_id"]) && held_data["steam_id"] != Network.KNOWN_GAME_MASTER: player_name.text = "[mod] " + str(held_data["steam_name"])
                     
                     func calico_update_mod_button():
                     	if Network.calico_is_mod(held_data["steam_id"]):
