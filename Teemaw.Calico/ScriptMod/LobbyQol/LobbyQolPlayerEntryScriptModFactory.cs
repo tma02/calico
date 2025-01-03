@@ -30,7 +30,7 @@ public static class LobbyQolPlayerEntryScriptModFactory
                     func calico_update_mod_label():
                     	if held_data["steam_id"] == Network.KNOWN_GAME_MASTER:
                     		player_name.text = "[host] " + str(held_data["steam_name"])
-                    	else if Network.calico_is_mod(held_data["steam_id"]):
+                    	elif Network.calico_is_mod(held_data["steam_id"]):
                     		player_name.text = "[mod] " + str(held_data["steam_name"])
                     	else:
                     		player_name.text = str(held_data["steam_name"])
