@@ -21,21 +21,34 @@ public static class LobbyQolPlayerlistScriptModFactory
                     banlist.visible = Network.GAME_MASTER
                     banlabel.visible = Network.GAME_MASTER
                     bansep.visible = Network.GAME_MASTER
-                    no_ban.visible = Network.GAME_MASTER and Network.WEB_LOBBY_REJECTS.size() <= 0
+                    no_ban.visible = Network.GAME_MASTER && Network.WEB_LOBBY_REJECTS.size() <= 0
                     """, 1
                 ))
                 .Do(ReplaceAll)
                 .With(
                     """
 
-                    var calico_show_banlist = Network.GAME_MASTER || Network.calico_is_mod(Network.STEAM_ID)
-                    banlist.visible = calico_show_banlist
-                    banlabel.visible = calico_show_banlist
-                    bansep.visible = calico_show_banlist
-                    no_ban.visible = calico_show_banlist && Network.WEB_LOBBY_REJECTS.size() <= 0
+                    calico_updatemods()
+                    Network.connect("calico_mod_updatemods", self, "calico_updatemods")
 
                     """, 1
                 )
+            )
+            .AddRule(new TransformationRuleBuilder()
+                .Named("globals")
+                .Matching(CreateGlobalsPattern())
+                .Do(Append)
+                .With(
+                    """
+                    func calico_updatemods():
+                    	var calico_show_banlist = Network.GAME_MASTER || Network.calico_is_mod(Network.STEAM_ID)
+                    	banlist.visible = calico_show_banlist
+                    	banlabel.visible = calico_show_banlist
+                    	bansep.visible = calico_show_banlist
+                    	no_ban.visible = calico_show_banlist && Network.WEB_LOBBY_REJECTS.size() <= 0
+                    """
+                )
+                .Build()
             )
             .Build();
     }
