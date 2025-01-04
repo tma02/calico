@@ -2,6 +2,8 @@
 
 * Updated patches for WEBFISHING v1.12
     * 0.6.0 also works on v1.12 but contains unnecessary patches.
+    * Removed the player desync fix from `LobbyQolEnabled`.
+        * This is now fixed in the vanilla game.
 * Added peer moderation features to `LobbyQolEnabled`.
     * The lobby host can grant moderation permissions to other players from the lobby list.
     * Moderators are able to kick, ban, and unban other players as if they were the host.
