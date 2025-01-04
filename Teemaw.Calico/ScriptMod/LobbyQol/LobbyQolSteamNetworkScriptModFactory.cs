@@ -243,6 +243,7 @@ public static class LobbyQolSteamNetworkScriptModFactory
                 .With(
                     """
 
+                    
                     "^^calico_mod_kick":
                     	if calico_is_mod(PACKET_SENDER):
                     		_update_chat(calico_get_safe_username_from_id(PACKET_SENDER) + " is kicking " + calico_get_safe_username_from_id(DATA["user_id"]))
