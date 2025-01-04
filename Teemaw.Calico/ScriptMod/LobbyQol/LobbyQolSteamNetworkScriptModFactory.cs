@@ -249,28 +249,25 @@ public static class LobbyQolSteamNetworkScriptModFactory
                     "^^calico_mod_ban":
                     	if calico_is_mod(PACKET_SENDER):
                     		_update_chat(calico_get_safe_username_from_id(PACKET_SENDER) + " is banning " + calico_get_safe_username_from_id(DATA["user_id"]))
-                    	if !GAME_MASTER: return
-                    	if calico_is_mod(PACKET_SENDER):
-                    		_ban_player(DATA["user_id"])
+                    	if GAME_MASTER:
+                    		if calico_is_mod(PACKET_SENDER):
+                    			_ban_player(DATA["user_id"])
+                    	elif from_host:
+                    		calico_peer_sync_ban(DATA["user_id"])
                     "^^calico_mod_unban":
                     	if calico_is_mod(PACKET_SENDER):
                     		_update_chat(calico_get_safe_username_from_id(PACKET_SENDER) + " is unbanning " + calico_get_safe_username_from_id(DATA["user_id"]))
-                    	if !GAME_MASTER: return
-                    	if calico_is_mod(PACKET_SENDER):
-                    		_unban_player(DATA["user_id"])
-
+                    	if GAME_MASTER:
+                    		if calico_is_mod(PACKET_SENDER):
+                    			_unban_player(DATA["user_id"])
+                    	elif from_host:
+                    		calico_peer_sync_unban(DATA["user_id"])
                     "^^calico_mod_addmod":
                     	if !from_host: return
                     	calico_add_mod(DATA["user_id"])
                     "^^calico_mod_removemod":
                     	if !from_host: return
                     	calico_remove_mod(DATA["user_id"])
-                    "^^calico_mod_ban":
-                    	if !from_host: return
-                    	calico_peer_sync_ban(DATA["user_id"])
-                    "^^calico_mod_unban":
-                    	if !from_host: return
-                    	calico_peer_sync_unban(DATA["user_id"])
                     """, 3
                 )
             )
