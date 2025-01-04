@@ -167,7 +167,13 @@ public static class PlayerScriptModFactory
             .AddRule(new TransformationRuleBuilder()
                 .Named("player_opt_update_cosmetics_guard")
                 .When(config.PlayerOptimizationsEnabled)
-                .Matching(CreateGdSnippetPattern("data = PlayerData.FALLBACK_COSM.duplicate()"))
+                .Matching(CreateGdSnippetPattern(
+                    // Match the newline after duplicate()
+                    """
+                    data = PlayerData.FALLBACK_COSM.duplicate()
+
+                    """
+                ))
                 .Do(Append)
                 .With(
                     // The original script has a blank line here. We replicate this to improve compatibility with other
