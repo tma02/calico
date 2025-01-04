@@ -1,3 +1,8 @@
+## 0.7.1
+
+* Fixed compatibility with WebfishingRichPresence and TitlesPlus.
+    * This was a regression following 0.7.0.
+
 ## 0.7.0
 
 * Updated patches for WEBFISHING v1.12
