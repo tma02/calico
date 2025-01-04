@@ -46,7 +46,7 @@ public static class LobbyQolPlayerEntryScriptModFactory
                     	else:
                     		calico_mod_button.text = "+M"
                     		calico_mod_button.get_node("TooltipNode4").header = "Give Moderator"
-                    		calico_mod_button.get_node("TooltipNode4").body = "If this player has Calico installed, grants this player moderation permissions."
+                    		calico_mod_button.get_node("TooltipNode4").body = "If this player has Calico installed, grants this player moderation permissions. (The [mod] tag is only visible to other Calico users.)"
 
                     func calico_on_mod_pressed():
                     	if !Network.GAME_MASTER:
