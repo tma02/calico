@@ -29,10 +29,22 @@ public static class LobbyQolPlayerlistScriptModFactory
                     """
 
                     calico_updatemods()
-                    Network.connect("calico_mod_updatemods", self, "calico_updatemods")
 
                     """, 1
                 )
+            )
+            .AddRule(new TransformationRuleBuilder()
+                .Named("ready")
+                .Matching(CreateFunctionDefinitionPattern("_ready"))
+                .Do(Append)
+                .With(
+                    """
+                    
+                    Network.connect("calico_mod_updatemods", self, "calico_updatemods")
+                    
+                    """, 1
+                )
+                .Build()
             )
             .AddRule(new TransformationRuleBuilder()
                 .Named("globals")
