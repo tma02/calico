@@ -76,11 +76,11 @@ public static class LobbyQolSteamNetworkScriptModFactory
                     	username = username.replace("[", "")
                     	username = username.replace("]", "")
                     	return username
-                    
+
                     func calico_host_share_mods():
                     	for user_id in calico_mods:
                     		_send_P2P_Packet({"type": "^^calico_mod_addmod", "user_id": user_id}, "all", 2, CHANNELS.GAME_STATE)
-                    
+
                     func calico_host_share_bans():
                     	for mod_id in calico_mods:
                     		for banned_id in WEB_LOBBY_REJECTS:
@@ -267,13 +267,14 @@ public static class LobbyQolSteamNetworkScriptModFactory
             )
             .AddRule(new TransformationRuleBuilder()
                 .Named("moderation_share")
-                .ScopedTo(CreateGdSnippetPattern(
-                    "func _on_Lobby_Chat_Update(lobby_id, changed_id, making_change_id, chat_state):"))
-                .Matching(CreateGdSnippetPattern("emit_signal(\"_user_connected\", making_change_id)"))
+                .ScopedTo(config.MultiThreadNetworkingEnabled
+                    ? CreateGdSnippetPattern("func _calico_process_P2P_packet_on_main(packet):")
+                    : CreateGdSnippetPattern("func _read_P2P_Packet(message_data = {}):"))
+                .Matching(CreateGdSnippetPattern("\"new_player_join\":"))
                 .Do(Append)
                 .With(
                     """
-                    
+
                     if GAME_MASTER:
                     	calico_host_share_mods()
                     	calico_host_share_bans()
