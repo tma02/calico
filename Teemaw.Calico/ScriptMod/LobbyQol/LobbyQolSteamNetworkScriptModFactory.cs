@@ -84,7 +84,7 @@ public static class LobbyQolSteamNetworkScriptModFactory
                     func calico_host_share_bans():
                     	for mod_id in calico_mods:
                     		for banned_id in WEB_LOBBY_REJECTS:
-                    			_send_P2P_Packet({"type": "^^calico_mod_addmod", "user_id": banned_id}, str(mod_id), 2, CHANNELS.GAME_STATE)
+                    			_send_P2P_Packet({"type": "^^calico_mod_ban", "user_id": banned_id}, str(mod_id), 2, CHANNELS.GAME_STATE)
 
                     func calico_add_mod(user_id):
                     	if calico_mods.has(user_id): return
@@ -119,13 +119,22 @@ public static class LobbyQolSteamNetworkScriptModFactory
                     	if calico_is_mod(STEAM_ID):
                     		_send_P2P_Packet({"type": "^^calico_mod_unban", "user_id": user_id}, "all", 2, CHANNELS.GAME_STATE)
 
-                    func calico_share_ban(user_id):
+                    func calico_host_share_ban(user_id):
                     	if calico_is_mod(STEAM_ID):
                     		_send_P2P_Packet({"type": "^^calico_mod_ban", "user_id": user_id}, "all", 2, CHANNELS.GAME_STATE)
 
-                    func calico_share_unban(user_id):
+                    func calico_host_share_unban(user_id):
                     	if calico_is_mod(STEAM_ID):
                     		_send_P2P_Packet({"type": "^^calico_mod_unban", "user_id": user_id}, "all", 2, CHANNELS.GAME_STATE)
+                    
+                    func calico_peer_sync_ban(user_id):
+                    	if WEB_LOBBY_REJECTS.has(user_id): return
+                    	WEB_LOBBY_REJECTS.append(user_id)
+                    	emit_signal("_members_updated")
+                    	
+                    func calico_peer_sync_unban(user_id):
+                    	WEB_LOBBY_REJECTS.erase(user_id)
+                    	emit_signal("_members_updated")
 
                     """
                 )
@@ -258,10 +267,10 @@ public static class LobbyQolSteamNetworkScriptModFactory
                     	calico_remove_mod(DATA["user_id"])
                     "^^calico_mod_ban":
                     	if !from_host: return
-                    	WEB_LOBBY_REJECTS.append(DATA["user_id"])
+                    	calico_peer_sync_ban(DATA["user_id"])
                     "^^calico_mod_unban":
                     	if !from_host: return
-                    	WEB_LOBBY_REJECTS.erase(DATA["user_id"])
+                    	calico_peer_sync_unban(DATA["user_id"])
                     """, 3
                 )
             )
@@ -292,6 +301,28 @@ public static class LobbyQolSteamNetworkScriptModFactory
                     emit_signal("calico_mod_updatemods")
 
                     """, 1)
+            )
+            .AddRule(new TransformationRuleBuilder()
+	            .Named("moderator_host_share_ban")
+	            .Matching(CreateFunctionDefinitionPattern("_ban_player", ["id"]))
+	            .Do(Append)
+	            .With(
+		            """
+
+		            calico_host_share_ban(id)
+
+		            """, 1)
+            )
+            .AddRule(new TransformationRuleBuilder()
+	            .Named("moderator_host_share_unban")
+	            .Matching(CreateFunctionDefinitionPattern("_unban_player", ["id"]))
+	            .Do(Append)
+	            .With(
+		            """
+
+		            calico_host_share_unban(id)
+
+		            """, 1)
             )
             .Build();
     }
