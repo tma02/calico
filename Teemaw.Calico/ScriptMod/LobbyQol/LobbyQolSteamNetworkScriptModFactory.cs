@@ -130,13 +130,16 @@ public static class LobbyQolSteamNetworkScriptModFactory
                     func calico_peer_sync_ban(user_id):
                     	if WEB_LOBBY_REJECTS.has(user_id): return
                     	WEB_LOBBY_REJECTS.append(user_id)
+                    	var MEMBERS = Steam.getNumLobbyMembers(Network.STEAM_LOBBY_ID)
                     	emit_signal("_members_updated")
                     	
                     func calico_peer_sync_unban(user_id):
                     	WEB_LOBBY_REJECTS.erase(user_id)
+                    	var MEMBERS = Steam.getNumLobbyMembers(Network.STEAM_LOBBY_ID)
                     	emit_signal("_members_updated")
 
                     """
+                    // The MEMBERS var declaration is for WebfishingRichPresence compatibility
                 )
             )
             .AddRule(new TransformationRuleBuilder()
