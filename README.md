@@ -18,7 +18,9 @@ Calico aims to improve the performance of WEBFISHING in multiplayer scenarios.
 * Skipping cosmetics loading for players that have not changed
 * Optimize player animation updates
 * Other player processing optimizations (caught item, held item, sound effects)
-* Lobby IDs which cannot be spoofed for joining lobbies
+* QoL features
+  * Grant other users moderation permissions to kick, ban, and unban
+  * Lobby IDs which cannot be spoofed for joining lobbies
 * Other bug fixes
 
 ## Install
@@ -66,16 +68,18 @@ Files modified:
 ### `LobbyQolEnabled`
 
 This brings a few QoL features to lobbies:
+* Peer moderators - hosts running Calico can grant other Calico users permissions to kick, ban, and unban.
 * Lobby IDs - unique to each lobby and cannot be spoofed.
     * A new button in the Esc menu lets you see and copy this ID.
     * Other players with Calico installed can join with this ID.
-* Fixes a bug in vanilla where player/entity movement in larger lobbies gets desynced.
 * Fixes a bug in vanilla where player names are blank in some places.
 
 Files modified:
 
 * `res://Scenes/Entities/Player/player.gdc`
 * `res://Scenes/HUD/Esc Menu/esc_menu.gdc`
+* `res://Scenes/HUD/Playerlist/player_entry.gd`
+* `res://Scenes/HUD/Playerlist/playerlist.gd`
 * `res://Scenes/Menus/Main Menu/main_menu.gdc`
 * `res://Scenes/Singletons/SteamNetwork.gdc`
 
