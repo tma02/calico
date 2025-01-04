@@ -278,8 +278,20 @@ public static class LobbyQolSteamNetworkScriptModFactory
                     if GAME_MASTER:
                     	calico_host_share_mods()
                     	calico_host_share_bans()
-                    
-                    """, 2)
+
+                    """, 4)
+            )
+            .AddRule(new TransformationRuleBuilder()
+                .Named("moderators_reset")
+                .Matching(CreateFunctionDefinitionPattern("_reset_lobby_status"))
+                .Do(Append)
+                .With(
+                    """
+
+                    calico_mods = []
+                    emit_signal("calico_mod_updatemods")
+
+                    """, 1)
             )
             .Build();
     }
