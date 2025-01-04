@@ -26,6 +26,9 @@ public static class LobbyQolPlayerEntryScriptModFactory
                     func calico_updatemods():
                     	calico_update_mod_label()
                     	calico_update_mod_button()
+                    	var calico_im_mod = Network.calico_is_mod(Network.STEAM_ID)
+                    	$Panel / HBoxContainer / member / kick.disabled = !(Network.GAME_MASTER || calico_im_mod) || held_data["steam_id"] == Network.STEAM_ID || held_data["steam_id"] == Network.KNOWN_GAME_MASTER
+                    	$Panel / HBoxContainer / member / ban.disabled = !(Network.GAME_MASTER || calico_im_mod) || held_data["steam_id"] == Network.STEAM_ID || held_data["steam_id"] == Network.KNOWN_GAME_MASTER
 
                     func calico_update_mod_label():
                     	if held_data["steam_id"] == Network.KNOWN_GAME_MASTER:
@@ -96,8 +99,9 @@ public static class LobbyQolPlayerEntryScriptModFactory
                     """
 
                     var calico_is_mod = Network.calico_is_mod(data["steam_id"])
-                    $Panel / HBoxContainer / member / kick.disabled = !(Network.GAME_MASTER || calico_is_mod) || data["steam_id"] == Network.STEAM_ID
-                    $Panel / HBoxContainer / member / ban.disabled = !(Network.GAME_MASTER || calico_is_mod) || data["steam_id"] == Network.STEAM_ID
+                    var calico_im_mod = Network.calico_is_mod(Network.STEAM_ID)
+                    $Panel / HBoxContainer / member / kick.disabled = !(Network.GAME_MASTER || calico_im_mod) || held_data["steam_id"] == Network.STEAM_ID || held_data["steam_id"] == Network.KNOWN_GAME_MASTER
+                    $Panel / HBoxContainer / member / ban.disabled = !(Network.GAME_MASTER || calico_im_mod) || held_data["steam_id"] == Network.STEAM_ID || held_data["steam_id"] == Network.KNOWN_GAME_MASTER
                     if type == 0 && Network.calico_is_mod(data["steam_id"]) && data["steam_id"] != Network.KNOWN_GAME_MASTER: player_name.text = "[mod] " + str(data["steam_name"])
                     calico_mod_button = $"%member".get_node("ban").duplicate()
                     calico_mod_button.icon = null
