@@ -1,6 +1,6 @@
 {
   "name": "Calico",
-  "version_number": "0.7.0",
+  "version_number": "0.7.1",
   "website_url": "https://github.com/tma02/calico",
   "description": "Calico; anti-lag improvements & client optimizations.",
   "dependencies": [
