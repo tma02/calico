@@ -1,3 +1,15 @@
+## 0.7.0
+
+* Updated patches for WEBFISHING v1.12
+    * 0.6.0 also works on v1.12 but contains unnecessary patches.
+* Added peer moderation features to `LobbyQolEnabled`.
+    * The lobby host can grant moderation permissions to other players from the lobby list.
+    * Moderators are able to kick, ban, and unban other players as if they were the host.
+* Fixed compatibility with BetterCosmeticDefaulter.
+    * This was a regression following WEBFISHING v1.11.
+* `ReducePhysicsUpdatesEnabled` now defaults to `false`.
+    * This was changed in 0.6.0 but was not added to the changelog.
+
 ## 0.6.0
 
 * Updated to support WEBFISHING v1.11
@@ -46,12 +58,12 @@
 ## 0.4.0
 
 * Added loading screen timeout.
-    * This will get you past the loading screen when you're unable to connect to another player in the lobby. 
+    * This will get you past the loading screen when you're unable to connect to another player in the lobby.
 * Added map sound optimizations.
     * This detaches inactive audio player nodes from the scene tree.
 * Optimized actor signals with `PlayerOptimizationsEnabled`.
 * Optimized player sound effects and guitar audio with `PlayerOptimizationsEnabled`.
-    * This detaches inactive audio player nodes from the scene tree. 
+    * This detaches inactive audio player nodes from the scene tree.
 
 ## 0.3.4
 
