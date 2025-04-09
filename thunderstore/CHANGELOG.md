@@ -1,3 +1,9 @@
+## 0.7.2
+
+* Fixed some behaviors with `SmoothCameraEnabled`
+    * Fixed camera jank when zooming or moving while lagging.
+    * Improved player rotation behavior when moving while lagging.
+
 ## 0.7.1
 
 * Fixed compatibility with WebfishingRichPresence and TitlesPlus.
