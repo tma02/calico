@@ -367,6 +367,10 @@ public static class ScriptTokenizer {
                             // CALICO: Without this, `print` is tokenized as an identifier.
                             finalTokens.Add(new Token(TokenType.BuiltInFunc, (uint?) BuiltinFunction.TextPrint));
                             break;
+                        case "min":
+                            // CALICO: Without this, `min` is tokenized as an identifier.
+                            finalTokens.Add(new Token(TokenType.BuiltInFunc, (uint?) BuiltinFunction.LogicMin));
+                            break;
                         case "null":
                             // CALICO: Without this, `null` is tokenized as an identifier.
                             finalTokens.Add(new ConstantToken(new NilVariant()));

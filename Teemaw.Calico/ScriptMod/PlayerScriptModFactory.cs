@@ -205,7 +205,7 @@ public static class PlayerScriptModFactory
                 .When(config.ReducePhysicsUpdatesEnabled)
                 .Matching(CreateGdSnippetPattern("rotation.y = lerp_angle(rotation.y, rot_help.rotation.y, 0.2"))
                 .Do(ReplaceLast)
-                .With("12 * delta")
+                .With("min(12 * delta, 1)")
                 .ExpectTimes(3))
             .AddRule(new TransformationRuleBuilder()
                 .Named("smooth_camera_globals")
@@ -223,7 +223,7 @@ public static class PlayerScriptModFactory
                     	if body_origin.distance_squared_to(global_transform.origin) > 16:
                     		$body.global_transform = global_transform.translated(Vector3.DOWN)
                     		return
-                    	var weight = Engine.get_physics_interpolation_fraction()
+                    	var weight = min(Engine.get_physics_interpolation_fraction(), 1)
                     	var virtual_origin = global_transform.translated(Vector3.DOWN).origin
                     	$body.global_transform.origin = calico_last_physics_origin.linear_interpolate(virtual_origin, weight)
                     	$body.scale = scale
@@ -297,7 +297,7 @@ public static class PlayerScriptModFactory
                 .ScopedTo(CreateFunctionDefinitionPattern("_camera_update"))
                 .Matching(CreateGdSnippetPattern("var cam_zoom_lerp = 0.4"))
                 .Do(ReplaceAll)
-                .With("var cam_zoom_lerp = 24 * delta"))
+                .With("var cam_zoom_lerp = min(24 * delta, 1)"))
             .AddRule(new TransformationRuleBuilder()
                 .Named("smooth_camera_base_pos")
                 .When(config.SmoothCameraEnabled)
@@ -327,7 +327,7 @@ public static class PlayerScriptModFactory
                     """
 
                     cam_base.global_transform.origin = cam_base_pos
-                    var cam_speed = 4.8 * delta
+                    var cam_speed = min(4.8 * delta, 1)
 
                     """, 1
                 ))
